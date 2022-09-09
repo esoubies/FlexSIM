@@ -12,14 +12,15 @@ function [patt, params] = GenerateReconstructionPatterns(params, displ)
 % 
 %--------------------------------------------------------------------------
 % Extracting variables
+sz = size(params.y); 
 if isfield(params,'roi')
-    lx=-(params.roi(2)-1)*params.res:params.res/2:(params.sz(2)-params.roi(2)+1)*params.res-params.res/2;
-    ly=-(params.roi(1)-1)*params.res:params.res/2:(params.sz(1)-params.roi(1)+1)*params.res-params.res/2;
+    lx=-(params.roi(2)-1)*params.res:params.res/2:(sz(2)-params.roi(2)+1)*params.res-params.res/2;
+    ly=-(params.roi(1)-1)*params.res:params.res/2:(sz(1)-params.roi(1)+1)*params.res-params.res/2;
     [X,Y]=meshgrid(lx,ly); 
 else
-    [X,Y]=meshgrid(0:2*params.sz(2)-1,0:2*params.sz(1)-1); X=X*params.res/2; Y=Y*params.res/2;
+    [X,Y]=meshgrid(0:2*sz(2)-1,0:2*sz(1)-1); X=X*params.res/2; Y=Y*params.res/2;
 end
-patt = zeros(2*params.sz(1), 2*params.sz(2), params.nbOr*params.nbPh); 
+patt = zeros(2*sz(1), 2*sz(2), params.nbOr*params.nbPh); 
 for i = 1:params.nbOr
     k = params.k(i, :); 
     for j = 1:params.nbPh
@@ -27,11 +28,11 @@ for i = 1:params.nbOr
            phoff = params.phase(i);
            a = params.a(i);
            patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*(phoff+(j-1)*pi/params.nbPh))*cos(2*(k(1)*X+k(2)*Y)) ...
-                                                             - sin(2*(phoff+(j-1)*pi/params.nbPh))*sin(2*(k(1)*X+k(2)*Y)));
+                                                 - sin(2*(phoff+(j-1)*pi/params.nbPh))*sin(2*(k(1)*X+k(2)*Y)));
         else
-        a = params.a(i, j); 
-        patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*ph)*cos(2*(k(1)*X+k(2)*Y)) ...
-                                                          - sin(2*ph)*sin(2*(k(1)*X+k(2)*Y)));
+            a = params.a(i, j); 
+            patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*ph)*cos(2*(k(1)*X+k(2)*Y)) ...
+                                                  - sin(2*ph)*sin(2*(k(1)*X+k(2)*Y)));
         end
     end
 end

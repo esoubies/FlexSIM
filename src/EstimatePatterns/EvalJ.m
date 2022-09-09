@@ -27,7 +27,7 @@ function [c, g] = evalJ(ktest, wf, G, params, filt, att_filt, grad)
 
 %     if ~params.UseAllImages | (params.UseAllImages & params.eq_ph)
     if ismember(params.method, [0, 2])
-        A = BuildATest(ktest, wf, filt, params); 
+        A = BuildA(ktest, wf, filt, params); 
         AA = A'*A;
         if params.method == 0
             G = G(:,:,1); 
@@ -44,7 +44,7 @@ function [c, g] = evalJ(ktest, wf, G, params, filt, att_filt, grad)
     g = [0; 0];
 
     % - Build system    
-    A = BuildATest(ktest, wf, filt, params);
+    A = BuildA(ktest, wf, filt, params);
     AA = A'*A; 
 
     for ith_img = 1:nb_imgs

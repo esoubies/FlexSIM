@@ -1,33 +1,29 @@
-function masked_ft = MaskFT(ft, fc, res, limits, display)
+function maskedFT = MaskFT(ft, fc, radii)
 %--------------------------------------------------------------------------
-%   k_est = LandscapeJ(G,wf,fc, OTF, n_pts, res, zoom, grad, display)
+% Function masked_ft = MaskFT(ft, fc, res, radii)
 %
-% Inputs : ft   : Fourier transform (of SIM image) to mask 
-%          fc   : Cutoff frequency of OTF in [nm/rad]
-%          res  : Resolution of the image in [nm]
-%          limits : 1x2 matrix. Limits of the ring as factors of the system fc
-%          display : Whether to display findings or not
+% Takes as input a FT (propoerly shifted) and masks it by multiplying it 
+% (element-wise) with a boolean ring. The ring is parametrized in terms of
+% multiples of the maximum cutoff frequency of the system (provided as input)
 %
-% MaskFT takes as input the FT (shifted) of a SIM image, the cutoff
-% frequency of the system, and the limits of the ring that will mask the
-% image as a product of the fc 
+% Inputs : ft        → Fourier transform (of SIM image) to mask 
+%          fc        → Cutoff frequency of OTF in [nm/rad]
+%          limits    → 1x2 matrix. Limits of the ring as factors of the
+%                      maximum cutoff frequency. 
+% Outputs : maskedFT → Self-explanatory 
+%
+% Copyright (2022) A. Nogueron (anogueron.1996@gmail.com) , E. Soubies 
+% (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
-sz = size(ft);           % Size of the image. 
-maxp=fc*sz(1);         % Radius (in pxls) of the largest possible wavevector
-if nargin < 3
-    limits = [0.8, 1.1];
-    display = 0;
-else if nargin < 4
-    display = 0;
-end
-
-[I, J] = meshgrid(0:sz(1)-1,0:sz(2)-1);
-circ1 = sqrt((I-floor(sz(1)/2)-1).^2 + (J-floor(sz(2)/2)-1).^2) < maxp*limits(1);
-circ2 = sqrt((I-floor(sz(1)/2)-1).^2 + (J-floor(sz(2)/2)-1).^2) < maxp*limits(2);
+sz = size(ft);            % Get size of the image. 
+maxp=fc*min(sz);          % Radius (in pxls) of the largest possible wavevector
+[I, J] = meshgrid(0:sz(1)-1,0:sz(2)-1);    % Create grid and boolean circles
+circ1 = sqrt((I-floor(sz(1)/2)-1).^2 + (J-floor(sz(2)/2)-1).^2) < maxp*radii(1);
+circ2 = sqrt((I-floor(sz(1)/2)-1).^2 + (J-floor(sz(2)/2)-1).^2) < maxp*radii(2);
 ring = circ2 - circ1;
 
-masked_ft = ft.*ring; 
+maskedFT = ft.*ring;      % Mask
 
 
 end

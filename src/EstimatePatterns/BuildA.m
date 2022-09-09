@@ -2,14 +2,17 @@ function A = BuildA(ktest, wf, filt, params)
 %--------------------------------------------------------------------------
 % function A = BuildA(ktest, wf, filt, params)
 %
-% Inputs : ktest  : The wavevector to test
-%          wf     : The corresponding wf information
-%          filt   :
-%          params :
-%
-% Builds the following system
+% Builds the system A = [a1(:),a2(:)], where 
 % a1 =   wf.* cos(2*(k_1*X+k_2*Y));            
 % a2 = - wf.* sin(2*(k_1*X+k_2*Y)));
+%
+% Inputs :  ktest  → The wavevector to test
+%           wf     → The corresponding wf information
+%           filt   → The filter (in FT domain) to apply to A
+%           params → Structure containing the parameters of the system
+%
+% Outputs : A      → Array of size [N, 2] (N being the # of pixels) that
+%                    contains the sin and cos components of the pattern
 %--------------------------------------------------------------------------
 
 % Calculate necessary sins and cos first we get the grids corresponding to the test wavevector
