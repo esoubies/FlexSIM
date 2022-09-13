@@ -25,6 +25,8 @@ function [k_final, phase, a, res] = EstimatePatterns(params, displ)
 if isfield(params,'roi') && ~isempty(params.roi)   % Crop to ROI
     y = params.y(params.roi(1):params.roi(1)+params.roi(3)-1, ...
         params.roi(2):params.roi(2)+params.roi(3)-1,:);
+else
+    y=params.y;
 end
 sz = size(y);                                      % Calculate size of ROI
 

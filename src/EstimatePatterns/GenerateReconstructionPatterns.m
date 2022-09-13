@@ -13,7 +13,7 @@ function [patt, params] = GenerateReconstructionPatterns(params, res)
 %--------------------------------------------------------------------------
 % Extracting variables
 sz = size(params.y); 
-if isfield(params,'roi')
+if isfield(params,'roi') && ~isempty(params.roi)
     lx=-(params.roi(2)-1)*params.res:params.res/2:(sz(2)-params.roi(2)+1)*params.res-params.res/2;
     ly=-(params.roi(1)-1)*params.res:params.res/2:(sz(1)-params.roi(1)+1)*params.res-params.res/2;
     [X,Y]=meshgrid(lx,ly); 
