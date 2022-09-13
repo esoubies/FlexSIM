@@ -1,4 +1,4 @@
-function [attFilt, filt] = BuildFilter(k, sz, params)
+function [attFilt, filt] = BuildFilter(k, sz, params, results)
 %--------------------------------------------------------------------------
 % [att_filt, filt] = BuildFilter(k, sz, params, displ)
 %
@@ -6,7 +6,8 @@ function [attFilt, filt] = BuildFilter(k, sz, params)
 %
 % Inputs :  k       → The wavevector to construct the filter around
 %           sz      → The size of the filters
-%           params  → Structure containing the parameters of the system
+%           params  → Structure containing the input parameters of the system
+%           results → Structure that stores intermediate and final results
 %
 % Outputs : attFilt → Filter for the WF image
 %           Filt    → Filter for A 
@@ -17,7 +18,7 @@ if isfield(params,'ringMaskLim')
 else
     rr = 0.5 * norm(kPix);
 end
-OTF = params.OTF; I = params.I; J = params.J;
+OTF = results.OTF; I = results.I; J = results.J;
 OTF0=double(OTF.*ifftshift((sqrt((I-kPix(1)-floor(sz(1)/2)-1).^2+(J-kPix(2)-floor(sz(2)/2)-1).^2)<rr)+(sqrt((I+kPix(1)-floor(sz(1)/2)-1).^2+(J+kPix(2)-floor(sz(2)/2)-1).^2)<rr))>0);
 OTFshift=ifftshift(imtranslate(fftshift(OTF),kPix(:)')+imtranslate(fftshift(OTF),-kPix(:)'));
 attFilt = OTFshift.*OTF0;

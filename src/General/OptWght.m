@@ -1,28 +1,26 @@
-function a = OptWght(x,xref,p,r)
+function a = OptWght(x,xref,mask)
 %--------------------------------------------------------------------------
-% function a = OptWght(x,xref,p,r)
+% Function a = optWght(x,xref,mask)
 %
-% Computes a = argmin ||mask*(a*x-xref)||^2
-% where mask is a disk of radius r centered at p
+% Takas as inputs two arrays and a mask, and calculates the parameter `a` 
+% that will minimize the objective |x - xref|^2
 %
-% Input : x    : image to be scaled
-%         xref : reference image
-%         p    : mask center
-%         r    : mask radius
+% Inputs : ft        → Fourier transform (of SIM image) to mask 
+%          fc        → Cutoff frequency of OTF in [nm/rad]
+%          limits    → 1x2 matrix. Limits of the ring as factors of the
+%                      maximum cutoff frequency. 
+% Outputs : maskedFT → Self-explanatory 
 %
-% Output: a  : Regression coefficient
+% Copyright (2022) A. Nogueron (anogueron.1996@gmail.com) , E. Soubies 
+% (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
-% -- Pre computations
-sz = size(x);
+% If no mask was provided, define one that covers the whole image
+if nargin < 3
+    sz = size(x);
+    mask = ones(sz); 
+end
 
-% -- Create mask
-[I,J]=meshgrid(1:sz(1),1:sz(2));
-mask=double(((I-p(1)).^2+(J-p(2)).^2) < r^2); 
-
-% -- Compute weight
-x=x.*mask;
-xref=xref.*mask;
-a=(x(:)'*xref(:))/norm(x(:))^2;
-
+x=x.*mask; xref=xref.*mask;         % Multiply both arrays by mask
+a=(x(:)'*xref(:))/norm(x(:))^2;     % Solve system to get parameter `a`  
 end

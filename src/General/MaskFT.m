@@ -7,7 +7,7 @@ function maskedFT = MaskFT(ft, fc, radii)
 % multiples of the maximum cutoff frequency of the system (provided as input)
 %
 % Inputs : ft        → Fourier transform (of SIM image) to mask 
-%          fc        → Cutoff frequency of OTF in [nm/rad]
+%          fc        → Cutoff frequency, normalized by resolution ([0, 0.5])
 %          limits    → 1x2 matrix. Limits of the ring as factors of the
 %                      maximum cutoff frequency. 
 % Outputs : maskedFT → Self-explanatory 
@@ -21,9 +21,6 @@ maxp=fc*min(sz);          % Radius (in pxls) of the largest possible wavevector
 [I, J] = meshgrid(0:sz(1)-1,0:sz(2)-1);    % Create grid and boolean circles
 circ1 = sqrt((I-floor(sz(1)/2)-1).^2 + (J-floor(sz(2)/2)-1).^2) < maxp*radii(1);
 circ2 = sqrt((I-floor(sz(1)/2)-1).^2 + (J-floor(sz(2)/2)-1).^2) < maxp*radii(2);
-ring = circ2 - circ1;
-
+ring = circ2 - circ1;     % Define boolean mask
 maskedFT = ft.*ring;      % Mask
-
-
 end

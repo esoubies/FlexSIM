@@ -14,12 +14,18 @@ function params = Tests(params)
 % (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
-% Initial tests to ensure that the necessary parameters for FlexSIM to run
-% are present
-assert(isfield(params, "nMinima"),'Missing parameter `nMinima` (positive integer)')
-assert(isfield(params, "FilterRefinement"),'Missing parameter `FilterRefinement` (positive integer)')
-assert(isfield(params, "ringMaskLim"),'Missing parameter `ringMaskLim` (array of two doubles )')
-% Window vs Linux/Mac
-% for n = ["nMinima", "FilterRefinement", "ringMaskLim" ]
-%     assert(isfield(params, n),'Missing parameter '+n)
-% end
+% Declare a set of     
+if ~isfield(params, "nMinima")
+    params.nMinima = 1;
+end
+if ~isfield(params, "FilterRefinement")
+    params.FilterRefinement = 1;
+end
+if ~isfield(params, "ringMaskLim")
+    params.ringMaskLim = [0, 1];
+end
+
+
+for n = ["nMinima", "FilterRefinement", "ringMaskLim" ]
+    assert(isfield(params,'n'),'Missing parameter n')
+end

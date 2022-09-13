@@ -1,4 +1,4 @@
-function [patt, params] = GenerateReconstructionPatterns(params, displ)
+function [patt, params] = GenerateReconstructionPatterns(params, res)
 %--------------------------------------------------------------------------
 %   [patterns, params] = GenerateReconstructionPatterns(filename, params, displ)
 %
@@ -22,28 +22,19 @@ else
 end
 patt = zeros(2*sz(1), 2*sz(2), params.nbOr*params.nbPh); 
 for i = 1:params.nbOr
-    k = params.k(i, :); 
+    k = res.k(i, :); 
     for j = 1:params.nbPh
         if params.method == 2
-           phoff = params.phase(i);
-           a = params.a(i);
+           phoff = res.phase(i);
+           a = res.a(i);
            patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*(phoff+(j-1)*pi/params.nbPh))*cos(2*(k(1)*X+k(2)*Y)) ...
                                                  - sin(2*(phoff+(j-1)*pi/params.nbPh))*sin(2*(k(1)*X+k(2)*Y)));
         else
-            a = params.a(i, j); 
+            a = res.a(i, j); ph = res.phase(i, j);
             patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*ph)*cos(2*(k(1)*X+k(2)*Y)) ...
                                                   - sin(2*ph)*sin(2*(k(1)*X+k(2)*Y)));
         end
     end
 end
 patt=patt/(mean(patt(:))*size(patt,3));
-
-if displ
-    figure; 
-    for i = 1:params.nbOr
-        subplot(2, ceil(params.nbOr/2), i); imshow(patt(:,:,i*params.nbPh), []); 
-        title("Sample pattern of orientation " + num2str(i));
-    end
-    impixelinfo;
-end
 end

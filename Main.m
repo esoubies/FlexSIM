@@ -26,6 +26,7 @@ params.roi = [170 150 116];       % Select ROI ([initial y-coord, initial x-coor
 params.limits = [0.95, 1.05];     % Ring over which the J function is evaluated for initializing (fc = 1)
 params.ringMaskLim = [0.4, 1.1];  % Mask to finish hiding WF component
 params.nMinima = 3;               % Number of starting points for the refinement steps
+params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
 params.nPoints = 200;             % Number of points in the J evaluation grid
 params.method = 2;                % method : 0 - treat all images independently
                                   %          1 - use all images with same orientation to estimate a unique wavevector
