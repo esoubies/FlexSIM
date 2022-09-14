@@ -20,8 +20,12 @@ function res = FlexSIM(params)
 
 %% Data loading + routinary checks
 y = double(loadtiff(params.DataPath));    % Read data and add to params
-params.y=y;
+params.y=y; % TODO: Manage here the order paz or not ? Or in Tests and return y ? Call it preprocess ?
 Tests(params);                            % Check conformity of parameters
+
+% - Displays
+figure;sliceViewer(y);title('SIM Raw data');
+drawnow;set(gcf,'Visible','on');
 
 %% Pattern Estimation
 disp('=== Patterns parameter estimation START ...');
@@ -33,24 +37,27 @@ results.a = results.a./results.a;a=a./a; % Hardcode to 1 for now (to be as in pr
 [patterns, params] = GenerateReconstructionPatterns(params, results); 
 
 % - Displays
-imdisp(patterns(:,:,1),'Estimated Pattern #1',1);  % Default display
-if params.displ ==1                                % Detailled display
+figure;sliceViewer(patterns);title('Estimated Patterns'); % Default display
+if params.displ ==1                                       % Detailled display
     sz=size(y);
-    fig=figure;imshow(log10(sum(abs(fftshift(fft2(y))),3)+1), []); colormap(viridis);
-    colorbar; axis on; hold on; pause(0.1);
+    imdisp(log10(sum(abs(fftshift(fft2(y))),3)+1),'Detected wavevectors',1); colormap(viridis);
+    colorbar; hold on; 
     for i = 1:params.nbOr
         tmp = k(i, :) * sz(1) * params.res / pi + sz(1)/2+1;
-        figure(fig);plot(tmp(1), tmp(2), 'ro', 'MarkerSize', 5, 'LineWidth', 2);
+        plot(tmp(1), tmp(2), 'ro', 'MarkerSize', 5, 'LineWidth', 2);
     end
-    title('Sum of data Fourier amplitudes + detected wavevectors'); drawnow;
 end
+drawnow;
 
 %% Reconstruction
 rec = Reconstruct(y,patterns,params);
 
 % - Displays
-figure;subplot(1,2,1);imagesc(rec); axis image; title('Reconstructed image');colormap gray;
-subplot(1,2,2);imagesc(log(1+abs(fftshift(fftn(rec))))); axis image; title('Reconstructed image FFT');
+figure;
+s1=subplot(1,2,1);imdisp(rec,'SIM Reconstruction',0);
+s2=subplot(1,2,2);imdisp(imresize(mean(y,3),size(rec)),'Widefield',0);
+Link = linkprop([s1, s2],{'CameraUpVector', 'CameraPosition', 'CameraTarget', 'XLim', 'YLim', 'ZLim'});
+setappdata(gcf, 'StoreTheLink', Link);
 
 %% Save
 % - Save reconstruction / patterns / parameters

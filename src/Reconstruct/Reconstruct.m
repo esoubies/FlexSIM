@@ -33,7 +33,14 @@ end
 % -- Generate OTF/PSF
 otf = GenerateOTF(params.Na,params.lamb,min([256,256],sz(1:2)),params.res/2,params.damp);
 psf = fftshift(real(ifft2(otf)));
-
+% - Fix change of global intensity from one acquisition to the next one
+y=y-min(y(:));
+t=sum(sum(y,1),2);inten=min(t(:));
+for ii=1:size(y,3)
+    y(:,:,ii)=y(:,:,ii)/t(ii)*inten;
+end
+maxy=max(y(:));y=y/maxy;
+sig=max(max(y(:,:,1)))/10;
 
 %% Operators and Regul
 % -- Data term
@@ -61,14 +68,14 @@ for id1=0:n1-1
         yy=y;
         pp=patt;
     end
-    % - Fix change of global intensity from one acquisition to the next of 
-    yy=yy-min(yy(:));
-    t=sum(sum(yy,1),2);inten=min(t(:));
-    for ii=1:size(yy,3)
-        yy(:,:,ii)=yy(:,:,ii)/t(ii)*inten;
-    end
-    maxy=max(yy(:));yy=yy/maxy;
-    sig=max(max(yy(:,:,1)))/10;
+    % - Fix change of global intensity from one acquisition to the next one 
+%     yy=yy-min(yy(:));
+%     t=sum(sum(yy,1),2);inten=min(t(:));
+%     for ii=1:size(yy,3)
+%         yy(:,:,ii)=yy(:,:,ii)/t(ii)*inten;
+%     end
+%     maxy=max(yy(:));yy=yy/maxy;
+%    sig=max(max(yy(:,:,1)))/10;
     % -- Patterns normalization
     pp=pp/(mean(pp(:))*size(pp,3));
     % -- Data term
@@ -95,7 +102,7 @@ for id1=0:n1-1
     Opt.ItUpOut=round(params.maxIt/10);              % Call OutputOpti update every ItUpOut iterations
     Opt.maxiter=params.maxIt;                        % Max number of iterations
     Opt.run(zeros(P.sizeout));                       % Run the algorithm zeros(H.sizein)
-    
+    (1/numel(yy))*F*Opt.xopt
     rec=rec+Opt.xopt;
 end
 rec=rec/n1;
