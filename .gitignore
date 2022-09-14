@@ -5,8 +5,9 @@
 # Eclipse meta data
 *.metadata
 
-# Matlab autosave files
+# Matlab files
 *.asv
+*.mat
 
 # Python distribution / packaging
 .Python
