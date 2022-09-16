@@ -1,18 +1,25 @@
-function [patt, params] = GenerateReconstructionPatterns(params, res)
+function [patt] = GenerateReconstructionPatterns(params, res, y)
 %--------------------------------------------------------------------------
-%   [patterns, params] = GenerateReconstructionPatterns(filename, params, displ)
+%  function [patt] = GenerateReconstructionPatterns(params, res)
 %
-% Inputs : filename : Raw SIM data 
-%          params   : parameters with stored data. Should contain at least
-%                     the fields k and phase.
-%          displ    : Whereas to display a sample pattern
+% Takes as input the etimated pattern parameters (amplitude, phase and 
+% wavevector) of a SIM acquisition and returns the corresponding patterns
 %
-% Function that from the etimated parameters of a raw set of SIM images,
-% returns the estimated patterns
+% Inputs :  params   -> Parameters with stored data. Should contain at least
+%                       the fields k, phase and a, as well as the raw SIM data.
+%           res      -> Structure containing the wave vectors, phases, and 
+%                       amplitudes estimated
+%           y        -> Raw SIM data
 % 
+% Outputs : patt     -> Estimated patterns of the SIM acquisition, of the
+%                       same size as the data
+%
+%
+% Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
+%                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 % Extracting variables
-sz = size(params.y); 
+sz = size(y); 
 if isfield(params,'roi') && ~isempty(params.roi)
     lx=-(params.roi(2)-1)*params.res:params.res/2:(sz(2)-params.roi(2)+1)*params.res-params.res/2;
     ly=-(params.roi(1)-1)*params.res:params.res/2:(sz(1)-params.roi(1)+1)*params.res-params.res/2;

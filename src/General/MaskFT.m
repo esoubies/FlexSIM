@@ -1,16 +1,16 @@
 function maskedFT = MaskFT(ft, fc, radii)
 %--------------------------------------------------------------------------
-% Function masked_ft = MaskFT(ft, fc, res, radii)
+% Function masked_ft = MaskFT(ft, fc, radii)
 %
 % Takes as input a FT (propoerly shifted) and masks it by multiplying it 
 % (element-wise) with a boolean ring. The ring is parametrized in terms of
 % multiples of the maximum cutoff frequency of the system (provided as input)
 %
-% Inputs : ft        → Fourier transform (of SIM image) to mask 
-%          fc        → Cutoff frequency, normalized by resolution ([0, 0.5])
-%          limits    → 1x2 matrix. Limits of the ring as factors of the
+% Inputs : ft        -> Fourier transform (of SIM image) to mask 
+%          fc        -> Cutoff frequency, normalized by resolution ([0, 0.5])
+%          limits    -> 1x2 matrix. Limits of the ring as factors of the
 %                      maximum cutoff frequency. 
-% Outputs : maskedFT → Self-explanatory 
+% Outputs : maskedFT -> Self-explanatory 
 %
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com) , E. Soubies 
 % (emmanuel.soubies@irit.fr) 

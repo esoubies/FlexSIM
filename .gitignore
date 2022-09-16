@@ -8,6 +8,7 @@
 # Matlab files
 *.asv
 *.mat
+GlobalBioIm/*
 
 # Python distribution / packaging
 .Python

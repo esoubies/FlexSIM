@@ -1,40 +1,42 @@
-function [k_final, phase, a, res] = EstimatePatterns(params, displ)
+function [k_final, phase, a] = EstimatePatterns(params, y)
 %--------------------------------------------------------------------------
-% Function [k_final, phase, a, params] = EstimatePatterns(params)
+% Function [k_final, phase, a, res] = EstimatePatterns(params)
 %
 % EstimatePatterns takes as input the structure defined in Main.m (now
 % containing the SIM data) and returns the parameters (wavevector, phase
 % and amplitude) of the SIM patterns
 %
-% Inputs  : params  → Structure containing all the necessary data (optical
-%                    and reconstruction parameters, paths, SIM image, etc.)  
+% Inputs  : params  -> Structure containing all the necessary data (optical
+%                      and reconstruction parameters, paths, SIM image, etc.)
+%           y       -> Array containing raw SIM data
 %
-% Outputs : k_final → Structure with the final image (in the field `res`)
-%                    and other intermediate res, like patterns. 
-%           phase   → Depending on the method, of size (nbOr, nbPh) or just
+% Outputs : k_final -> Structure with the final image (in the field `res`)
+%                      and other intermediate res, like patterns. 
+%           phase   -> Depending on the method, of size (nbOr, nbPh) or just
 %                     (nbPh). Contains the phase offset of the images 
-%           a       → Same size as phase, contains the amplitude of the SIM patterns
-%           res → Output structure with input parameter 
+%           a       -> Same size as phase, contains the amplitude of the SIM patterns
+%           res     -> Output structure with input parameter 
 %
-% Copyright (2022) A. Nogueron (anogueron.1996@gmail.com) , E. Soubies 
-% (emmanuel.soubies@irit.fr) 
+% [1] FlexSIM: ADD REF TO PAPER
+%
+% See also FlexSIM.m and Reconstruct.m
+%
+% Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
+%                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
 %% Preprocessing of stack & initialization of useful variables
 % If requested, we crop to the ROI, keeping the original size before
 if isfield(params,'roi') && ~isempty(params.roi)   % Crop to ROI
-    y = params.y(params.roi(1):params.roi(1)+params.roi(3)-1, ...
+    y = y(params.roi(1):params.roi(1)+params.roi(3)-1, ...
         params.roi(2):params.roi(2)+params.roi(3)-1,:);
-else
-    y=params.y;
 end
 sz = size(y);                                      % Calculate size of ROI
 
-[res.I, res.J] = meshgrid(0:sz(2)-1,0:sz(1)-1);    % Numerical mesh - multipurpose
-res.X = res.I*params.res; res.Y=res.J*params.res;  % Scaled (by resolution) mesh 
+[grids.I, grids.J] = meshgrid(0:sz(2)-1,0:sz(1)-1);        % Numerical mesh - multipurpose
+grids.X = grids.I*params.res; grids.Y=grids.J*params.res;  % Scaled (by resolution) mesh 
 
-res.OTF = GenerateOTF(params.Na, params.lamb, sz, params.res, 1); % Computation of the OTF
-res.OTF0=fftshift(double(res.OTF>0));
+OTF = GenerateOTF(params.Na, params.lamb, sz, params.res, 1); % Computation of the OTF
 
 wfs =zeros(sz(1), sz(2),params.nbOr);              % Initialize variable for widefield
 y = (y - min(y(:))) / (max(y(:)) - min(y(:)));     % Normalize stack images
@@ -64,7 +66,6 @@ for idx = imgIdxs                             % Iterate through the orientations
         [I,J]=meshgrid(1:sz(1),1:sz(2));      % Create a LP filter in Fourier domain to remove WF
         p = (sz(1:2)+1)/2; r = sz(1)/8; 
         mask=double(((I-p(1)).^2+(J-p(2)).^2) < r^2); 
-%         mask=double(((res.I-(sz(1)+1)/2+1).^2+(res.J-(sz(2)+1)/2-1).^2) < (sz(1)/8)^2); 
         a=real(OptWght(ffty,fft_wf, mask));   % Calculate argmin_a |a*ffty - fft_wf|^2
         % Remove the scaled WF + filter freq within a ring of interest
         y(:,:,img) = real(ifft2(ifftshift(MaskFT((a*ffty-fft_wf), FCut, params.ringMaskLim)))); 
@@ -73,6 +74,17 @@ end
 
 for ii=1:size(wfs,3)                           % Mask widefields with the same ring as the images
     wfs(:,:,ii) = real(ifft2(ifftshift(MaskFT(fftshift(fft2(wfs(:,:,ii))), FCut, params.ringMaskLim))));
+end
+
+if params.displ > 1                               % Debug mode - display conditioned images
+    figure; sliceViewer(y, "Colormap",viridis);   % Display masked `b` in [1]
+    title('Conditioned Images');                  
+    figure; sliceViewer(wfs, "Colormap",viridis); % Display widefields
+    title('Conditioned widefields (masked on FT domain)');
+    figure; sliceViewer(log10(abs(fftshift(fft2(y))+1)), "Colormap",viridis);   % Display FTs of both
+    title('Conditioned Images FT');               
+    figure; sliceViewer(log10(abs(fftshift(fft2(wfs))+1)), "Colormap",viridis); % Display widefields
+    title('Conditioned widefields FT');
 end
 %% Precomputations and evaluation of the cost function J
 cmin=params.limits(1);  cmax=params.limits(2);        % Ring used to delimit Fourier sin peaks search
@@ -97,7 +109,7 @@ for idx = imgIdxs                                     % Loop through images to c
         for jj=1:params.nPoints/2                     % is within the limits, evaluate
             if Knorm(ii, jj)>cmin*FCutN && Knorm(ii, jj)<cmax*FCutN
                 ktest = squeeze(K(ii, jj, :));        % Evaluate cost without filtering                 
-                Jp(ii, jj) = EvalJ(ktest, wf, G, params, res, 0, 0, 0);
+                Jp(ii, jj) = EvalJ(ktest, wf, G, params, grids, 0, 0, 0);
             else
                 Jp(ii,jj)=NaN;
             end
@@ -123,7 +135,7 @@ for idx = imgIdxs                                     % Loop through images to c
         Jp_tmp(idx1:idx2, idx3:idx4)  = max(Jp(:));
     end
     
-    if displ > 1                           % If requested, display J grid
+    if params.displ > 1                           % If requested, display J grid
         mJp=max(Jp(:));
         fg=figure; subplot(1,2,1); axis xy;hold on; view(45,45);
         surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
@@ -131,7 +143,8 @@ for idx = imgIdxs                                     % Loop through images to c
         for nth = 1:params.nMinima
             h(nth)=plot3(k_est_landscape(nth, 1),k_est_landscape(nth, 2),mJp,'Color', 'k','Marker', '.', 'markersize',20); %#ok<AGROW>            
         end        
-        title('J landscape and initial local minima');
+        sgtitle(sprintf('J landscape for orientation #%d', OrientCount))
+        title('Landscape and initial local minima');
         subplot(1,2,2); axis xy;hold on; title('Zoom');
         surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
         colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14)
@@ -154,14 +167,14 @@ for idx = imgIdxs                                     % Loop through images to c
         end
 
         k=k_est_landscape(ithk, :); k = k(:);      % Select wavevector
-        if displ>1                                 % More display
+        if params.displ>1                          % More display (optim curve)
             fig=figure;
         end
         count_it = 1;                              % Dummy variable for plotting and storing cost
         clear cf                                   % Clear cost array for the current iteration
 
         for nit_filt = 1:params.FilterRefinement   % Iterate filter refinement
-            [att_filt, filt] = BuildFilter(k, sz, params, res);
+            [att_filt, filt] = BuildFilter(k, sz, OTF, params, grids);
     
             tau=1e-2;                              % Gradient descent parameters
             tau_fact=1.5;
@@ -170,12 +183,12 @@ for idx = imgIdxs                                     % Loop through images to c
             cf_tolerance = 1e-6;
             
             % Calculate current cost
-            cf(count_it) = EvalJ(k, wf, G, params, res, filt, att_filt, 0); %#ok<AGROW> 
+            cf(count_it) = EvalJ(k, wf, G, params, grids, filt, att_filt, 0); %#ok<AGROW> 
             
             for jj=1:nit_tot                       % Update k with gradient descent (max nit_tot steps)
-                [~, g] = EvalJ(k, wf, G, params, res, filt, att_filt, 1);    % Get current gradient
+                [~, g] = EvalJ(k, wf, G, params, grids, filt, att_filt, 1);    % Get current gradient
                 ktmp = k - tau * g';                                             % Update k
-                cf_new = EvalJ(ktmp, wf, G, params, res, filt, att_filt, 0); % Calculate new cost
+                cf_new = EvalJ(ktmp, wf, G, params, grids, filt, att_filt, 0); % Calculate new cost
                 
                 % Line search by backtracking
                 if cf(count_it) > cf_new                     
@@ -183,14 +196,14 @@ for idx = imgIdxs                                     % Loop through images to c
                         k = ktmp;
                         tau = tau * tau_fact;
                         ktmp = k - tau * g';
-                        cf_new = EvalJ(ktmp, wf, G, params, res, filt, att_filt, 0);
+                        cf_new = EvalJ(ktmp, wf, G, params, grids, filt, att_filt, 0);
                     end  
                     ktmp = k; tau = tau/tau_fact;
                 else 
                     while cf(count_it)<=cf_new && (tau>tau_min)
                         tau = tau/tau_fact;
                         ktmp = k - tau * g';
-                        cf_new = EvalJ(ktmp, wf, G, params, res, filt, att_filt, 0);
+                        cf_new = EvalJ(ktmp, wf, G, params, grids, filt, att_filt, 0);
                     end
                     if (tau>tau_min)
                         k=ktmp;
@@ -198,7 +211,7 @@ for idx = imgIdxs                                     % Loop through images to c
                 end
 
                 count_it=count_it+1;                  % Calculate and store new cost 
-                cf(count_it) = EvalJ(ktmp, wf, G, params, res, filt, att_filt, 0);        
+                cf(count_it) = EvalJ(ktmp, wf, G, params, grids, filt, att_filt, 0);        
                 
                 % Stop grad descent if step size or cost improvement become negligible
                 if (tau<tau_min) || abs(cf(count_it)-cf(count_it-1))/abs(cf(count_it-1))<cf_tolerance 
@@ -206,17 +219,18 @@ for idx = imgIdxs                                     % Loop through images to c
                 end        
             end
                         
-            if displ>1                               % Draw curve before erasing cf
+            if params.displ>1                               % Draw curve before erasing cf
                 figure(fig); plot(cf,'linewidth',2); 
                 xlim([0 nit_tot*params.FilterRefinement]);grid;
-                title('Freq/Phase Opti: Cv curve'); set(gca,'FontSIze',14); drawnow;
+                xlabel('Iteration'); ylabel('Cost');
+                title(sprintf('Phase Iter Opti Curve (Orient #%d, Minima #%d)', OrientCount, ithk)); set(gca,'FontSIze',14); drawnow;
             end
         end
 
         % Store final wavevector and phase (with updated filter)
         k_alt_est(ithk, :) = k; %#ok<AGROW> 
-        [att_filt, filt] = BuildFilter(k, sz, params, res);
-        A=BuildA(k, wf, filt, params, res); AA = A'*A;
+        [att_filt, filt] = BuildFilter(k, sz, OTF, params, grids);
+        A=BuildA(k, wf, filt, params, grids); AA = A'*A;
         G_filt=real(ifft2(fft2(G).*att_filt));       
         if params.method == 2
             s = AA\A'*G_filt(:);
@@ -230,30 +244,43 @@ for idx = imgIdxs                                     % Loop through images to c
     disp('   - Choosing the best wavevector...');    % Iterate the found minimas
     lowestJ = realmax;                               % And choose the one with the 
     for iii = 1:params.nMinima                       % lowest cost
-        Jp = EvalJ(k_alt_est(iii,:), wf, G, params, res, 0, 0, 0);
+        Jp = EvalJ(k_alt_est(iii,:), wf, G, params, grids, 0, 0, 0);
         if Jp < lowestJ  
             lowestJ = Jp;
             optIdx = iii;
         end
     end
     k_final(OrientCount, :) = k_alt_est(optIdx, :); %#ok<AGROW> Store in final array
+    
 
-    if displ > 1                                     % Paint minima in red
-        figure(fg);subplot(1,2,1);
+    if params.displ > 1                                     
+        figure(fg);subplot(1,2,1);                   % Paint minima in red
         plot3(k_alt_est(optIdx, 1),k_alt_est(optIdx, 2),mJp,'Color', 'r','Marker', '.', 'markersize',25);
         subplot(1,2,2);
-        plot3(k_alt_est(optIdx, 1),k_alt_est(optIdx, 2),mJp,'Color', 'r','Marker', '.', 'markersize',25);
+        h = plot3(k_alt_est(optIdx, 1),k_alt_est(optIdx, 2),mJp,'Color', 'r','Marker', '.', 'markersize',25);
         axis([k_alt_est(optIdx, 1) - maxp*0.1 k_alt_est(optIdx, 1) + maxp*0.1 k_alt_est(optIdx, 2) - maxp*0.1 k_alt_est(optIdx, 2) + maxp*0.1 ]);grid;
+        legend(h, 'Optimized wavevector')
         pause(0.1);
+
+        kPix = k_alt_est(optIdx, :)' .* sz(1:2)' * params.res / pi;
+
+        % Show corresponding filter
+        [att_filt, filt] = BuildFilter(k_alt_est(optIdx, :)', sz, OTF, params, grids);        
+        figure(); subplot(1,2,1); imshow(fftshift(att_filt), []); colormap(viridis); impixelinfo; 
+        title('Filter $G_A$ for estimated $k$', 'interpreter', 'latex'); hold on
+        plot(kPix(1) + sz(1)/2 + 1, kPix(2)+ sz(2)/2 + 1, 'ro', 'MarkerSize', 5, 'LineWidth', 2);
+        subplot(1,2,2); imshow(fftshift(filt), []); colormap(viridis); impixelinfo; hold on
+        title('Filter $G_b$', 'interpreter', 'latex')
+        plot(kPix(1) + sz(1)/2 + 1, kPix(2)+ sz(2)/2 + 1, 'ro', 'MarkerSize', 5, 'LineWidth', 2);
+        sgtitle('Filters used for the detected wavevector')
+        drawnow
     end
 
     tmp = atan(as(optIdx)/ac(optIdx));           % Calculate phase, ac, and as
     if ac(optIdx) <0, tmp=pi+tmp; end
     ph_init=mod(tmp,2*pi)/2;                     
-    phase(OrientCount, 1) = ph_init; %#ok<AGROW> % Store 
-    res.ac(OrientCount,1) = ac(optIdx); 
-    res.as(OrientCount,1) = as(optIdx);
-    A=BuildA(k_final(OrientCount, :), wf, 0, params, res);
+    phase(OrientCount, 1) = ph_init;             % #ok<AGROW> % Store 
+    A=BuildA(k_final(OrientCount, :), wf, 0, params, grids);
     AA = A'*A;                                   % Recalculate ac and as without...
     if params.method == 2                        % filters and extract amplitude
         s = AA\A'*G(:);
@@ -265,12 +292,12 @@ for idx = imgIdxs                                     % Loop through images to c
     % Calculate every phase if there is no assumption equidistant phase
     if params.method < 2
         k = k_alt_est(optIdx, :); 
-        [att_filt, filt] = BuildFilter(k, sz, params, res);
-        A=BuildA(k, wf, filt, params, res); AA = A'*A;
+        [att_filt, filt] = BuildFilter(k, sz, OTF, params, grids);
+        A=BuildA(k, wf, filt, params, grids); AA = A'*A;
         G_filt=real(ifft2(fft2(G).*att_filt));
 
         % For amplitude estimation
-        ANoFilt = BuildA(k_final(OrientCount, :), wf, filt, params, res); 
+        ANoFilt = BuildA(k_final(OrientCount, :), wf, filt, params, grids); 
         AANoFilt = ANoFilt'*ANoFilt;
 
         for i = 1:params.nbPh - 1
@@ -295,5 +322,4 @@ for idx = imgIdxs                                     % Loop through images to c
     end
     OrientCount = OrientCount + 1;
 end
-res.k = k_final; res.a = a; res.phase = phase; % Add parameters to results structure 
 end

@@ -1,18 +1,18 @@
 function OTF = GenerateOTF(Na,lamb,sz,res,damp)
 %--------------------------------------------------------------------------
-% function OTF = GenerateOTF(Na,lamb,sz,res,damp,displ)
+% function OTF = GenerateOTF(Na,lamb,sz,res,damp)
 %
 % Generates the Optical Transfer Function as a function of the acquisition 
 % optical parameters. 
 %
-% Inputs : Na    : Numerical Aperture
-%          lamb  : Illumination wavelength
-%          sz    : Size of the returned image
-%          res   : Pixel size
-%          damp  : Damping parameter (in [0,1] where 1 = no damping) to 
+% Inputs : Na   -> Numerical Aperture
+%          lamb -> Illumination wavelength
+%          sz   -> Size of the returned image
+%          res  -> Pixel size
+%          damp -> Damping parameter (in [0,1] where 1 = no damping) to 
 %                  attenuate the medium frequency response of the OTF
 %
-% Outputs : OTF → Array containing the Optical Transfer Function
+% Outputs : OTF -> Array containing the Optical Transfer Function
 %
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com) , E. Soubies 
 % (emmanuel.soubies@irit.fr) 

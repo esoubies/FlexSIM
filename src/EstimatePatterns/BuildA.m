@@ -1,6 +1,6 @@
 function A = BuildA(ktest, wf, filt, params, results)
 %--------------------------------------------------------------------------
-% function A = BuildA(ktest, wf, filt, params)
+% function A = BuildA(ktest, wf, filt, params, results)
 %
 % Builds the system A = [a1(:),a2(:)], where 
 % a1 =   wf.* cos(2*(k_1*X+k_2*Y));            
@@ -10,16 +10,18 @@ function A = BuildA(ktest, wf, filt, params, results)
 % the linearity of the Fourier transform, to only calculate expensive
 % cosines and FFTs of each component once. 
 %
-% Inputs :  ktest   → The wavevector to test (in the range [0 1/2])
-%           wf      → The corresponding wf information
-%           filt    → The filter (in FT domain) to apply to A. If set to 0,
-%                    no filter is applied%           
-%           params  → Structure containing the input parameters of the system
-%           results → Structure that stores intermediate and final results
+% Inputs :  ktest   -> The wavevector to test 
+%           wf      -> The corresponding wf information
+%           filt    -> The filter (in FT domain) to apply to A. If set to 0,
+%                      no filter is applied%           
+%           params  -> Structure containing the input parameters of the system
+%           results -> Structure that stores intermediate and final results
 %
-% Outputs : A       → Array of size [N, 2] (N being the # of pixels) that
-%                    contains the sin and cos components of the pattern
+% Outputs : A       -> Array of size [N, 2] (N being the # of pixels) that
+%                      contains the sin and cos components of the pattern
 %
+% [1] FlexSIM: ADD REF TO PAPER
+% 
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com) , E. Soubies 
 % (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------

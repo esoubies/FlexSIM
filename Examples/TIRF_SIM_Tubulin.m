@@ -10,6 +10,7 @@ clear; close all; clc;
 %% Parameters
 % -- General
 params.DataPath = './TIRF_SIM_Tubulin.tif';   % Path to the SIM stack 
+params.pathToFlexSIM = '../';
 params.displ = 1;                             % Displaying choice, from 0 to 2 with increasing number of display
 params.sav = 1;                               % Boolean if true save the result
 
@@ -25,8 +26,8 @@ params.nbPh = 3;       % Number of phases
 % -- Parameters for patterns estimation
 params.roi = [];                  % Select ROI for pattern estimation ([initial y-coord, initial x-coord, size])
 params.limits = [0.95, 1.05];     % Ring over which the J function is evaluated for initializing (fc = 1)
-params.ringMaskLim = [0.3, 1.1];  % Mask to finish hiding WF component
-params.nMinima = 1;               % Number of starting points for the refinement steps
+params.ringMaskLim = [0.3, 1.1];  % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
+params.nMinima = 2;               % Number of starting points for the refinement steps
 params.nPoints = 150;             % Number of points in the J evaluation grid
 params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
 params.method = 2;                % Method : 0 - treat all images independently
@@ -42,7 +43,9 @@ params.maxIt = 100;        % Maximum number of iterations (stopping criteria)
 params.stepTol = 5e-4;     % Relative error tolerance between two iterates (stopping criteria)
 
 %% Run FlexSIM
-res = FlexSIM(params); 
+params.WorkingDir = pwd;
+run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m'))% Take care of paths & GlobalBioIm
+res = FlexSIM(params);                                % Run FlexSIM
 
 
 

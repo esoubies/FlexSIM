@@ -1,63 +1,63 @@
-function [c, g] = evalJ(ktest, wf, G, params, results, filt, att_filt, grad)
-% function [c, g] = evalJ(ktest, wf, G, eq_ph, filter, OTF, res, X, Y, nb_imgs)
+function [c, g] = EvalJ(ktest, wf, G, params, grids, filt, att_filt, grad)
 %--------------------------------------------------------------------------
-% [c, g] = evalJ(ktest, wf, G, filter, att_filter, params)
+% function [c, g] = EvalJ(ktest, wf, G, params, grids, filt, att_filt, grad)
 %
-% Evaluate the cost of the wavevector k, with or without filters
-% (attenuated for the actual image). Also calculates gradient on demand.
+% Evaluates the cost `|As - G|^2` with `A` and `s` being determined by the 
+% wavevector `k`. Depending on the parameters, A and G can be filtered. If 
+% requested, also calculates the gradient.
 % 
-% Input: ktest   : Wavevector 
-%        wf      : widefield component
-%        G       : SIM image(s) without widefield component
-%        params  : Structure with main parameters
-%        filter  : 0 (bool) or constant filter for the simulated image
-%        att_filter  : 0 (bool) or attenuated filter for the acquired image
-%        grad        : whether or not to calculate the gradient
-%        displ   : Level of information to give to the user.
+% Inputs : ktest           -> Wavevector 
+%          wf              -> widefield component
+%          G               -> SIM image(s) without widefield component
+%          params          -> Structure with main parameters
+%          grids           -> Structure with the grids of system
+%          filter          -> 0 (bool, filter not used) or Fourier filter for `A`
+%          att_filter      -> 0 (bool) or Fourier filter for the acquired image
+%          grad            -> whether or not to calculate the gradient
 %
-% Output: c  (float)     : Cost of the given wavevector
-%         g  (1x2 float) : Gradient
+% Output : c  (float)      -> Cost of the given wavevector
+%          g  (1x2 float)  -> Gradient
+%
+% [1] FlexSIM: ADD REF TO PAPER
+%
+% See also EstimatePatterns.m and Reconstruct.m
+%
+% Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
+%                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
-    nb_imgs = params.nbImgs;
+nb_imgs = params.nbImgs;
 
-    if all(size(att_filt) == size(wf))      % Already filter data             
-        G=real(ifft2(fft2(G).*att_filt));
+if all(size(att_filt) == size(wf))      % If a filter was given, filter data             
+    G=real(ifft2(fft2(G).*att_filt));
+end
+
+if ismember(params.method, [0, 2])               % If no summation needed...
+    A = BuildA(ktest, wf, filt, params, grids);  % Build system (inner function takes 
+    AA = A'*A;                                   % care of the size and delta ph)
+    if params.method == 0
+        G = G(:,:,1);                            % If we're only using one image select it
     end
-
-%     if ~params.UseAllImages | (params.UseAllImages & params.eq_ph)
-    if ismember(params.method, [0, 2])
-        A = BuildA(ktest, wf, filt, params, results); 
-        AA = A'*A;
-        if params.method == 0
-            G = G(:,:,1); 
-        end
-        s = AA\A'*G(:);
-        c = 0.5*norm(A*s-G(:))^2/numel(G);
-        if grad           
-            g(1) = - (A*[s(2);-s(1)].*2.*repmat(results.X(:), nb_imgs, 1))'*(A*s-G(:))/numel(G);
-            g(2) = - (A*[s(2);-s(1)].*2.*repmat(results.Y(:), nb_imgs, 1))'*(A*s-G(:))/numel(G);
-        end 
-    else
-
-    c = 0;
-    g = [0; 0];
-
-    % - Build system    
+    s = AA\A'*G(:);                              
+    c = 0.5*norm(A*s-G(:))^2/numel(G);           % Extract cost and gradient
+    if grad                                        
+        g(1) = - (A*[s(2);-s(1)].*2.*repmat(grids.X(:), nb_imgs, 1))'*(A*s-G(:))/numel(G);
+        g(2) = - (A*[s(2);-s(1)].*2.*repmat(grids.Y(:), nb_imgs, 1))'*(A*s-G(:))/numel(G);
+    end 
+else
+    c = 0;                               % Initialize variables and system `A`
+    g = [0; 0];   
     A = BuildA(ktest, wf, filt, params);
     AA = A'*A; 
-
-    for ith_img = 1:nb_imgs
-        % Select image (G if one image supplied, G_i in any other case)
-        G_i = G(:,:,ith_img);
-        
-        % If grad was required, solve system, and calculate it.
-        s = AA\A'*G_i(:);
+    
+    for ith_img = 1:nb_imgs              % Iterate the images for summation        
+        G_i = G(:,:,ith_img);            % Select corresponding image               
+        s = AA\A'*G_i(:);                % Extract phase of current image
         if grad                                    
-            g(1) = g(1) - (A*[s(2);-s(1)].*2.*results.X(:))'*(A*s-G_i(:))/numel(G_i);
-            g(2) = g(2) - (A*[s(2);-s(1)].*2.*results.Y(:))'*(A*s-G_i(:))/numel(G_i);
+            g(1) = g(1) - (A*[s(2);-s(1)].*2.*grids.X(:))'*(A*s-G_i(:))/numel(G_i);
+            g(2) = g(2) - (A*[s(2);-s(1)].*2.*grids.Y(:))'*(A*s-G_i(:))/numel(G_i);
             g = g';
         end 
         c = c + 0.5*norm(A*s-G_i(:))^2/numel(G_i);
     end    
-    end
+end
 end

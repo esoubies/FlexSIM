@@ -32,6 +32,12 @@ else
 end
 % -- Generate OTF/PSF
 otf = GenerateOTF(params.Na,params.lamb,min([256,256],sz(1:2)),params.res/2,params.damp);
+
+if params.displ
+    imdisp(log10(abs(fftshift(otf))), 'Optical Transfer Function',1); colormap(viridis);
+    impixelinfo; colorbar
+end
+
 psf = fftshift(real(ifft2(otf)));
 % - Fix change of global intensity from one acquisition to the next one
 y=y-min(y(:));
