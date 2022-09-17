@@ -9,8 +9,8 @@ clear; close all; clc;
 
 %% Parameters
 % -- General
-params.DataPath = './TIRF_SIM_Tubulin.tif';   % Path to the SIM stack 
-params.pathToFlexSIM = '../';
+params.DataPath = fullfile(pwd,'TIRF_SIM_Tubulin.tif');   % Path to the SIM stack 
+params.pathToFlexSIM = '../';                 % Path to the root of GitHub FlexSIM repo
 params.displ = 1;                             % Displaying choice, from 0 to 2 with increasing number of display
 params.sav = 1;                               % Boolean if true save the result
 
@@ -43,9 +43,8 @@ params.maxIt = 100;        % Maximum number of iterations (stopping criteria)
 params.stepTol = 5e-4;     % Relative error tolerance between two iterates (stopping criteria)
 
 %% Run FlexSIM
-params.WorkingDir = pwd;
-run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m'))% Take care of paths & GlobalBioIm
-res = FlexSIM(params);                                % Run FlexSIM
+run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m')) % Take care of paths & GlobalBioIm
+res = FlexSIM(params);                                 % Run FlexSIM
 
 
 

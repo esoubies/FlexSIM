@@ -21,11 +21,12 @@ function res = FlexSIM(params)
 %--------------------------------------------------------------------------
 
 %% Data loading + routinary checks
-y = double(loadtiff(fullfile(params.WorkingDir, params.DataPath)));    % Read data 
-sz_y=size(y);
-CheckParams(params);                                                   % Check conformity of parameters
+y = double(loadtiff(params.DataPath));    % Read data 
+sz_y=size(y);                             % Raw SIM data size
+CheckParams(params);                      % Check conformity of parameters
 
-figure;sliceViewer(y);title('SIM Raw data');  % Display data
+% - Displays
+figure;sliceViewer(y);title('SIM Raw data');  
 drawnow;set(gcf,'Visible','on');
 
 %% Pattern Estimation
