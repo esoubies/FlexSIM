@@ -22,7 +22,8 @@ function res = FlexSIM(params)
 
 %% Data loading + routinary checks
 y = double(loadtiff(fullfile(params.WorkingDir, params.DataPath)));    % Read data 
-CheckParams(params);                                % Check conformity of parameters
+sz_y=size(y);
+CheckParams(params);                                                   % Check conformity of parameters
 
 figure;sliceViewer(y);title('SIM Raw data');  % Display data
 drawnow;set(gcf,'Visible','on');
@@ -34,8 +35,7 @@ disp('=== Patterns parameter estimation START ...');
 disp('=== Patterns parameter estimation END.');
 % - Generate Patterns for reconstruction
 a=a./a; % Hardcode to 1 for now (to be as in previous version) 
-results.a = a; results.k = k; results.phase = phase;
-[patterns] = GenerateReconstructionPatterns(params, results, y); 
+[patterns] = GenerateReconstructionPatterns(params,k,phase,a,sz_y); 
 
 % - Displays
 figure;sliceViewer(patterns, "Colormap", viridis);        % Default display of patterns
@@ -53,9 +53,7 @@ if params.displ > 0                                       % Detailled displays s
     patternParams = horzcat(k, phase, a);       % Initialize the data
     T = array2table(patternParams, 'variableNames', {'Kx', 'Ky', 'Phase [rad]', 'Amplitude'});
 %     hUI=uitable(tFig,'Data',T{:,:}); 
-    hUI=uitable('Data',T{:,:}, 'ColumnName',T.Properties.VariableNames,...           
-    'RowName',T.Properties.RowNames,'Units', 'Normalized', 'Position',...
-    tFig.Position); % TODO: 'ColumnWidth', 'fit' throwing error
+    hUI=uitable('Data',T{:,:}, 'ColumnName',T.Properties.VariableNames,'RowName',T.Properties.RowNames,'Units', 'Normalized', 'Position',tFig.Position); % TODO: 'ColumnWidth', 'fit' throwing error
 end
 drawnow;
 

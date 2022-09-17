@@ -1,25 +1,28 @@
-function [patt] = GenerateReconstructionPatterns(params, res, y)
+function patt = GenerateReconstructionPatterns(params,k,phase,a,sz)
 %--------------------------------------------------------------------------
-%  function [patt] = GenerateReconstructionPatterns(params, res)
+% function patt = GenerateReconstructionPatterns(params,k,phase,a,sz)
 %
-% Takes as input the etimated pattern parameters (amplitude, phase and 
-% wavevector) of a SIM acquisition and returns the corresponding patterns
+% Sample a 2D sinusoidal pattern
+%    w(x) = 1 + a cos(<k,x> + phase)
+% from its parameters (amplitude, phase and  wavevector).
 %
-% Inputs :  params   -> Parameters with stored data. Should contain at least
-%                       the fields k, phase and a, as well as the raw SIM data.
-%           res      -> Structure containing the wave vectors, phases, and 
-%                       amplitudes estimated
-%           y        -> Raw SIM data
+% Inputs :  params -> Structures with fields:
+%                         - roi: region on interest on which the parameters  have been estimated (see function EstimatePatterns)
+%                         - res: resolution of the SIM data stack (patterns will be generated on a twice finer grid)
+%                         - nbOr: number of orientations
+%                         - nbPh: number of phases
+%                         - method: method used to estimate the parameters (see function EstimatePatterns)
+%           k      -> Array (nbOr x 2) containing the wavevector for each orientation
+%           phase  -> Array containing the absolute phases (method = 0 or 1) or phase offsets (method =2)
+%           a      -> Array containing the amplitudes of the patterns
+%           sz     -> Size of the raw SIM stack
 % 
-% Outputs : patt     -> Estimated patterns of the SIM acquisition, of the
-%                       same size as the data
-%
+% Outputs : patt   -> Sampled patterns
 %
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 % Extracting variables
-sz = size(y); 
 if isfield(params,'roi') && ~isempty(params.roi)
     lx=-(params.roi(2)-1)*params.res:params.res/2:(sz(2)-params.roi(2)+1)*params.res-params.res/2;
     ly=-(params.roi(1)-1)*params.res:params.res/2:(sz(1)-params.roi(1)+1)*params.res-params.res/2;
@@ -29,17 +32,17 @@ else
 end
 patt = zeros(2*sz(1), 2*sz(2), params.nbOr*params.nbPh); 
 for i = 1:params.nbOr
-    k = res.k(i, :); 
+    ki = k(i, :); 
     for j = 1:params.nbPh
         if params.method == 2
-           phoff = res.phase(i);
-           a = res.a(i);
-           patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*(phoff+(j-1)*pi/params.nbPh))*cos(2*(k(1)*X+k(2)*Y)) ...
-                                                 - sin(2*(phoff+(j-1)*pi/params.nbPh))*sin(2*(k(1)*X+k(2)*Y)));
+           phoff = phase(i);
+           ai = a(i);
+           patt(:,:,(i-1)*params.nbPh+j) = 1 + ai*(cos(2*(phoff+(j-1)*pi/params.nbPh))*cos(2*(ki(1)*X+ki(2)*Y)) ...
+                                                 - sin(2*(phoff+(j-1)*pi/params.nbPh))*sin(2*(ki(1)*X+ki(2)*Y)));
         else
-            a = res.a(i, j); ph = res.phase(i, j);
-            patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*ph)*cos(2*(k(1)*X+k(2)*Y)) ...
-                                                  - sin(2*ph)*sin(2*(k(1)*X+k(2)*Y)));
+            aij = a(i, j); ph = phase(i, j);
+            patt(:,:,(i-1)*params.nbPh+j) = 1 + aij*(cos(2*ph)*cos(2*(ki(1)*X+ki(2)*Y)) ...
+                                                  - sin(2*ph)*sin(2*(ki(1)*X+ki(2)*Y)));
         end
     end
 end
