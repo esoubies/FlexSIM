@@ -69,8 +69,6 @@ if params.displ > 0
             text(16,300+ii*9,['\bf Orr #',num2str(ii+1)] ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
         end
     end
-    
-    % Table with estimated parameters
     text(sz_y(2)/2,275,'\bf Estimated parameters','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',14);
     format short;
     TString = evalc('disp(patternParams)');
