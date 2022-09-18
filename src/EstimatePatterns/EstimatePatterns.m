@@ -1,21 +1,34 @@
-function [k_final, phase, a] = EstimatePatterns(params, y)
+function [k_final, phase, a] = EstimatePatterns(params,y)
 %--------------------------------------------------------------------------
-% Function [k_final, phase, a, res] = EstimatePatterns(params)
+% Function [k_final, phase, a] = EstimatePatterns(params,y)
 %
-% EstimatePatterns takes as input the structure defined in Main.m (now
-% containing the SIM data) and returns the parameters (wavevector, phase
-% and amplitude) of the SIM patterns
+% Estimate the parameters of 2D sinusoidal patterns of the form 
+%    w(x) = 1 + a cos(<k,x> + phase),
+% as described in [1].
 %
-% Inputs  : params  -> Structure containing all the necessary data (optical
-%                      and reconstruction parameters, paths, SIM image, etc.)
-%           y       -> Array containing raw SIM data
+% Inputs  : params  -> Structures with fields:
+%                         - AcqConv: order of the SIM stack. Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+%                         - roi: region on interest on which the parameters will be estimated
+%                         - lamb: Emission wavelength
+%                         - Na: Objective numerica aperture
+%                         - res: resolution of the SIM data stac
+%                         - nbOr: number of orientations
+%                         - nbPh: number of phases
+%                         - method: method used to estimate the parameters, 3 choices
+%                                    0 - treat all images independently
+%                                    1 - use all images with same orientation to estimate a unique wavevector
+%                                    2 - 1 + assume equally spaced phases
+%                         - ringMaskLim: 1x2 array (eg. [0.3, 1.1]) defining the ring used to mask the WF component and the high-freq of the data, givien as factor of fc=1
+%                         - limits: 1x2 array (eg. [0.9, 1.1]) defining  the ring over which the J function is evaluated for initializing, givien as factor of fc=1
+%                         - nMinima: Number of starting points for the refinement steps
+%                         - nPoints: Number of points in the J evaluation grid
+%                         - FilterRefinement: Number of times that the filter is upgraded (gradient descent cycles)
+%                         - displ: if >1, displays intermediate results
+%           y       -> SIM data stack
 %
-% Outputs : k_final -> Structure with the final image (in the field `res`)
-%                      and other intermediate res, like patterns. 
-%           phase   -> Depending on the method, of size (nbOr, nbPh) or just
-%                     (nbPh). Contains the phase offset of the images 
+% Outputs : k_final -> array with the estimated wavevectors (if method=0, of size nbOr*nbPh. Otherwise, of size nbOr)
+%           phase   -> array with the estimated phases (if method=0,1, of size nbOr*nbPh. Otherwise, of size nbOr)
 %           a       -> Same size as phase, contains the amplitude of the SIM patterns
-%           res     -> Output structure with input parameter 
 %
 % [1] FlexSIM: ADD REF TO PAPER
 %

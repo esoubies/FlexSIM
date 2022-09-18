@@ -19,6 +19,8 @@ function patt = GenerateReconstructionPatterns(params,k,phase,a,sz)
 % 
 % Outputs : patt   -> Sampled patterns
 %
+% See also EstimatePatterns.m
+%
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
