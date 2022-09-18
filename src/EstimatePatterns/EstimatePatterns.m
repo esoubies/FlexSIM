@@ -327,8 +327,6 @@ for idx = imgIdxs                                     % Loop through images to c
             if ac_tmp < 0, tmp=pi+tmp; end
             tmp=mod(tmp,2*pi)/2;
             phase(OrientCount, i+1) = tmp;
-            params.ac(OrientCount,i+1) = ac_tmp; 
-            params.as(OrientCount,i+1) = as_tmp;
             % Calculate amplitude with the unfiltered as, but the accurate phase
             a(OrientCount, 1) = asNoFilt/sin(2*tmp);
         end
