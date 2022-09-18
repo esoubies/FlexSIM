@@ -32,12 +32,6 @@ else
 end
 % -- Generate OTF/PSF
 otf = GenerateOTF(params.Na,params.lamb,min([256,256],sz(1:2)),params.res/2,params.damp);
-
-if params.displ
-    imdisp(log10(abs(fftshift(otf))), 'Optical Transfer Function',1); colormap(viridis);
-    impixelinfo; colorbar
-end
-
 psf = fftshift(real(ifft2(otf)));
 % - Fix change of global intensity from one acquisition to the next one
 y=y-min(y(:));
@@ -108,7 +102,6 @@ for id1=0:n1-1
     Opt.ItUpOut=round(params.maxIt/10);              % Call OutputOpti update every ItUpOut iterations
     Opt.maxiter=params.maxIt;                        % Max number of iterations
     Opt.run(zeros(P.sizeout));                       % Run the algorithm zeros(H.sizein)
-    (1/numel(yy))*F*Opt.xopt
     rec=rec+Opt.xopt;
 end
 rec=rec/n1;

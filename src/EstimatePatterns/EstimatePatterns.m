@@ -272,7 +272,7 @@ for idx = imgIdxs                                     % Loop through images to c
         subplot(1,2,2); imshow(fftshift(filt), []); colormap(viridis); impixelinfo; hold on
         title('Filter $G_b$', 'interpreter', 'latex')
         plot(kPix(1) + sz(1)/2 + 1, kPix(2)+ sz(2)/2 + 1, 'ro', 'MarkerSize', 5, 'LineWidth', 2);
-        sgtitle('Filters used for the detected wavevector')
+        sgtitle(sprintf('Filters used for the detected wavevector (Orient #%d)',OrientCount))
         drawnow
     end
 
