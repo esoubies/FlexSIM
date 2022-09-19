@@ -22,85 +22,81 @@ function res = FlexSIM(params)
 
 %% Data loading + routinary checks
 y = double(loadtiff(params.DataPath));    % Read data 
-sz_y=size(y);                             % Raw SIM data size
 CheckParams(params);                      % Check conformity of parameters
+wf=mean(y,3);wf=imresize(wf,size(wf)*2);  % Widefield image;
 
-% - Displays
+% -- Displays
+
 if params.displ > 0
-    figure;sliceViewer(y);title('SIM Raw data');
-    drawnow;set(gcf,'Visible','on');
+    fig_y=-1;fig_patt=-1;fig_patt_par=-1;fig_rec=-1;  % Initialize figures
+    fig_y=DisplayStack(y,'SIM Raw data',fig_y);
 end
 
-%% Pattern Estimation
-disp('=== Patterns parameter estimation START ...');
-% - Estimate pattern parameters
-[k, phase, a] = EstimatePatterns(params, y);
-disp('=== Patterns parameter estimation END.');
-% - Generate Patterns for reconstruction
-a=a./a; % Hardcode to 1 for now (to be as in previous version) 
-[patterns] = GenerateReconstructionPatterns(params,k,phase,a,sz_y); 
+%% FlexSIM pipeline
+% -- Extract patches (if required)
+if params.szPatch==0
+     patches={y};
+else
+     patches=Image2Patches(y,params.szPatch,params.overlapPatch);
+end
 
-% - Displays
-if params.displ > 0          
-    % - Display of estimated patterns
-    figure;sliceViewer(patterns);  title('Estimated Patterns');
-    % - Displays related to estimated parameters
-    % Image with wavevectors super-imposed on the FT
-    fig=figure('Position',[500 500 600 800]);
-    ax = axes(fig,'Units','pixels','Position',[60 250 500 500]);   
-    imagesc(log10(sum(abs(fftshift(fft2(y))),3)+1), 'Parent', ax);colormap(ax,viridis);
-    axis(ax,'equal','off');hold(ax,'on');
-    fc = 2*params.Na/params.lamb*params.res;
-    drawellipse(ax,'Center',sz_y(1:2)/2,'SemiAxes',fc.*sz_y(2:-1:1),'StripeColor','w','InteractionsAllowed','none');
-    for i = 1:params.nbOr
-        tmp = k(i, :) * sz_y(1) * params.res / pi + sz_y(1)/2+1;
-        plot(ax,tmp(1), tmp(2), 'ro', 'MarkerSize', 8, 'LineWidth', 3);
-    end  
-    text(sz_y(2)/2,-15,'\bf OTF support + Detected wavevectors','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',14);
+% -- Initializations
+nbPatches=length(patches(:));
+patterns=CellZeros(patches,[2,2,1],[1,2,3]);
+rec=CellZeros(patches,[2,2],[1,2]);
+
+% -- Loop over patches
+prefix_disp='';
+for id_patch = 1:nbPatches
+    if params.szPatch>0, prefix_disp=['[Patch #',num2str(id_patch),'/',num2str(nbPatches),']']; end
+    sz_p=size(patches{id_patch});                             % Patch size
     
-    % Table with estimated parameters
-    if params.method==0
-        % TODO
-    elseif params.method==1
-        % TODO
-    elseif params.method==2        
-        patternParams = horzcat(k, phase,phase + pi/3,phase + 2*pi/3, a);       % Initialize the data
-        for ii=0:params.nbOr-1
-            text(16,300+ii*9,['\bf Orr #',num2str(ii+1)] ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
+    % -- Pattern Estimation
+    disp(['<strong>=== ',prefix_disp,' Patterns parameter estimation START</strong> ...']);
+    [k, phase, a] = EstimatePatterns(params, patches{id_patch});
+    if params.estiPattLowFreq
+        Lf = EstimateLowFreqPatterns(patches{id_patch},5);
+    end
+    
+    % -- Generate Patterns for reconstruction
+    a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
+    patterns{id_patch} = GenerateReconstructionPatterns(params,k,phase,a,sz_p);
+    
+    % -- Displays
+    if params.displ > 0
+        % - Display of estimated patterns
+        fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
+        % - Displays related to estimated parameters
+        if params.szPatch==0
+            fig_patt_par=DisplayPattParams(patches{id_patch},params,k,phase,a,fig_patt_par,0);
+        else
+            fig_patt_par=DisplayPattParams(patches{id_patch},params,k,phase,a,fig_patt_par,id_patch);
         end
     end
-    text(sz_y(2)/2,275,'\bf Estimated parameters','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',14);
-    format short;
-    TString = evalc('disp(patternParams)');
-    text(sz_y(2)/2+10,300,TString,'HorizontalAlignment' ,'center','VerticalAlignment', 'top');
-    text(55,290,'\bf Kx         Ky       Ph #1    Ph #2    Ph #3     Amp' ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
-end
-drawnow;
+    
+    % -- Reconstruction
+    disp(['<strong>=== ',prefix_disp,' Reconstruction START</strong> ...']);
+    rec{id_patch} = Reconstruct(patches{id_patch},patterns{id_patch},params);
+    
+    % -- Displays
+    if params.displ > 0
+        fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wf,fig_rec);
+    end
 
-%% Reconstruction
-rec = Reconstruct(y,patterns,params);
-
-% - Displays
-if params.displ > 0
-    figure;
-    s1=subplot(1,2,1);imdisp(rec,'SIM Reconstruction',0);
-    s2=subplot(1,2,2);imdisp(imresize(mean(y,3),size(rec)),'Widefield',0);
-    Link = linkprop([s1, s2],{'CameraUpVector', 'CameraPosition', 'CameraTarget', 'XLim', 'YLim', 'ZLim'});
-    setappdata(gcf, 'StoreTheLink', Link);
 end
 
 %% Save
 % - Save reconstruction / patterns / reconst. parameters / pattern parameters
 if params.sav
     prefix=params.DataPath(1:end-4);
-    saveastiff(single(rec),strcat(prefix,'_Rec.tif'));
-    saveastiff(single(patterns),strcat(prefix,'_Patt.tif'));
+    saveastiff(single(Patches2Image(rec,params.overlapPatch*2)),strcat(prefix,'_Rec.tif'));
+    saveastiff(single(Patches2Image(patterns,params.overlapPatch*2)),strcat(prefix,'_Patt.tif'));
     save(strcat(prefix,'_Params'),'params');
 end
 
 % - Fill output variable
-res.rec=rec;
-res.patt=patterns;
+res.rec=Patches2Image(rec,params.overlapPatch*2);
+res.patt=Patches2Image(patterns,params.overlapPatch*2);
 
 end
 
