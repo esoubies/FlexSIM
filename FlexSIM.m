@@ -26,7 +26,6 @@ CheckParams(params);                      % Check conformity of parameters
 wf=mean(y,3);wf=imresize(wf,size(wf)*2);  % Widefield image;
 
 % -- Displays
-
 if params.displ > 0
     fig_y=-1;fig_patt=-1;fig_patt_par=-1;fig_rec=-1;  % Initialize figures
     fig_y=DisplayStack(y,'SIM Raw data',fig_y);
@@ -44,6 +43,7 @@ end
 nbPatches=length(patches(:));
 patterns=CellZeros(patches,[2,2,1],[1,2,3]);
 rec=CellZeros(patches,[2,2],[1,2]);
+k=zeros(params.nbOr,2,nbPatches);
 
 % -- Loop over patches
 prefix_disp='';
@@ -53,14 +53,14 @@ for id_patch = 1:nbPatches
     
     % -- Pattern Estimation
     disp(['<strong>=== ',prefix_disp,' Patterns parameter estimation START</strong> ...']);
-    [k, phase, a] = EstimatePatterns(params, patches{id_patch});
+    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, patches{id_patch});
     if params.estiPattLowFreq
         Lf = EstimateLowFreqPatterns(patches{id_patch},5);
     end
     
     % -- Generate Patterns for reconstruction
     a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-    patterns{id_patch} = GenerateReconstructionPatterns(params,k,phase,a,sz_p);
+    patterns{id_patch} = GenerateReconstructionPatterns(params,k(:,:,id_patch),phase,a,sz_p);
     
     % -- Displays
     if params.displ > 0
@@ -68,9 +68,9 @@ for id_patch = 1:nbPatches
         fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
         % - Displays related to estimated parameters
         if params.szPatch==0
-            fig_patt_par=DisplayPattParams(patches{id_patch},params,k,phase,a,fig_patt_par,0);
+            fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,0);
         else
-            fig_patt_par=DisplayPattParams(patches{id_patch},params,k,phase,a,fig_patt_par,id_patch);
+            fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,id_patch);
         end
     end
     
@@ -82,7 +82,28 @@ for id_patch = 1:nbPatches
     if params.displ > 0
         fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wf,fig_rec);
     end
+end
 
+% -- Re-run reconstruction for patches with wrong patterns
+if params.szPatch>0
+    disp('<strong>=== Detect and correct patches with bad estimated patterns</strong> ...');
+    kmed=median(k,3); % median wavevector
+    relErr=sum(sum((k-kmed).^2,1),2)./sum(sum((k).^2,1),2);
+    idx_err=find(relErr>1e-3);
+    disp(['   - Detected patches #',num2str(idx_err')]);
+    for ii=idx_err'
+        disp(['   - Proceed Patch #',num2str(ii),' ...']);
+        k(:,:,ii)=kmed;
+        % Recompute phase
+        patterns{ii} = GenerateReconstructionPatterns(params,kmed,phase,a,sz_p);
+        rec{ii} = Reconstruct(patches{ii},patterns{ii},params);
+    end
+    
+    % -- Displays
+    if params.displ > 0
+        fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
+        fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wf,fig_rec);
+    end
 end
 
 %% Save
