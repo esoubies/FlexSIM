@@ -27,7 +27,7 @@ wf=mean(y,3);wf=imresize(wf,size(wf)*2);  % Widefield image;
 
 % -- Displays
 if params.displ > 0
-    fig_y=-1;fig_patt=-1;fig_patt_par=-1;fig_rec=-1;  % Initialize figures
+    fig_y=-1;fig_patt=-1;fig_patt_par=-1;fig_rec=-1;tab=[];  % Initialize figures
     fig_y=DisplayStack(y,'SIM Raw data',fig_y);
 end
 
@@ -70,7 +70,7 @@ for id_patch = 1:nbPatches
         if params.szPatch==0
             fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,0);
         else
-            fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,id_patch);
+            [fig_patt_par,tab]=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,id_patch,tab);
         end
     end
     
@@ -90,13 +90,17 @@ if params.szPatch>0
     kmed=median(k,3); % median wavevector
     relErr=sum(sum((k-kmed).^2,1),2)./sum(sum((k).^2,1),2);
     idx_err=find(relErr>1e-3);
-    disp(['   - Detected patches #',num2str(idx_err')]);
     for ii=idx_err'
-        disp(['   - Proceed Patch #',num2str(ii),' ...']);
-        k(:,:,ii)=kmed;
-        % Recompute phase
+        prefix_disp=['[Correction Patch #',num2str(ii),']'];
+        disp(['<strong>--- ',prefix_disp,' Patterns parameter correction  START</strong> ...']);
+        [k(:,:,ii), phase, a] = EstimatePatterns(params, patches{ii},kmed);
+        a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
         patterns{ii} = GenerateReconstructionPatterns(params,kmed,phase,a,sz_p);
+        disp(['<strong>--- ',prefix_disp,' New reconstruction START</strong> ...']);      
         rec{ii} = Reconstruct(patches{ii},patterns{ii},params);
+        if params.displ >0
+            [fig_patt_par,tab]=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,ii,tab);
+        end
     end
     
     % -- Displays

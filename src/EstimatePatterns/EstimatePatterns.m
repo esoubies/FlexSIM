@@ -1,6 +1,6 @@
-function [k_final, phase, a] = EstimatePatterns(params,y)
+function [k_final, phase, a] = EstimatePatterns(params,y,k_init)
 %--------------------------------------------------------------------------
-% Function [k_final, phase, a] = EstimatePatterns(params,y)
+% Function [k_final, phase, a] = EstimatePatterns(params,y,k_init)
 %
 % Estimate the parameters of 2D sinusoidal patterns of the form 
 %    w(x) = 1 + a cos(<k,x> + phase),
@@ -47,6 +47,12 @@ end
 sz = size(y);                                      % Calculate size of ROI
 y = (y - min(y(:))) / (max(y(:)) - min(y(:)));     % Normalize stack images
 
+if nargin<3
+    compute_k_init=true;
+else
+    compute_k_init=false;
+end
+
 % TODO : fix this convention once for all in FlexSIM.m (by reordering if
 % necessary the stack y according to our code convention 'pa'.
 imgIdxs = 1:params.nbPh*params.nbOr;               % Select the indexes to use (through imgIdxs)...
@@ -79,28 +85,34 @@ for idx = imgIdxs
     wf=mean(y(:,:,idx),3);                            % TODO : this is valid only when we have method 2 and we are sure that we can compute the wf like that
     [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
     
-    disp('   - Grid-based evaluation of J landscape...');
-    [Jp,K1,K2] = GridEvalJ(params,wf,G,grids);
-    
-    disp(['   - Extracting the ',num2str(params.nMinima),' smallest local minima...']);
-    k_init= ExtractLocMin(params,Jp,K1,K2);
-    
-    disp('   - Refine position of extracted local min...');
-    fprintf('%s','     - local min #');
-    for ithk = 1:params.nMinima
-        if mod(ithk,ceil(params.nMinima/10))==0
-            if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
+    if compute_k_init
+        disp('   - Grid-based evaluation of J landscape...');
+        [Jp,K1,K2] = GridEvalJ(params,wf,G,grids);
+        
+        disp(['   - Extracting the ',num2str(params.nMinima),' smallest local minima...']);
+        k_init= ExtractLocMin(params,Jp,K1,K2);
+        
+        
+        disp('   - Refine position of extracted local min...');
+        fprintf('%s','     - local min #');
+        for ithk = 1:params.nMinima
+            if mod(ithk,ceil(params.nMinima/10))==0
+                if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
+            end
+            k(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
         end
-        k(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
+        
+        disp('   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
+        Jp=zeros(1,params.nMinima);
+        for iii = 1:params.nMinima
+            Jp(iii) = EvalJ(k(iii,:), wf, G, params, grids, 0, 0, 0);
+        end
+        [~,optIdx] = min(Jp);
+        k_final(OrientCount, :) = k(optIdx, :);
+    else
+        disp('   - Refine position of wavevector...');
+        k_final(OrientCount, :) = IterRefinementWavevec(k_init(OrientCount, :)',wf,G,grids,OTF,sz,params);
     end
-    
-    disp('   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J   
-    Jp=zeros(1,params.nMinima);
-    for iii = 1:params.nMinima                       
-        Jp(iii) = EvalJ(k(iii,:), wf, G, params, grids, 0, 0, 0);
-    end
-    [~,optIdx] = min(Jp);
-    k_final(OrientCount, :) = k(optIdx, :); 
     
     disp('   - Computing phases and amplitutes...'); 
     % TODO: compute the phases accordingly to the choice of method

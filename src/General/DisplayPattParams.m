@@ -1,4 +1,4 @@
-function fig_id=DisplayPattParams(y,params,k,phase,a,fig_id,id_patch)
+function [fig_id,tab]=DisplayPattParams(y,params,k,phase,a,fig_id,id_patch,tab)
 %% Pre-computations
 sz_y=size(y);
 if ~isgraphics(fig_id), fig_id=figure; end
@@ -6,8 +6,11 @@ figure(fig_id);
 %% Image with wavevectors super-imposed on the FT
 fig_id.Position=[500 500 600 800];
 if id_patch>0
-    tab=uitab( 'Title', ['Patch #',num2str(id_patch)]);
-    ax = axes(tab,'Units','pixels','Position',[60 250 500 500]);
+    if id_patch > length(tab)
+        tab{id_patch}=uitab( 'Title', ['Patch #',num2str(id_patch)]);
+    end
+    ax = axes(tab{id_patch},'Units','pixels','Position',[60 250 500 500]);
+    cla(ax, 'reset');
 else
     ax = axes(fig_id,'Units','pixels','Position',[60 250 500 500]);
 end
