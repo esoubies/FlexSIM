@@ -96,15 +96,16 @@ if params.szPatch>0
     idx_err=find(relErr>1e-3);
     for ii=idx_err'
         prefix_disp=['[Correction Patch #',num2str(ii),']'];
+        sz_p=size(patches{ii});    
         disp(['<strong>--- ',prefix_disp,' Patterns parameter correction  START</strong> ...']);
         [k(:,:,ii), phase, a] = EstimatePatterns(params, patches{ii},kmed);
         a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-        patterns{ii} = GenerateReconstructionPatterns(params,kmed,phase,a,sz_p);
+        patterns{ii} = GenerateReconstructionPatterns(params,k(:,:,ii),phase,a,sz_p);
         disp(['<strong>--- ',prefix_disp,' New reconstruction START</strong> ...']);
         rec{ii} = Reconstruct(patches{ii},patterns{ii},params);
         % -- Displays
         if params.displ >0
-            fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,ii);
+            fig_patt_par=DisplayPattParams(patches{ii},params,k(:,:,ii),phase,a,fig_patt_par,ii);
             fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
             fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2,norm_patches),wf,fig_rec);
         end
