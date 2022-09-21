@@ -33,10 +33,13 @@ end
 
 %% FlexSIM pipeline
 % -- Extract patches (if required)
+norm_patches=[];
 if params.szPatch==0
-     patches={y};
+    patches={y};
+elseif params.szPatch>0 && params.enhanceContrast
+    patches=Image2Patches(y,params.szPatch,params.overlapPatch); 
 else
-     patches=Image2Patches(y,params.szPatch,params.overlapPatch);
+    [patches,norm_patches]=Image2Patches(y,params.szPatch,params.overlapPatch);
 end
 
 % -- Initializations
@@ -53,6 +56,7 @@ for id_patch = 1:nbPatches
     
     % -- Pattern Estimation
     disp(['<strong>=== ',prefix_disp,' Patterns parameter estimation START</strong> ...']);
+    
     [k(:,:,id_patch), phase, a] = EstimatePatterns(params, patches{id_patch});
     if params.estiPattLowFreq
         Lf = EstimateLowFreqPatterns(patches{id_patch},5);
@@ -80,7 +84,7 @@ for id_patch = 1:nbPatches
     
     % -- Displays
     if params.displ > 0
-        fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wf,fig_rec);
+        fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2,norm_patches),wf,fig_rec);
     end
 end
 
@@ -96,17 +100,14 @@ if params.szPatch>0
         [k(:,:,ii), phase, a] = EstimatePatterns(params, patches{ii},kmed);
         a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
         patterns{ii} = GenerateReconstructionPatterns(params,kmed,phase,a,sz_p);
-        disp(['<strong>--- ',prefix_disp,' New reconstruction START</strong> ...']);      
+        disp(['<strong>--- ',prefix_disp,' New reconstruction START</strong> ...']);
         rec{ii} = Reconstruct(patches{ii},patterns{ii},params);
+        % -- Displays
         if params.displ >0
             fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,ii);
+            fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
+            fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2,norm_patches),wf,fig_rec);
         end
-    end
-    
-    % -- Displays
-    if params.displ > 0
-        fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
-        fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wf,fig_rec);
     end
 end
 
@@ -114,13 +115,13 @@ end
 % - Save reconstruction / patterns / reconst. parameters / pattern parameters
 if params.sav
     prefix=params.DataPath(1:end-4);
-    saveastiff(single(Patches2Image(rec,params.overlapPatch*2)),strcat(prefix,'_Rec.tif'));
+    saveastiff(single(Patches2Image(rec,params.overlapPatch*2,norm_patches)),strcat(prefix,'_Rec.tif'));
     saveastiff(single(Patches2Image(patterns,params.overlapPatch*2)),strcat(prefix,'_Patt.tif'));
     save(strcat(prefix,'_Params'),'params');
 end
 
 % - Fill output variable
-res.rec=Patches2Image(rec,params.overlapPatch*2);
+res.rec=Patches2Image(rec,params.overlapPatch*2,norm_patches);
 res.patt=Patches2Image(patterns,params.overlapPatch*2);
 
 end
