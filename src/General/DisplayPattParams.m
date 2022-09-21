@@ -1,15 +1,22 @@
-function [fig_id,tab]=DisplayPattParams(y,params,k,phase,a,fig_id,id_patch,tab)
+function fig_id=DisplayPattParams(y,params,k,phase,a,fig_id,id_patch)
 %% Pre-computations
-sz_y=size(y);
-if ~isgraphics(fig_id), fig_id=figure; end
-figure(fig_id);
+sz_y=size(y); first=0;
+if ~isgraphics(fig_id)
+    fig_id=figure; first=1;
+    fig_id.Position=[500 500 600 800];
+end
+set(0,'CurrentFigure',fig_id);
 %% Image with wavevectors super-imposed on the FT
-fig_id.Position=[500 500 600 800];
 if id_patch>0
-    if id_patch > length(tab)
-        tab{id_patch}=uitab( 'Title', ['Patch #',num2str(id_patch)]);
+    if first || (id_patch > length(fig_id.Children.Children))
+        uitab( 'Title', ['Patch #',num2str(id_patch)]);
+    else
+        delete(fig_id.Children.Children(id_patch));
+        uitab( 'Title', ['Patch #',num2str(id_patch)]);
+        perm=1:length(fig_id.Children.Children);perm=[perm(1:max(id_patch-1,1)),perm(end),perm(id_patch:end-1)];
+        fig_id.Children.Children=fig_id.Children.Children(perm);
     end
-    ax = axes(tab{id_patch},'Units','pixels','Position',[60 250 500 500]);
+    ax = axes(fig_id.Children.Children(id_patch),'Units','pixels','Position',[60 250 500 500]);
     cla(ax, 'reset');
 else
     ax = axes(fig_id,'Units','pixels','Position',[60 250 500 500]);

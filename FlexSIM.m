@@ -27,7 +27,7 @@ wf=mean(y,3);wf=imresize(wf,size(wf)*2);  % Widefield image;
 
 % -- Displays
 if params.displ > 0
-    fig_y=-1;fig_patt=-1;fig_patt_par=-1;fig_rec=-1;tab=[];  % Initialize figures
+    fig_y=-1;fig_patt=-1;fig_patt_par=-1;fig_rec=-1;  % Initialize figures
     fig_y=DisplayStack(y,'SIM Raw data',fig_y);
 end
 
@@ -70,7 +70,7 @@ for id_patch = 1:nbPatches
         if params.szPatch==0
             fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,0);
         else
-            [fig_patt_par,tab]=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,id_patch,tab);
+            fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,id_patch);
         end
     end
     
@@ -99,7 +99,7 @@ if params.szPatch>0
         disp(['<strong>--- ',prefix_disp,' New reconstruction START</strong> ...']);      
         rec{ii} = Reconstruct(patches{ii},patterns{ii},params);
         if params.displ >0
-            [fig_patt_par,tab]=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,ii,tab);
+            fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,ii);
         end
     end
     
