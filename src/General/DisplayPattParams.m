@@ -21,6 +21,7 @@ if id_patch>0
 else
     ax = axes(fig_id,'Units','pixels','Position',[60 250 500 500]);
 end
+y = (y - min(y(:))) / (max(y(:)) - min(y(:))); 
 G = RemoveWFandMask(y,mean(y,3),params);
 imagesc(log10(sum(abs(fftshift(fft2(G))),3)+1), 'Parent', ax);colormap(ax,viridis);
 axis(ax,'equal','off');hold(ax,'on');
