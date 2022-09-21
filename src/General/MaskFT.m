@@ -15,12 +15,11 @@ function maskedFT = MaskFT(ft, fc, radii)
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com) , E. Soubies 
 % (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
-
 sz = size(ft);            % Get size of the image. 
-maxp=fc*min(sz);          % Radius (in pxls) of the largest possible wavevector
-[I, J] = meshgrid(0:sz(1)-1,0:sz(2)-1);    % Create grid and boolean circles
-circ1 = sqrt((I-floor(sz(1)/2)-1).^2 + (J-floor(sz(2)/2)-1).^2) < maxp*radii(1);
-circ2 = sqrt((I-floor(sz(1)/2)-1).^2 + (J-floor(sz(2)/2)-1).^2) < maxp*radii(2);
-ring = circ2 - circ1;     % Define boolean mask
-maskedFT = ft.*ring;      % Mask
+maxp=fc*sz;          % Radius (in pxls) of the largest possible wavevector
+[I, J] = meshgrid(0:sz(2)-1,0:sz(1)-1);    % Create grid and boolean circles
+ellips1 = sqrt(((I-floor(sz(2)/2)-1).^2)./(maxp(2).^2) + ((J-floor(sz(1)/2)-1).^2)./(maxp(1).^2)) < radii(1); 
+ellips2 = sqrt(((I-floor(sz(2)/2)-1).^2)./(maxp(2).^2) + ((J-floor(sz(1)/2)-1).^2)./(maxp(1).^2)) < radii(2); 
+mask = ellips2 - ellips1;     % Define boolean mask
+maskedFT = ft.*mask;      % Mask
 end

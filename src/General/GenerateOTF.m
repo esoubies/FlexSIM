@@ -19,12 +19,15 @@ function OTF = GenerateOTF(Na,lamb,sz,res,damp)
 %--------------------------------------------------------------------------
 % Generate grid and get radius
 if mod(sz(1),2)==0
-    ll=linspace(-0.5,0,sz(1)/2+1);
-    lr=linspace(0,0.5,sz(1)/2);
-    [X,Y]=meshgrid([ll,lr(2:end)],[ll,lr(2:end)]);
+    ll_v=linspace(-0.5,0,sz(1)/2+1);
+    lr_v=linspace(0,0.5,sz(1)/2);
+    ll_h=linspace(-0.5,0,sz(2)/2+1);
+    lr_h=linspace(0,0.5,sz(2)/2);
+    [X,Y]=meshgrid([ll_h,lr_h(2:end)],[ll_v,lr_v(2:end)]);
 else
-    ll=linspace(-0.5,0.5,sz(1));
-    [X,Y]=meshgrid(ll,ll);
+    ll_v=linspace(-0.5,0.5,sz(1));
+    ll_h=linspace(-0.5,0.5,sz(2));
+    [X,Y]=meshgrid(ll_h,ll_v);
 end
 [~,rho]=cart2pol(X,Y);
 

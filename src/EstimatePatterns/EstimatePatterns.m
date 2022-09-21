@@ -63,6 +63,18 @@ end
 
 % TODO: remove the adding of nbImgs in the user struct params
 % TODO: improve regarding the choice of method
+% Check the acquisition convention of the user and convert to ap(w)
+% acq = ''
+% if 
+% switch char(params.AcqConv)
+%     case 'ap' 
+%         % Do nothing
+%     case 'pa' || 'paw'
+%         % Reorder stack in angle-phase mode - reshape(reshape(1:9, [3, 3])', 1, [])
+%         newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
+%         y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder); 
+%     case 
+% end
 if params.method > 0                  % If there are assumptions on multiple...
     params.nbImgs = params.nbPh;      % images, we will use all the phases
 else     
@@ -84,10 +96,45 @@ for idx = imgIdxs
     disp('   - Remove WF and mask...');
     wf=mean(y(:,:,idx),3);                            % TODO : this is valid only when we have method 2 and we are sure that we can compute the wf like that
     [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
+    if params.displ > 1 && OrientCount == 1           % Debug mode - display conditioned images
+        figure; sliceViewer(G, "Colormap",viridis);   % Display masked `b` in [1]
+        title('Conditioned Images');                  
+        imdisp(wf, 'Conditioned Widefield', 1);  % Display widefields
+        title('Conditioned widefields (masked on FT domain)');
+        figure; sliceViewer(log10(abs(fftshift(fft2(G))+1)), "Colormap",viridis);   % Display FTs of both
+        title('Conditioned Images FT');               
+        imdisp(log10(abs(fftshift(fft2(wf))+1)), "FT of Widefield", 1); % Display widefields
+        title('Conditioned widefield FT');
+    end
     
     if compute_k_init
         disp('   - Grid-based evaluation of J landscape...');
         [Jp,K1,K2] = GridEvalJ(params,wf,G,grids);
+
+        
+
+        if params.displ > 1                           % If requested, display J grid
+            mJp=max(Jp(:));
+            fg=figure; subplot(1,2,1); axis xy;hold on; view(45,45);
+            surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
+            colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14); %axis([0 maxp -maxp maxp]);grid;
+%             for nth = 1:params.nMinima
+%                 h(nth)=plot3(k_est_landscape(nth, 1),k_est_landscape(nth, 2),mJp,'Color', 'k','Marker', '.', 'markersize',20); %#ok<AGROW>            
+%             end        
+            sgtitle(sprintf('J landscape for orientation #%d', OrientCount))
+            title('Landscape and initial local minima');
+            subplot(1,2,2); axis xy;hold on; title('Zoom');
+            surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
+            colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14)
+%             for nth = 1:params.nMinima
+%                 h(nth)=plot3(k_est_landscape(nth, 1),k_est_landscape(nth, 2),mJp,'Color', 'k','Marker', '.', 'markersize',20);           
+%             end  
+            drawnow;
+        end
+
+
+
+
         
         disp(['   - Extracting the ',num2str(params.nMinima),' smallest local minima...']);
         k_init= ExtractLocMin(params,Jp,K1,K2);
