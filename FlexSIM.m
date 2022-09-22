@@ -66,7 +66,7 @@ for id_patch = 1:nbPatches
     end
     
     % -- Generate Patterns for reconstruction
-%     a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
+     a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
     patterns{id_patch} = GenerateReconstructionPatterns(params,k(:,:,id_patch),phase,a,sz_p);
     
     % -- Displays
