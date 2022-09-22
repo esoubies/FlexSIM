@@ -27,7 +27,7 @@ imagesc(log10(sum(abs(fftshift(fft2(G))),3)+1), 'Parent', ax);colormap(ax,viridi
 axis(ax,'square','on');hold(ax,'on');axis off;
 fc = 2*params.Na/params.lamb*params.res;
 drawellipse(ax,'Center',sz_y(2:-1:1)/2,'SemiAxes',fc.*sz_y(2:-1:1),'StripeColor','w','InteractionsAllowed','none');
-for i = 1:params.nbOr
+for i = 1:size(k, 1)
     tmp = k(i, :) .* sz_y(2:-1:1) * params.res / pi + sz_y(2:-1:1)/2+1;
     plot(ax,tmp(1), tmp(2), 'ro', 'MarkerSize', 8, 'LineWidth', 3);
 end
@@ -36,19 +36,37 @@ text(sz_y(2)/2,-sz_y(1)*0.04,'\bf Pre-processed Data (FT) + OTF support + Detect
 %% Table with estimated parameters
 if params.method==0
     % TODO
+    patternParams = horzcat(k, phase, a);       % Initialize the data
+    for ii=0:params.nbOr*params.nbPh-1
+        text(sz_y(2)*0.06,sz_y(1)*(1+0.2+ii*0.035),['\bf Img #',num2str(ii+1)] ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
+    end
+    text(sz_y(2)/2,sz_y(1)*1.1,'\bf Estimated parameters','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',14);
+    format short;
+    TString = evalc('disp(patternParams)');
+    text(sz_y(2)*0.37,sz_y(1)*1.2,TString,'HorizontalAlignment' ,'center','VerticalAlignment', 'top');
+    text(sz_y(2)*0.2,sz_y(1)*1.16,'\bf Kx           Ky            Ph        Amp' ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
 elseif params.method==1
     % TODO
+    patternParams = horzcat(k, phase, a);       % Initialize the data
+    for ii=0:params.nbOr-1
+        text(sz_y(2)*0.06,sz_y(1)*(1+0.2+ii*0.035),['\bf Orr #',num2str(ii+1)] ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
+    end
+    text(sz_y(2)/2,sz_y(1)*1.1,'\bf Estimated parameters','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',14);
+    format short;
+    TString = evalc('disp(patternParams)');
+    text(sz_y(2)*0.6,sz_y(1)*1.2,TString,'HorizontalAlignment' ,'center','VerticalAlignment', 'top');
+    text(sz_y(2)*0.2,sz_y(1)*1.16,'\bf Kx         Ky          Ph #1     Ph #2      Ph #3     Amp #1  Amp #2  Amp #3' ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
 elseif params.method==2
     patternParams = horzcat(k, phase,phase + pi/3,phase + 2*pi/3, a);       % Initialize the data
     for ii=0:params.nbOr-1
         text(sz_y(2)*0.06,sz_y(1)*(1+0.2+ii*0.035),['\bf Orr #',num2str(ii+1)] ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
     end
+    text(sz_y(2)/2,sz_y(1)*1.1,'\bf Estimated parameters','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',14);
+    format short;
+    TString = evalc('disp(patternParams)');
+    text(sz_y(2)*0.49,sz_y(1)*1.2,TString,'HorizontalAlignment' ,'center','VerticalAlignment', 'top');
+    text(sz_y(2)*0.2,sz_y(1)*1.16,'\bf Kx          Ky         Ph #1      Ph #2      Ph #3     Amp' ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
 end
-text(sz_y(2)/2,sz_y(1)*1.1,'\bf Estimated parameters','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',14);
-format short;
-TString = evalc('disp(patternParams)');
-text(sz_y(2)*0.54,sz_y(1)*1.2,TString,'HorizontalAlignment' ,'center','VerticalAlignment', 'top');
-text(sz_y(2)*0.2,sz_y(1)*1.16,'\bf Kx         Ky        Ph #1    Ph #2    Ph #3     Amp' ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
 
 drawnow;
 end

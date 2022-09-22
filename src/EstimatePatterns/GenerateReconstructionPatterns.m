@@ -33,19 +33,30 @@ else
     [X,Y]=meshgrid(0:2*sz(2)-1,0:2*sz(1)-1); X=X*params.res/2; Y=Y*params.res/2;
 end
 patt = zeros(2*sz(1), 2*sz(2), params.nbOr*params.nbPh); 
-for i = 1:params.nbOr
-    ki = k(i, :); 
-    for j = 1:params.nbPh
-        if params.method == 2
-           phoff = phase(i);
-           ai = a(i);
-           patt(:,:,(i-1)*params.nbPh+j) = 1 + ai*(cos(2*(phoff+(j-1)*pi/params.nbPh))*cos(2*(ki(1)*X+ki(2)*Y)) ...
-                                                 - sin(2*(phoff+(j-1)*pi/params.nbPh))*sin(2*(ki(1)*X+ki(2)*Y)));
-        else
-            aij = a(i, j); ph = phase(i, j);
-            patt(:,:,(i-1)*params.nbPh+j) = 1 + aij*(cos(2*ph)*cos(2*(ki(1)*X+ki(2)*Y)) ...
-                                                  - sin(2*ph)*sin(2*(ki(1)*X+ki(2)*Y)));
+if params.method
+    for i = 1:params.nbOr
+        ki = k(i, :); 
+        for j = 1:params.nbPh
+            if params.method == 2
+               phoff = phase(i);
+               ai = a(i);
+               patt(:,:,(i-1)*params.nbPh+j) = 1 + ai*(cos(2*(phoff+(j-1)*pi/params.nbPh))*cos(2*(ki(1)*X+ki(2)*Y)) ...
+                                                     - sin(2*(phoff+(j-1)*pi/params.nbPh))*sin(2*(ki(1)*X+ki(2)*Y)));
+            else
+                aij = a(i, j); ph = phase(i, j);
+                patt(:,:,(i-1)*params.nbPh+j) = 1 + aij*(cos(2*ph)*cos(2*(ki(1)*X+ki(2)*Y)) ...
+                                                      - sin(2*ph)*sin(2*(ki(1)*X+ki(2)*Y)));
+            end
         end
+    end
+else
+    for i = 1:params.nbOr*params.nbPh
+        ki = k(i, :);        
+        phoff = phase(i);
+        ai = a(i);
+        patt(:,:,i) = 1 + ai*(cos(2*(phoff*pi/params.nbPh))*cos(2*(ki(1)*X+ki(2)*Y)) ...
+                            - sin(2*(phoff*pi/params.nbPh))*sin(2*(ki(1)*X+ki(2)*Y)));
+       
     end
 end
 patt=patt/(mean(patt(:))*size(patt,3));

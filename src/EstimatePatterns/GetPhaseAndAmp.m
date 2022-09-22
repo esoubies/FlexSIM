@@ -20,16 +20,22 @@ G_filt=real(ifft2(fft2(G).*att_filt));
 % -- Solve linear system
 if params.method == 2
     s = AA\A'*G_filt(:);
+elseif params.method == 1
+    s = zeros(2, 3);
+    for phNb = 1:params.nbPh
+        G_filt_tmp= G_filt(:,:,phNb);
+        s(:,phNb) = AA\A'*G_filt_tmp(:);
+    end
 else
-    G_filt_tmp= G_filt(:,:,1);
+    G_filt_tmp= G_filt;
     s = AA\A'*G_filt_tmp(:);
 end
 % -- Extract cos and sin components
-ac=s(1); as=s(2);
+ac=s(1,:); as=s(2,:);
 
 % -- Convert (cos,sin) --> angle
-tmp = atan(as/ac);           % Calculate phase, ac, and as
-if ac <0, tmp=pi+tmp; end
+tmp = atan(as./ac);           % Calculate phase, ac, and as
+tmp = tmp + pi * (ac < 0);
 ph=mod(tmp,2*pi)/2;   
 
 % - Get amplitude of the pattern
@@ -38,9 +44,16 @@ A=BuildA(k, wf, 0, params, grids);
 AA = A'*A;                                   % Recalculate ac and as without...
 if params.method == 2                        % filters and extract amplitude
     s = AA\A'*G(:);
+elseif params.method == 1
+    s = zeros(2, 3);
+    for phNb = 1:params.nbPh
+        G_filt_tmp= G_filt(:,:,phNb);
+        s(:,phNb) = AA\A'*G_filt_tmp(:);
+    end
 else
-    G_tmp= G(:,:,1); s = AA\A'*G_tmp(:);
+    G_filt_tmp= G_filt;
+    s = AA\A'*G_filt_tmp(:);
 end
-a=sqrt(s(1)^2 + s(2)^2);
+a=sqrt(s(1,:).^2 + s(2,:).^2);
 
 end

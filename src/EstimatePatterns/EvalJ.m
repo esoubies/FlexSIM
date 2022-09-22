@@ -46,7 +46,7 @@ if ismember(params.method, [0, 2])               % If no summation needed...
 else
     c = 0;                               % Initialize variables and system `A`
     g = [0; 0];   
-    A = BuildA(ktest, wf, filt, params);
+    A = BuildA(ktest, wf, filt, params, grids);
     AA = A'*A; 
     
     for ith_img = 1:nb_imgs              % Iterate the images for summation        

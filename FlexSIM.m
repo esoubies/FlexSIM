@@ -46,7 +46,10 @@ end
 nbPatches=length(patches(:));
 patterns=CellZeros(patches,[2,2,1],[1,2,3]);
 rec=CellZeros(patches,[2,2],[1,2]);
-k=zeros(params.nbOr,2,nbPatches);
+% if params.method                       % To think about - I would skip the...
+%     k=zeros(params.nbOr,2,nbPatches);  % initialization altogether, it's not looping that much
+% else
+%     k=zeros(params.nbOr*params.nbPh,2,nbPatches);
 
 % -- Loop over patches
 prefix_disp='';
@@ -63,7 +66,7 @@ for id_patch = 1:nbPatches
     end
     
     % -- Generate Patterns for reconstruction
-    a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
+%     a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
     patterns{id_patch} = GenerateReconstructionPatterns(params,k(:,:,id_patch),phase,a,sz_p);
     
     % -- Displays

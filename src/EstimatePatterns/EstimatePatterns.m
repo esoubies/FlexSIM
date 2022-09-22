@@ -52,29 +52,37 @@ if nargin<3
 else
     compute_k_init=false;
 end
-
-% TODO : fix this convention once for all in FlexSIM.m (by reordering if
-% necessary the stack y according to our code convention 'pa'.
-imgIdxs = 1:params.nbPh*params.nbOr;               % Select the indexes to use (through imgIdxs)...
-imgIdxs = reshape(imgIdxs, [params.nbPh, params.nbOr]); % according to the selected phase,z angle convention
-if strcmp(params.AcqConv, "zap")                   % . If Zeiss convention (zap), flip
-    imgIdxs = imgIdxs'; 
-end 
-
-% TODO: remove the adding of nbImgs in the user struct params
-% TODO: improve regarding the choice of method
+ 
 % Check the acquisition convention of the user and convert to ap(w)
-% acq = ''
-% if 
-% switch char(params.AcqConv)
-%     case 'ap' 
-%         % Do nothing
-%     case 'pa' || 'paw'
-%         % Reorder stack in angle-phase mode - reshape(reshape(1:9, [3, 3])', 1, [])
-%         newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
-%         y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder); 
-%     case 
-% end
+switch string(params.AcqConv)
+    case "ap" 
+        % Do nothing
+    case "pa" 
+        % Reorder stack in angle-phase mode - reshape(reshape(1:9, [3, 3])', 1, [])
+        newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
+        y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder); 
+    case "paw"
+        wfOrig = y(:,:,end); 
+        y = y(:,:,1:end-1); 
+        newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
+        y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder);
+    case "apw"
+        wfOrig = y(:,:,end); 
+        y = y(:,:,1:end-1); 
+    case "wap"
+        wfOrig = y(:,:,1); 
+        y = y(:,:,2:end); 
+    case "wpa"
+        wfOrig = y(:,:,1); 
+        y = y(:,:,2:end); 
+        newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
+        y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder); 
+end
+
+imgIdxs = 1:params.nbPh*params.nbOr;    % Select the indexes to use (through imgIdxs)...
+if params.method                        % according to the selected phase,z angle convention
+    imgIdxs = reshape(imgIdxs, [params.nbPh, params.nbOr]);  
+end 
 if params.method > 0                  % If there are assumptions on multiple...
     params.nbImgs = params.nbPh;      % images, we will use all the phases
 else     
@@ -83,19 +91,28 @@ else
 end
 
 % Common quantities of interest
-[grids.I, grids.J] = meshgrid(0:sz(2)-1,0:sz(1)-1);        % Numerical mesh - multipurpose
-grids.X = grids.I*params.res; grids.Y=grids.J*params.res;  % Scaled (by resolution) mesh 
+[grids.I, grids.J] = meshgrid(0:sz(2)-1,0:sz(1)-1);           % Numerical mesh - multipurpose
+grids.X = grids.I*params.res; grids.Y=grids.J*params.res;     % Scaled (by resolution) mesh 
 OTF = GenerateOTF(params.Na, params.lamb, sz, params.res, 1); % Computation of the OTF
+if ~exist('wf', 'var') && params.method < 2                   % If the WF has not been given and can be estimated 
+    wfOrig  = mean(y,3);                                           % Calculate WF as the mean of all images
+end
 
 %% Loop over batch of images (1 batch = 1 orr + x phases)
 % TODO: add back the displays (need to think how to manage the patch-based case)
 OrientCount = 1; 
+
 for idx = imgIdxs 
-    disp([' Batch of images: ', num2str(idx')]);      % Display info to the user 
-    
+    disp([' Batch of images: ', num2str(idx')]);      % Display info to the user     
     disp('   - Remove WF and mask...');
-    wf=mean(y(:,:,idx),3);                            % TODO : this is valid only when we have method 2 and we are sure that we can compute the wf like that
-    [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
+%     if ~ismember('w', char(params.AcqConv)) && params.method == 2
+    if ~exist('wfOrig', 'var') && params.method == 2
+        wf=mean(y(:,:,idx),3);                            % TODO : this is valid only when we have method 2 and we are sure that we can compute the wf like that
+        [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
+    else
+        [G,wf] = RemoveWFandMask(y(:,:,idx),wfOrig,params);
+    end
+    
     if params.displ > 1 && OrientCount == 1           % Debug mode - display conditioned images
         figure; sliceViewer(G, "Colormap",viridis);   % Display masked `b` in [1]
         title('Conditioned Images');                  
@@ -131,14 +148,9 @@ for idx = imgIdxs
 %             end  
             drawnow;
         end
-
-
-
-
-        
+ 
         disp(['   - Extracting the ',num2str(params.nMinima),' smallest local minima...']);
         k_init= ExtractLocMin(params,Jp,K1,K2);
-        
         
         disp('   - Refine position of extracted local min...');
         fprintf('%s','     - local min #');
@@ -163,7 +175,7 @@ for idx = imgIdxs
     
     disp('   - Computing phases and amplitutes...'); 
     % TODO: compute the phases accordingly to the choice of method
-    [phase(OrientCount, 1),a(OrientCount, 1)]=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
+    [phase(OrientCount, :),a(OrientCount, :)]=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
     
     OrientCount=OrientCount+1;
 end

@@ -41,7 +41,7 @@ params.ringMaskLim = [0.3, 1.1];  % Lower and upper limit of mask to finish hidi
 params.nMinima = 2;               % Number of starting points for the refinement steps
 params.nPoints = 150;             % Number of points in the J evaluation grid
 params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
-params.method = 2;                % Method : 0 - treat all images independently
+params.method = 0;                % Method : 0 - treat all images independently
                                   %          1 - use all images with same orientation to estimate a unique wavevector
                                   %          2 - 1 + assume equally spaced phases
 params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns
