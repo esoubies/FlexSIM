@@ -95,13 +95,17 @@ for id1=0:n1-1
         end
     end
     
-    % -- Build cost and optimize
-%     Opt=OptiVMLMB((1/numel(yy))*F+(params.mu/prod(P.sizeout))*R,0.,[]);            % Algorithm instanciation
-    Opt=OptiFBS((1/numel(yy))*F+(params.mu/prod(P.sizeout))*R, CostNonNeg(R.sizein));            % Algorithm instanciation
-    Opt.fista=1;
-    Opt.gam=numel(yy);
-    Opt.updateGam='backtracking';
-    Opt.eta=1.5;
+    % -- Build cost and optimize. Try the faster VMLMB for Linux devices, or FBS for Windows devices 
+    try        
+        Opt=OptiVMLMB((1/numel(yy))*F+(params.mu/prod(P.sizeout))*R,0.,[]);            % Algorithm instanciation
+    catch
+        disp(['Reconstructing with Projected Gradient Descent...']);
+        Opt=OptiFBS((1/numel(yy))*F+(params.mu/prod(P.sizeout))*R, CostNonNeg(R.sizein));
+        Opt.fista=1;
+        Opt.gam=numel(yy);
+        Opt.updateGam='backtracking';
+        Opt.eta=1.5;
+    end
     Opt.OutOp=OutputOpti(1,round(params.maxIt/10));  % Verbose monitoring
     Opt.CvOp=TestCvgStepRelative(params.stepTol);    % Test convergence criterion
     Opt.ItUpOut=round(params.maxIt/10);              % Call OutputOpti update every ItUpOut iterations
