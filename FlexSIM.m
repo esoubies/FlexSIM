@@ -20,6 +20,7 @@ function res = FlexSIM(params)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
+time0=tic;
 %% Data loading + routinary checks
 y = double(loadtiff(params.DataPath));    % Read data 
 CheckParams(params);                      % Check conformity of parameters
@@ -46,6 +47,7 @@ end
 nbPatches=length(patches(:));
 patterns=CellZeros(patches,[2,2,1],[1,2,3]);
 rec=CellZeros(patches,[2,2],[1,2]);
+Lf=CellZeros(patches,[2,2,1],[1,2,3]);
 % if params.method                       % To think about - I would skip the...
 %     k=zeros(params.nbOr,2,nbPatches);  % initialization altogether, it's not looping that much
 % else
@@ -62,12 +64,14 @@ for id_patch = 1:nbPatches
     
     [k(:,:,id_patch), phase, a] = EstimatePatterns(params, patches{id_patch});
     if params.estiPattLowFreq
-        Lf = EstimateLowFreqPatterns(patches{id_patch},5);
+        Lf{id_patch} = EstimateLowFreqPatterns(patches{id_patch},5);
+    else
+        Lf{id_patch}=1;
     end
     
     % -- Generate Patterns for reconstruction
-     a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-    patterns{id_patch} = GenerateReconstructionPatterns(params,k(:,:,id_patch),phase,a,sz_p);
+    a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
+    patterns{id_patch} = GenerateReconstructionPatterns(params,k(:,:,id_patch),phase,a,sz_p,Lf{id_patch});
     
     % -- Displays
     if params.displ > 0
@@ -89,6 +93,13 @@ for id_patch = 1:nbPatches
     if params.displ > 0
         fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2,norm_patches),wf,fig_rec);
     end
+    
+    % - Save reconstruction / patterns 
+    if params.sav
+        prefix=params.DataPath(1:end-4);
+        saveastiff(single(Patches2Image(rec,params.overlapPatch*2,norm_patches)),strcat(prefix,'_Rec.tif'));
+        saveastiff(single(Patches2Image(patterns,params.overlapPatch*2)),strcat(prefix,'_Patt.tif'));
+    end
 end
 
 % -- Re-run reconstruction for patches with wrong patterns
@@ -103,7 +114,7 @@ if params.szPatch>0
         disp(['<strong>--- ',prefix_disp,' Patterns parameter correction  START</strong> ...']);
         [k(:,:,ii), phase, a] = EstimatePatterns(params, patches{ii},kmed);
         a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-        patterns{ii} = GenerateReconstructionPatterns(params,k(:,:,ii),phase,a,sz_p);
+        patterns{ii} = GenerateReconstructionPatterns(params,k(:,:,ii),phase,a,sz_p,Lf{ii});
         disp(['<strong>--- ',prefix_disp,' New reconstruction START</strong> ...']);
         rec{ii} = Reconstruct(patches{ii},patterns{ii},params);
         % -- Displays
@@ -128,5 +139,6 @@ end
 res.rec=Patches2Image(rec,params.overlapPatch*2,norm_patches);
 res.patt=Patches2Image(patterns,params.overlapPatch*2);
 
+disp(['<strong>=== FlexSIM END. Elapsed time (s): ',num2str(toc(time0)),' </strong>']);
 end
 
