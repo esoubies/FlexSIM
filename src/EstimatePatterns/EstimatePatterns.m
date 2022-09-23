@@ -1,4 +1,4 @@
-function [k_final, phase, a] = EstimatePatterns(params,y,k_init)
+function [k_final, phase, a] = EstimatePatterns(params,y,k_init, wfAcq)
 %--------------------------------------------------------------------------
 % Function [k_final, phase, a] = EstimatePatterns(params,y,k_init)
 %
@@ -7,10 +7,10 @@ function [k_final, phase, a] = EstimatePatterns(params,y,k_init)
 % as described in [1].
 %
 % Inputs  : params  -> Structures with fields:
-%                         - AcqConv: order of the SIM stack. Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+%                         - StackOrder: order of the SIM stack. Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
 %                         - roi: region on interest on which the parameters will be estimated
 %                         - lamb: Emission wavelength
-%                         - Na: Objective numerica aperture
+%                         - Na: Objective numerical aperture
 %                         - res: resolution of the SIM data stac
 %                         - nbOr: number of orientations
 %                         - nbPh: number of phases
@@ -25,6 +25,10 @@ function [k_final, phase, a] = EstimatePatterns(params,y,k_init)
 %                         - FilterRefinement: Number of times that the filter is upgraded (gradient descent cycles)
 %                         - displ: if >1, displays intermediate results
 %           y       -> SIM data stack
+%           k_init  -> Initial wavevector. If provided, skips the grid search and runs only the
+%                      iterative optimization. Set to 0 to perform grid search 
+%           wfAcq   -> Widefield image. Provide if acquired. Otherwise set to 0                      
+%
 %
 % Outputs : k_final -> array with the estimated wavevectors (if method=0, of size nbOr*nbPh. Otherwise, of size nbOr)
 %           phase   -> array with the estimated phases (if method=0,1, of size nbOr*nbPh. Otherwise, of size nbOr)
@@ -43,42 +47,21 @@ function [k_final, phase, a] = EstimatePatterns(params,y,k_init)
 if isfield(params,'roi') && ~isempty(params.roi)   % Crop to ROI
     y = y(params.roi(1):params.roi(1)+params.roi(3)-1, ...
         params.roi(2):params.roi(2)+params.roi(3)-1,:);
+    if any(wfAcq, 'all')
+        wfAcq = wfAcq(params.roi(1):params.roi(1)+params.roi(3)-1, ...
+        params.roi(2):params.roi(2)+params.roi(3)-1,:);
+    end
 end
 sz = size(y);                                      % Calculate size of ROI
 y = (y - min(y(:))) / (max(y(:)) - min(y(:)));     % Normalize stack images
 
-if nargin<3
+if ~k_init
     compute_k_init=true;
 else
     compute_k_init=false;
 end
  
 % Check the acquisition convention of the user and convert to ap(w)
-switch string(params.AcqConv)
-    case "ap" 
-        % Do nothing
-    case "pa" 
-        % Reorder stack in angle-phase mode - reshape(reshape(1:9, [3, 3])', 1, [])
-        newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
-        y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder); 
-    case "paw"
-        wfOrig = y(:,:,end); 
-        y = y(:,:,1:end-1); 
-        newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
-        y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder);
-    case "apw"
-        wfOrig = y(:,:,end); 
-        y = y(:,:,1:end-1); 
-    case "wap"
-        wfOrig = y(:,:,1); 
-        y = y(:,:,2:end); 
-    case "wpa"
-        wfOrig = y(:,:,1); 
-        y = y(:,:,2:end); 
-        newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
-        y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder); 
-end
-
 imgIdxs = 1:params.nbPh*params.nbOr;    % Select the indexes to use (through imgIdxs)...
 if params.method                        % according to the selected phase,z angle convention
     imgIdxs = reshape(imgIdxs, [params.nbPh, params.nbOr]);  
@@ -94,8 +77,8 @@ end
 [grids.I, grids.J] = meshgrid(0:sz(2)-1,0:sz(1)-1);           % Numerical mesh - multipurpose
 grids.X = grids.I*params.res; grids.Y=grids.J*params.res;     % Scaled (by resolution) mesh 
 OTF = GenerateOTF(params.Na, params.lamb, sz, params.res, 1); % Computation of the OTF
-if ~exist('wf', 'var') && params.method < 2                   % If the WF has not been given and can be estimated 
-    wfOrig  = mean(y,3);                                           % Calculate WF as the mean of all images
+if ~any(wfAcq, 'all') && params.method < 2                   % If the WF has not been given and can be estimated 
+    wfAcq  = mean(y,3);                                           % Calculate WF as the mean of all images
 end
 
 %% Loop over batch of images (1 batch = 1 orr + x phases)
@@ -106,20 +89,26 @@ for idx = imgIdxs
     disp([' Batch of images: ', num2str(idx')]);      % Display info to the user     
     disp('   - Remove WF and mask...');
 %     if ~ismember('w', char(params.AcqConv)) && params.method == 2
-    if ~exist('wfOrig', 'var') && params.method == 2
+    if ~any(wfAcq, 'all') && params.method == 2
         wf=mean(y(:,:,idx),3);                            % TODO : this is valid only when we have method 2 and we are sure that we can compute the wf like that
         [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
     else
-        [G,wf] = RemoveWFandMask(y(:,:,idx),wfOrig,params);
+        [G,wf] = RemoveWFandMask(y(:,:,idx),wfAcq,params);
     end
     
-    if params.displ > 1 && OrientCount == 1           % Debug mode - display conditioned images
-        figure; sliceViewer(G, "Colormap",viridis);   % Display masked `b` in [1]
-        title('Conditioned Images');                  
+%     if params.displ > 1 && OrientCount == 1           % Debug mode - display conditioned images
+    if params.displ > 1                                 % Debug mode - display conditioned images
+        if numel(size(G)) > 2
+            figure; sliceViewer(G, "Colormap",viridis);   % Display masked `b` in [1]
+            title('Conditioned Images');                  
+            figure; sliceViewer(log10(abs(fftshift(fft2(G))+1)), "Colormap",viridis);   % Display FTs of both
+            title('Conditioned Images FT');
+        else
+            figure; imdisp(G, 'Conditioned Images',0);   % Display masked `b` in [1]
+            figure; imdisp(log10(abs(fftshift(fft2(G))+1)), 'Conditioned Images FT', 0);   % Display FTs of both
+        end
         imdisp(wf, 'Conditioned Widefield', 1);  % Display widefields
-        title('Conditioned widefields (masked on FT domain)');
-        figure; sliceViewer(log10(abs(fftshift(fft2(G))+1)), "Colormap",viridis);   % Display FTs of both
-        title('Conditioned Images FT');               
+        title('Conditioned widefields (masked on FT domain)');                       
         imdisp(log10(abs(fftshift(fft2(wf))+1)), "FT of Widefield", 1); % Display widefields
         title('Conditioned widefield FT');
     end
@@ -179,157 +168,4 @@ for idx = imgIdxs
     
     OrientCount=OrientCount+1;
 end
-
 end
-
-%% OLD CODE
-%{
-% Initializations
-wfs =zeros(sz(1), sz(2),params.nbOr);              % Initialize variable for widefield
-
-idwf=0;
-for idx = imgIdxs 
-    idwf=idwf+1;
-    wf=mean(y(:,:,idx),3);     % TODO : this is valid only when we have method 2 and we are sure that we can compute the wf like that
-    [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
-    y(:,:,idx')=G;
-    wfs(:,:,idwf)=wf;          % TODO : same here, something to fix when not method==2
-end
-
-if params.displ > 1                               % Debug mode - display conditioned images
-    figure; sliceViewer(y, "Colormap",viridis);   % Display masked `b` in [1]
-    title('Conditioned Images');                  
-    figure; sliceViewer(wfs, "Colormap",viridis); % Display widefields
-    title('Conditioned widefields (masked on FT domain)');
-    figure; sliceViewer(log10(abs(fftshift(fft2(y))+1)), "Colormap",viridis);   % Display FTs of both
-    title('Conditioned Images FT');               
-    figure; sliceViewer(log10(abs(fftshift(fft2(wfs))+1)), "Colormap",viridis); % Display widefields
-    title('Conditioned widefields FT');
-end
-
-% -- Precomputations and evaluation of the cost function 
-OrientCount = 1;                                      % Dummy var to count orientations
-for idx = imgIdxs                                     % Loop through images to calculate J
-    wf =  wfs(:,:,OrientCount);                       % Get corresponding wf
-    disp([' Batch of images: ', num2str(idx')]);      % Display info to the user
-    disp('   - Grid-based evaluation of J landscape...');
-    G = y(:,:,idx);                                   % Select current batch of images
-    [Jp,K1,K2] = GridEvalJ(params,wf,G,grids);
-    
-    disp(['   - Extracting the ',num2str(params.nMinima),' smallest local minima...']);   
-    k_est_landscape= ExtractLocMin(params,Jp,K1,K2);
-    
-    if params.displ > 1                           % If requested, display J grid
-        mJp=max(Jp(:));
-        fg=figure; subplot(1,2,1); axis xy;hold on; view(45,45);
-        surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
-        colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14); axis([0 maxp -maxp maxp]);grid;
-        for nth = 1:params.nMinima
-            h(nth)=plot3(k_est_landscape(nth, 1),k_est_landscape(nth, 2),mJp,'Color', 'k','Marker', '.', 'markersize',20); %#ok<AGROW>            
-        end        
-        sgtitle(sprintf('J landscape for orientation #%d', OrientCount))
-        title('Landscape and initial local minima');
-        subplot(1,2,2); axis xy;hold on; title('Zoom');
-        surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
-        colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14)
-        for nth = 1:params.nMinima
-            h(nth)=plot3(k_est_landscape(nth, 1),k_est_landscape(nth, 2),mJp,'Color', 'k','Marker', '.', 'markersize',20);           
-        end  
-        drawnow;
-    end
-
-% -- Refinement of  each of the found minima with  an iterative approach    
-    disp('   - Refine position of extracted local min...');  % Display user info
-    fprintf('%s','     - local min #');
-    for ithk = 1:params.nMinima                    % Iterate minima
-        if mod(ithk,ceil(params.nMinima/10))==0
-            if ithk==params.nMinima
-                fprintf('%i\n',ithk);              % More user info
-            else
-                fprintf('%i, ',ithk);
-            end
-        end
-        
-        k = IterRefinementWavevec(k_est_landscape(ithk, :)',wf,G,grids,OTF,sz,params);     
-        if params.displ>1                               % Draw curve before erasing cf
-            fig=figure;
-            figure(fig); plot(cf,'linewidth',2);
-            xlim([0 nit_tot*params.FilterRefinement]);grid;
-            xlabel('Iteration'); ylabel('Cost');
-            title(sprintf('Phase Iter Opti Curve (Orient #%d, Minima #%d)', OrientCount, ithk)); set(gca,'FontSIze',14); drawnow;
-        end
-
-        % Store final wavevector and phase (with updated filter)
-        k_alt_est(ithk, :) = k; %#ok<AGROW>     
-    end
-
-    disp('   - Choosing the best wavevector...');    % Iterate the found minimas
-    lowestJ = realmax;                               % And choose the one with the 
-    for iii = 1:params.nMinima                       % lowest cost
-        Jp = EvalJ(k_alt_est(iii,:), wf, G, params, grids, 0, 0, 0);
-        if Jp < lowestJ  
-            lowestJ = Jp;
-            optIdx = iii;
-        end
-    end
-    k_final(OrientCount, :) = k_alt_est(optIdx, :); %#ok<AGROW> Store in final array
-    
-
-    if params.displ > 1                                     
-        figure(fg);subplot(1,2,1);                   % Paint minima in red
-        plot3(k_alt_est(optIdx, 1),k_alt_est(optIdx, 2),mJp,'Color', 'r','Marker', '.', 'markersize',25);
-        subplot(1,2,2);
-        h = plot3(k_alt_est(optIdx, 1),k_alt_est(optIdx, 2),mJp,'Color', 'r','Marker', '.', 'markersize',25);
-        axis([k_alt_est(optIdx, 1) - maxp*0.1 k_alt_est(optIdx, 1) + maxp*0.1 k_alt_est(optIdx, 2) - maxp*0.1 k_alt_est(optIdx, 2) + maxp*0.1 ]);grid;
-        legend(h, 'Optimized wavevector')
-        pause(0.1);
-
-        kPix = k_alt_est(optIdx, :)' .* sz(1:2)' * params.res / pi;
-
-        % Show corresponding filter
-        [att_filt, filt] = BuildFilter(k_alt_est(optIdx, :)', sz, OTF, params, grids);        
-        figure(); subplot(1,2,1); imshow(fftshift(att_filt), []); colormap(viridis); impixelinfo; 
-        title('Filter $G_A$ for estimated $k$', 'interpreter', 'latex'); hold on
-        plot(kPix(1) + sz(1)/2 + 1, kPix(2)+ sz(2)/2 + 1, 'ro', 'MarkerSize', 5, 'LineWidth', 2);
-        subplot(1,2,2); imshow(fftshift(filt), []); colormap(viridis); impixelinfo; hold on
-        title('Filter $G_b$', 'interpreter', 'latex')
-        plot(kPix(1) + sz(1)/2 + 1, kPix(2)+ sz(2)/2 + 1, 'ro', 'MarkerSize', 5, 'LineWidth', 2);
-        sgtitle(sprintf('Filters used for the detected wavevector (Orient #%d)',OrientCount))
-        drawnow
-    end
-    
-    [phase(OrientCount, 1),a(OrientCount, 1)]=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
-    
-    
-    % Calculate every phase if there is no assumption equidistant phase
-    if params.method < 2
-        k = k_alt_est(optIdx, :); 
-        [att_filt, filt] = BuildFilter(k, sz, OTF, params, grids);
-        A=BuildA(k, wf, filt, params, grids); AA = A'*A;
-        G_filt=real(ifft2(fft2(G).*att_filt));
-
-        % For amplitude estimation
-        ANoFilt = BuildA(k_final(OrientCount, :), wf, filt, params, grids); 
-        AANoFilt = ANoFilt'*ANoFilt;
-
-        for i = 1:params.nbPh - 1
-            Gtmp = G_filt(:,:,i + 1); 
-            s = AA\A'*Gtmp(:);
-            ac_tmp=s(1); as_tmp=s(2);
-
-            % For amplitude estimation
-            GtmpNoFilt = G(:,:,i + 1); 
-            sNoFilt = AANoFilt\ANoFilt'*GtmpNoFilt(:);
-            acNoFilt=sNoFilt(1); asNoFilt=sNoFilt(2); %#ok<NASGU> 
-            
-            tmp=atan(as_tmp/ac_tmp);
-            if ac_tmp < 0, tmp=pi+tmp; end
-            tmp=mod(tmp,2*pi)/2;
-            phase(OrientCount, i+1) = tmp;
-            % Calculate amplitude with the unfiltered as, but the accurate phase
-            a(OrientCount, 1) = asNoFilt/sin(2*tmp);
-        end
-    end
-    OrientCount = OrientCount + 1;
-end
-%}

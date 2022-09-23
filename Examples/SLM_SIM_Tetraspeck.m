@@ -9,16 +9,18 @@ clear; close all; clc;
 
 %% General parameters
 % -- Path and files
-params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck.tif');   % Path to the SIM stack 
+% params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck.tif');    % Path to the SIM stack
+% params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck_1ph.tif');% To test 4SIM
+params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck_ap.tif');    % To test ap convention
 params.pathToFlexSIM = '../';                             % Path to the root of GitHub FlexSIM repo
 
 % -- Display and saving
-params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
+params.displ = 2;                       % Displaying choice, from 0 to 2 with increasing number of display
 params.sav = 1;                         % Boolean if true save the result
 
 %% Data related parameters
 % -- Properties of the SIM data stack
-params.AcqConv= 'paz';                  % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+params.StackOrder= 'ap';                  % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
 params.nbOr = 4;                        % Number of orientations
 params.nbPh = 3;                        % Number of phases 
 
@@ -41,7 +43,7 @@ params.ringMaskLim = [0, 1.1];    % Lower and upper limit of mask to finish hidi
 params.nMinima = 2;               % Number of starting points for the refinement steps
 params.nPoints = 150;             % Number of points in the J evaluation grid
 params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
-params.method = 2;                % Method : 0 - treat all images independently
+params.method = 0;                % Method : 0 - treat all images independently
                                   %          1 - use all images with same orientation to estimate a unique wavevector
                                   %          2 - 1 + assume equally spaced phases
 params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns

@@ -15,10 +15,17 @@ function CheckParams(params)
 % Initial tests to ensure that the necessary parameters for FlexSIM to run are present
 
 % Tests on general parameters
-assert(contains(params.DataPath, 'tif'), 'The SIM data should be in tiff format!')                     
+assert(contains(params.DataPath, 'tif'), 'The SIM data should be in tiff format!')
+if params.nbPh == 1
+    assert(params.method == 0, ...  % Ensure that the widefield is there
+         "When providing only one phase, set `params.method == 1`.")
+    assert(any(ismember(char(params.StackOrder), 'w')), ...  % Ensure that the widefield is there
+         "Widefield image is necessary when providing one image pero orientation. " + ...
+         "Ensure that the acquisition convention is one of `paw, apw, wap, wpa`")
+end
 
 % Test optical and acquisition parameters
-assert(ismember(params.AcqConv, ["paz", "pza" ,"zap"]), ...
+assert(ismember(params.StackOrder, ["ap", "pa", "paw", "apw", "wap", "wpa"]), ...
     'Choose one of {`paz`, `pza` or `zap`} as acquisition convention (p(hase), a(ngle) and Z)')
 assert(50 < params.lamb && params.lamb < 1000, ...
     'Acquisition wavelength [nm] expected for `params.lamb` (visible light range accepted)')

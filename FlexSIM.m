@@ -21,9 +21,15 @@ function res = FlexSIM(params)
 %--------------------------------------------------------------------------
 
 %% Data loading + routinary checks
-y = double(loadtiff(params.DataPath));    % Read data 
-CheckParams(params);                      % Check conformity of parameters
-wf=mean(y,3);wf=imresize(wf,size(wf)*2);  % Widefield image;
+y = double(loadtiff(params.DataPath));     % Read data 
+CheckParams(params);                       % Check conformity of parameters
+[y, wfAcq] = OrderY(y, params); % Reorder and extract data if necessary
+if wfAcq
+    wf=imresize(wfAcq ,size(wfAcq)*2);
+else
+    wf=mean(y,3);
+    wf=imresize(wf ,size(wf)*2);
+end
 
 % -- Displays
 if params.displ > 0
@@ -60,7 +66,7 @@ for id_patch = 1:nbPatches
     % -- Pattern Estimation
     disp(['<strong>=== ',prefix_disp,' Patterns parameter estimation START</strong> ...']);
     
-    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, patches{id_patch});
+    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, patches{id_patch}, 0, wfAcq);
     if params.estiPattLowFreq
         Lf = EstimateLowFreqPatterns(patches{id_patch},5);
     end
@@ -101,7 +107,7 @@ if params.szPatch>0
         prefix_disp=['[Correction Patch #',num2str(ii),']'];
         sz_p=size(patches{ii});    
         disp(['<strong>--- ',prefix_disp,' Patterns parameter correction  START</strong> ...']);
-        [k(:,:,ii), phase, a] = EstimatePatterns(params, patches{ii},kmed);
+        [k(:,:,ii), phase, a] = EstimatePatterns(params, patches{ii},kmed, wfAcq);
         a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
         patterns{ii} = GenerateReconstructionPatterns(params,k(:,:,ii),phase,a,sz_p);
         disp(['<strong>--- ',prefix_disp,' New reconstruction START</strong> ...']);
@@ -125,6 +131,7 @@ if params.sav
 end
 
 % - Fill output variable
+res.k = k; res.phase = phase; res.a = a; 
 res.rec=Patches2Image(rec,params.overlapPatch*2,norm_patches);
 res.patt=Patches2Image(patterns,params.overlapPatch*2);
 
