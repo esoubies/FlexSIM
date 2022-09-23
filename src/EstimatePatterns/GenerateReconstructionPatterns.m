@@ -1,25 +1,27 @@
-function patt = GenerateReconstructionPatterns(params,k,phase,a,sz)
+function patt = GenerateReconstructionPatterns(params,k,phase,a,sz,Lf)
 %--------------------------------------------------------------------------
-% function patt = GenerateReconstructionPatterns(params,k,phase,a,sz)
+% function patt = GenerateReconstructionPatterns(params,k,phase,a,sz,Lf)
 %
 % Sample a 2D sinusoidal pattern
-%    w(x) = 1 + a cos(<k,x> + phase)
-% from its parameters (amplitude, phase and  wavevector).
+%    w(x) = Lf(x) + a cos(<k,x> + phase)
+% from its parameters (amplitude, phase and  wavevector) and the
+% low-frequency component Lf.
 %
-% Inputs :  params -> Structures with fields:
+% Inputs :  params  -> Structures with fields:
 %                         - roi: region on interest on which the parameters  have been estimated (see function EstimatePatterns)
 %                         - res: resolution of the SIM data stack (patterns will be generated on a twice finer grid)
 %                         - nbOr: number of orientations
 %                         - nbPh: number of phases
 %                         - method: method used to estimate the parameters (see function EstimatePatterns)
-%           k      -> Array (nbOr x 2) containing the wavevector for each orientation
-%           phase  -> Array containing the absolute phases (method = 0 or 1) or phase offsets (method =2)
-%           a      -> Array containing the amplitudes of the patterns
-%           sz     -> Size of the raw SIM stack
+%           k       -> Array (nbOr x 2) containing the wavevector for each orientation
+%           phase   -> Array containing the absolute phases (method = 0 or 1) or phase offsets (method =2)
+%           a       -> Array containing the amplitudes of the patterns
+%           sz      -> Size of the raw SIM stack
+%           Lf_comp -> Low-freq component of the patterns, default 1 (see EstimateLowFreqPatterns.m)
 % 
 % Outputs : patt   -> Sampled patterns
 %
-% See also EstimatePatterns.m
+% See also EstimatePatterns.m EstimateLowFreqPatterns.m
 %
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
@@ -59,5 +61,7 @@ else
        
     end
 end
+
+patt=patt-mean(patt,[1,2]) +Lf.*mean(patt,[1,2])./mean(Lf,[1,2]);
 patt=patt/(mean(patt(:))*size(patt,3));
 end

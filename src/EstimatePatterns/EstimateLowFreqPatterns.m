@@ -2,12 +2,16 @@ function Lf = EstimateLowFreqPatterns(y,filt_sz)
 %--------------------------------------------------------------------------
 % function Lf = EstimateLowFreqPatterns(y,filt_sz)
 %
-%
+% Estimate a non-constant low-frequency componnent (Lf) of a 2D sinusoidal
+% pattern of the form:
+%    w(x) = Lf(x) + a cos(<k,x> + phase)
 %
 % Inputs: y       -> SIM data stack
 %         filt_sz -> size (in px) of the Gaussian filter used to extract low-freqs
 %
 % Output: Lf      -> Extracted low frequency component of the pattern
+%
+% See also GenerateReconstructionPatterns.m
 %
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
@@ -21,6 +25,5 @@ Lf=zeros(size(y_filt(:,:,1))*2);
 for kk=1:size(y_filt,3)
     Lf(:,:,kk)=imresize(y_filt(:,:,kk),size(y_filt(:,:,kk))*2);
 end
-%                 patterns=patterns-mean(patterns,[1,2]) +tt.*mean(patterns,[1,2])./mean(tt,[1,2]);
-%                 patterns=patterns/(mean(patterns(:))*size(patterns,3));
+
 end
