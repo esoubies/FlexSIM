@@ -54,10 +54,6 @@ nbPatches=length(patches(:));
 patterns=CellZeros(patches,[2,2,1],[1,2,3]);
 rec=CellZeros(patches,[2,2],[1,2]);
 Lf=CellZeros(patches,[2,2,1],[1,2,3]);
-% if params.method                       % To think about - I would skip the...
-%     k=zeros(params.nbOr,2,nbPatches);  % initialization altogether, it's not looping that much
-% else
-%     k=zeros(params.nbOr*params.nbPh,2,nbPatches);
 
 % -- Loop over patches
 prefix_disp='';

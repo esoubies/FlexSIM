@@ -24,49 +24,61 @@ end
 y = (y - min(y(:))) / (max(y(:)) - min(y(:))); 
 G = RemoveWFandMask(y,mean(y,3),params);
 imagesc(log10(sum(abs(fftshift(fft2(G))),3)+1), 'Parent', ax);colormap(ax,viridis);
-axis(ax,'square','on');hold(ax,'on');axis off;
+axis(ax,'square','on');hold(ax,'all');axis off;
 fc = 2*params.Na/params.lamb*params.res;
 drawellipse(ax,'Center',sz_y(2:-1:1)/2,'SemiAxes',fc.*sz_y(2:-1:1),'StripeColor','w','InteractionsAllowed','none');
 for i = 1:size(k, 1)
     tmp = k(i, :) .* sz_y(2:-1:1) * params.res / pi + sz_y(2:-1:1)/2+1;
-    plot(ax,tmp(1), tmp(2), 'ro', 'MarkerSize', 8, 'LineWidth', 3);
+    plot(ax,tmp(1), tmp(2), 'o', 'MarkerSize', 8, 'LineWidth', 3);
+    if params.method==0
+        leg{i}=['Img #',num2str(i)];
+    else
+        leg{i}=['Or #',num2str(i)];
+    end
 end
+legend(leg);
 text(sz_y(2)/2,-sz_y(1)*0.04,'\bf Pre-processed Data (FT) + OTF support + Detected wavevectors','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',12);
 
 %% Table with estimated parameters
+% - Find monospaced font
+mono_fonts={ ...
+'Liberation Mono',...
+'DejaVu Sans Mono',...
+'Monospaced',...
+'Courier',...
+'FreeMono',...
+'Go Mono',...
+'Noto Mono',...
+'Mitra Mono'};
+id_font=find(cell2mat(cellfun(@(x) sum(strcmp(x,listfonts)),mono_fonts,'UniformOutput',false)),1,'first');
+
+% - Display Table
 if params.method==0
-    % TODO
-    patternParams = horzcat(k, phase, a);       % Initialize the data
-    for ii=0:params.nbOr*params.nbPh-1
-        text(sz_y(2)*0.06,sz_y(1)*(1+0.2+ii*0.035),['\bf Img #',num2str(ii+1)] ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
+    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase, a);       % Initialize the data
+    Col_name={' Kx[px]',' Ky[px]',' Ph',' Amp'};
+    for ii=1:params.nbOr*params.nbPh
+        Row_name{ii}=['Img #',num2str(ii)];
     end
-    text(sz_y(2)/2,sz_y(1)*1.1,'\bf Estimated parameters','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',14);
-    format short;
-    TString = evalc('disp(patternParams)');
-    text(sz_y(2)*0.37,sz_y(1)*1.2,TString,'HorizontalAlignment' ,'center','VerticalAlignment', 'top');
-    text(sz_y(2)*0.2,sz_y(1)*1.16,'\bf Kx           Ky            Ph        Amp' ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
 elseif params.method==1
-    % TODO
-    patternParams = horzcat(k, phase, a);       % Initialize the data
-    for ii=0:params.nbOr-1
-        text(sz_y(2)*0.06,sz_y(1)*(1+0.2+ii*0.035),['\bf Orr #',num2str(ii+1)] ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
+    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase, a);       % Initialize the data
+    Col_name={' Kx[px]',' Ky[px]',' Ph #1',' Ph #2',' Ph #3',' Amp #1',' Amp #2',' Amp #3'};
+    for ii=1:params.nbOr
+        Row_name{ii}=['Or #',num2str(ii)];
     end
-    text(sz_y(2)/2,sz_y(1)*1.1,'\bf Estimated parameters','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',14);
-    format short;
-    TString = evalc('disp(patternParams)');
-    text(sz_y(2)*0.6,sz_y(1)*1.2,TString,'HorizontalAlignment' ,'center','VerticalAlignment', 'top');
-    text(sz_y(2)*0.2,sz_y(1)*1.16,'\bf Kx         Ky          Ph #1     Ph #2      Ph #3     Amp #1  Amp #2  Amp #3' ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
 elseif params.method==2
-    patternParams = horzcat(k, phase,phase + pi/3,phase + 2*pi/3, a);       % Initialize the data
-    for ii=0:params.nbOr-1
-        text(sz_y(2)*0.06,sz_y(1)*(1+0.2+ii*0.035),['\bf Orr #',num2str(ii+1)] ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
+    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase,mod(phase + pi/3,pi),mod(phase + 2*pi/3,pi), a);       % Initialize the data
+    Col_name={' Kx[px]',' Ky[px]',' Ph #1',' Ph #2',' Ph #3',' Amp'};
+    for ii=1:params.nbOr
+        Row_name{ii}=['Or #',num2str(ii)];
     end
-    text(sz_y(2)/2,sz_y(1)*1.1,'\bf Estimated parameters','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',14);
-    format short;
-    TString = evalc('disp(patternParams)');
-    text(sz_y(2)*0.49,sz_y(1)*1.2,TString,'HorizontalAlignment' ,'center','VerticalAlignment', 'top');
-    text(sz_y(2)*0.2,sz_y(1)*1.16,'\bf Kx          Ky         Ph #1      Ph #2      Ph #3     Amp' ,'HorizontalAlignment' ,'left','VerticalAlignment', 'top');
 end
+T=array2table(patternParams,'VariableName',Col_name,'Rowname',Row_name);
+tableCell = [' ',T.Properties.VariableNames;T.Properties.RowNames, table2cell(T)]; 
+tableCell(cellfun(@isnumeric,tableCell)) = cellfun(@(x) sprintf('% 1.2f',x), tableCell(cellfun(@isnumeric,tableCell)),'UniformOutput',false); 
+tableChar = splitapply(@strjoin,pad(tableCell),(1:length(Row_name)+1)');
+axes('position',[.1,.1,.85,.18], 'Visible','off');
+text(.5,.95,tableChar,'VerticalAlignment','Top','HorizontalAlignment','Center','FontName',mono_fonts{id_font},'Interpreter','Tex');
+text(.5,1.1,'\bf Estimated parameters','VerticalAlignment','Top','HorizontalAlignment','Center');
 
 drawnow;
 end
