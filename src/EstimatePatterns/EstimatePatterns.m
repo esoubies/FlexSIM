@@ -98,19 +98,27 @@ for idx = imgIdxs
     
 %     if params.displ > 1 && OrientCount == 1           % Debug mode - display conditioned images
     if params.displ > 1                                 % Debug mode - display conditioned images
-        if numel(size(G)) > 2
-            figure; sliceViewer(G, "Colormap",viridis);   % Display masked `b` in [1]
-            title('Conditioned Images');                  
-            figure; sliceViewer(log10(abs(fftshift(fft2(G))+1)), "Colormap",viridis);   % Display FTs of both
-            title('Conditioned Images FT');
+        f = figure; 
+        if params.method
+            sgtitle(sprintf("Conditioned data for orientation #%d", OrientCount))
         else
-            figure; imdisp(G, 'Conditioned Images',0);   % Display masked `b` in [1]
-            figure; imdisp(log10(abs(fftshift(fft2(G))+1)), 'Conditioned Images FT', 0);   % Display FTs of both
+            sgtitle(sprintf("Conditioned data for image #%", OrientCount))
         end
-        imdisp(wf, 'Conditioned Widefield', 1);  % Display widefields
-        title('Conditioned widefields (masked on FT domain)');                       
-        imdisp(log10(abs(fftshift(fft2(wf))+1)), "FT of Widefield", 1); % Display widefields
-        title('Conditioned widefield FT');
+        WFPan = axes('position',[0.55,0.55,0.4,0.4], 'title','Widefield', 'Parent', f);
+        WFFTPan = axes('position',[0.55,0.05,0.4,0.4], 'title','Widefield FT', 'Parent', f);
+        if numel(size(G)) > 2            
+            ImgPan = uipanel('position',[0.05,0.55,0.4,0.4], 'title','SIM Images', 'Parent', f);
+            ImgFTPan = uipanel('position',[0.05,0.05,0.4,0.4], 'title','SIM Images FT', 'Parent', f);
+            sliceViewer(G, "Colormap",viridis, "Parent",ImgPan);
+            sliceViewer(log10(abs(fftshift(fft2(G))+1)), "Colormap",viridis, "Parent",ImgFTPan);                                                                  
+            imshow(wf, [], 'Parent', WFPan); colormap(viridis);
+            imshow(log10(abs(fftshift(fft2(G))+1)), [], 'Parent', WFFTPan); colormap(viridis);
+        else
+            subplot(2, 2, 1); imshow(G, [], "Parent",ImgPan); colormap(viridis);
+            subplot(2, 2, 3); imshow(log10(abs(fftshift(fft2(G))+1)), [], "Parent",ImgFTPan); colormap(viridis);
+            subplot(2, 2, 2); imshow(wf, [], 'Parent', WFPan); colormap(viridis);
+            subplot(2, 2, 4); imshow(log10(abs(fftshift(fft2(G))+1)), [], 'Parent', WFFTPan); colormap(viridis);
+        end               
     end
     
     if compute_k_init

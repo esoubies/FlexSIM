@@ -10,19 +10,21 @@ clear; close all; clc;
 %% General parameters
 % -- Path and files
 % params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck.tif');    % Path to the SIM stack
-% params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck_1ph.tif');% To test 4SIM
-params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck_ap.tif');    % To test ap convention
+params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck_1ph.tif');% To test 4SIM
+% params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck_ap.tif');    % To test ap convention
 params.pathToFlexSIM = '../';                             % Path to the root of GitHub FlexSIM repo
-
+if ~exist(params.DataPath, 'file')
+    websave(params.DataPath, 'https://github.com/fairSIM/test-datasets/releases/download/SLM-SIM-Bielefeld/SLM-SIM_Tetraspeck200_680nm.tif');
+end
 % -- Display and saving
-params.displ = 2;                       % Displaying choice, from 0 to 2 with increasing number of display
+params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
 params.sav = 1;                         % Boolean if true save the result
 
 %% Data related parameters
 % -- Properties of the SIM data stack
-params.StackOrder= 'ap';                  % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+params.StackOrder= 'paw';                  % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
 params.nbOr = 4;                        % Number of orientations
-params.nbPh = 3;                        % Number of phases 
+params.nbPh = 1;                        % Number of phases 
 
 % -- OTF Approximation
 params.lamb = 680;     % Emission wavelength
@@ -33,11 +35,12 @@ params.damp = 0.4;     % damping parameter (in [0,1], 1= no damping) to attenuat
 %% FlexSIM parameters
 % -- Patch-based processing
 params.szPatch=0;                 % If >0, FlexSIM will perform pattern estimation and reconstruction by patches of size 'szPatch'
-params.overlapPatch=0;            % Overlap between patches if szPatch>0
+params.overlapPatch=20;            % Overlap between patches if szPatch>0
 params.enhanceContrast=0;         % When 0 (and patch-based) rescale the reconstruction to widefield intensity variations. When 1, keep enhanced contrast due to patch-based rec
 
 % -- Parameters for patterns estimation
 params.roi = [128 128 256];       % Select ROI for pattern estimation ([initial y-coord, initial x-coord, size])
+params.roi = [];       % Select ROI for pattern estimation ([initial y-coord, initial x-coord, size])
 params.limits = [0.45, 0.55];     % Ring over which the J function is evaluated for initializing (fc = 1)
 params.ringMaskLim = [0, 1.1];    % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
 params.nMinima = 2;               % Number of starting points for the refinement steps
@@ -53,7 +56,7 @@ params.sepOrr = 0;                % Boolean if true treat each orientation separ
 params.padSz=20;                  % Padding size for the optimization variable (to account for boundaries effects)
 params.mu =  1e-5;                % Regularization parameter
 params.regType=1;                 % Choice regul: 1 for Tikhonov (i.e., Wiener), 2 for Total Variation, 3 for Good roughness
-params.maxIt = 150;               % Maximum number of iterations (stopping criteria)
+params.maxIt = 100;               % Maximum number of iterations (stopping criteria)
 params.stepTol = 5e-4;            % Relative error tolerance between two iterates (stopping criteria)
 
 %% Run FlexSIM
