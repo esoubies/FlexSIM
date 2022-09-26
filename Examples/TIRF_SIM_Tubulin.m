@@ -15,12 +15,12 @@ if ~exist(params.DataPath, 'file')
     websave(params.DataPath, 'https://github.com/fairSIM/test-datasets/releases/download/TIRF-SIM-Georgia/TIRF_Tubulin_525nm.tif');
 end
 % -- Display and saving
-params.displ = 2;                       % Displaying choice, from 0 to 2 with increasing number of display
+params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
 params.sav = 1;                         % Boolean if true save the result
 
 %% Data related parameters
 % -- Properties of the SIM data stack
-params.StackOrder = 'pa';                  % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+params.StackOrder = 'pa';               % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
 params.nbOr = 3;                        % Number of orientations
 params.nbPh = 3;                        % Number of phases 
 
@@ -32,8 +32,8 @@ params.damp = 0.3;     % damping parameter (in [0,1], 1= no damping) to attenuat
 
 %% FlexSIM parameters
 % -- Patch-based processing
-params.szPatch=128;                 % If >0, FlexSIM will perform pattern estimation and reconstruction by patches of size 'szPatch'
-params.overlapPatch=20;            % Overlap between patches if szPatch>0
+params.szPatch=0;                 % If >0, FlexSIM will perform pattern estimation and reconstruction by patches of size 'szPatch'
+params.overlapPatch=0;            % Overlap between patches if szPatch>0
 params.enhanceContrast=0;         % When 0 (and patch-based) rescale the reconstruction to widefield intensity variations. When 1, keep enhanced contrast due to patch-based rec
 
 % -- Parameters for patterns estimation

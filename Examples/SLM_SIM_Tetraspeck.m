@@ -9,10 +9,8 @@ clear; close all; clc;
 
 %% General parameters
 % -- Path and files
-% params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck.tif');    % Path to the SIM stack
-params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck_1ph.tif');% To test 4SIM
-% params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck_ap.tif');    % To test ap convention
-params.pathToFlexSIM = '../';                             % Path to the root of GitHub FlexSIM repo
+params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck.tif');    % Path to the SIM stack
+params.pathToFlexSIM = '../';                                % Path to the root of GitHub FlexSIM repo
 if ~exist(params.DataPath, 'file')
     websave(params.DataPath, 'https://github.com/fairSIM/test-datasets/releases/download/SLM-SIM-Bielefeld/SLM-SIM_Tetraspeck200_680nm.tif');
 end
@@ -22,9 +20,9 @@ params.sav = 1;                         % Boolean if true save the result
 
 %% Data related parameters
 % -- Properties of the SIM data stack
-params.StackOrder= 'paw';                  % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+params.StackOrder= 'pa';                % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
 params.nbOr = 4;                        % Number of orientations
-params.nbPh = 1;                        % Number of phases 
+params.nbPh = 3;                        % Number of phases 
 
 % -- OTF Approximation
 params.lamb = 680;     % Emission wavelength
@@ -35,18 +33,17 @@ params.damp = 0.4;     % damping parameter (in [0,1], 1= no damping) to attenuat
 %% FlexSIM parameters
 % -- Patch-based processing
 params.szPatch=0;                 % If >0, FlexSIM will perform pattern estimation and reconstruction by patches of size 'szPatch'
-params.overlapPatch=20;            % Overlap between patches if szPatch>0
+params.overlapPatch=0;            % Overlap between patches if szPatch>0
 params.enhanceContrast=0;         % When 0 (and patch-based) rescale the reconstruction to widefield intensity variations. When 1, keep enhanced contrast due to patch-based rec
 
 % -- Parameters for patterns estimation
 params.roi = [128 128 256];       % Select ROI for pattern estimation ([initial y-coord, initial x-coord, size])
-params.roi = [];       % Select ROI for pattern estimation ([initial y-coord, initial x-coord, size])
 params.limits = [0.45, 0.55];     % Ring over which the J function is evaluated for initializing (fc = 1)
 params.ringMaskLim = [0, 1.1];    % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
 params.nMinima = 2;               % Number of starting points for the refinement steps
 params.nPoints = 150;             % Number of points in the J evaluation grid
 params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
-params.method = 0;                % Method : 0 - treat all images independently
+params.method = 2;                % Method : 0 - treat all images independently
                                   %          1 - use all images with same orientation to estimate a unique wavevector
                                   %          2 - 1 + assume equally spaced phases
 params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns
