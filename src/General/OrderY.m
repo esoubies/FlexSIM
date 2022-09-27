@@ -13,13 +13,10 @@ function [y, wf]  = OrderY(y, params)
 % Outputs: y       -> Reordered ("ap") SIM data
 %          wf      -> Widefield image if provided, otherwise 0
 %
-% [1] FlexSIM: ADD REF TO PAPER
-%
-% See also EstimatePatterns.m and Reconstruct.m
-%
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
+
 % Check the acquisition convention of the user and convert to ap(w)
 switch string(params.StackOrder)
     case "pa" 
