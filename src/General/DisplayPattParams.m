@@ -76,7 +76,11 @@ T=array2table(patternParams,'VariableName',Col_name,'Rowname',Row_name);
 tableCell = [' ',T.Properties.VariableNames;T.Properties.RowNames, table2cell(T)]; 
 tableCell(cellfun(@isnumeric,tableCell)) = cellfun(@(x) sprintf('% 1.2f',x), tableCell(cellfun(@isnumeric,tableCell)),'UniformOutput',false); 
 tableChar = splitapply(@strjoin,pad(tableCell),(1:length(Row_name)+1)');
-axes('position',[.1,.1,.85,.18], 'Visible','off');
+if id_patch>0
+    axes(fig_id.Children.Children(id_patch),'Position',[.1,.1,.85,.18], 'Visible','off');
+else
+    axes(fig_id,'Position',[.1,.1,.85,.18], 'Visible','off');
+end
 text(.5,.95,tableChar,'VerticalAlignment','Top','HorizontalAlignment','Center','FontName',mono_fonts{id_font},'Interpreter','Tex');
 text(.5,1.1,'\bf Estimated parameters','VerticalAlignment','Top','HorizontalAlignment','Center');
 
