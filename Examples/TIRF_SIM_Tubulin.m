@@ -21,6 +21,7 @@ params.sav = 1;                         % Boolean if true save the result
 %% Data related parameters
 % -- Properties of the SIM data stack
 params.StackOrder = 'pa';               % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+params.roiBack=[39 209 20];             % Select ROI for background estimation ([initial y-coord, initial x-coord, size])
 params.nbOr = 3;                        % Number of orientations
 params.nbPh = 3;                        % Number of phases 
 

@@ -21,6 +21,7 @@ params.sav = 1;                         % Boolean if true save the result
 %% Data related parameters
 % -- Properties of the SIM data stack
 params.StackOrder= 'pa';                % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+params.roiBack=[281 191 13];            % Select ROI for background estimation ([initial y-coord, initial x-coord, size])
 params.nbOr = 4;                        % Number of orientations
 params.nbPh = 3;                        % Number of phases 
 
@@ -54,7 +55,7 @@ params.padSz=20;                  % Padding size for the optimization variable (
 params.mu =  1e-5;                % Regularization parameter
 params.regType=1;                 % Choice regul: 1 for Tikhonov (i.e., Wiener), 2 for Total Variation, 3 for Good roughness
 params.maxIt = 100;               % Maximum number of iterations (stopping criteria)
-params.stepTol = 5e-4;            % Relative error tolerance between two iterates (stopping criteria)
+params.stepTol = 1e-3;            % Relative error tolerance between two iterates (stopping criteria)
 
 %% Run FlexSIM
 run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m')) % Take care of paths & GlobalBioIm

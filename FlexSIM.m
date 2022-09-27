@@ -22,9 +22,10 @@ function res = FlexSIM(params)
 
 time0=tic;
 %% Data loading + routinary checks
-y = double(loadtiff(params.DataPath));     % Read data 
-CheckParams(params);                       % Check conformity of parameters
-[y, wfAcq] = OrderY(y, params); % Reorder and extract data if necessary
+y = double(loadtiff(params.DataPath));       % Read data 
+CheckParams(params);                         % Check conformity of parameters
+y = RemoveBackground(y,params);  % Remove constant background and normalize in [0,1]
+[y, wfAcq] = OrderY(y, params);              % Reorder and extract data if necessary
 if wfAcq
     wf=imresize(wfAcq ,size(wfAcq)*2);
 else
@@ -36,6 +37,17 @@ end
 if params.displ > 0
     fig_y=-1;fig_patt=-1;fig_patt_par=-1;fig_rec=-1;  % Initialize figures
     fig_y=DisplayStack(y,'SIM Raw data',fig_y);
+    leg={};
+    if isfield(params,'roiBack') && ~isempty(params.roiBack)
+    rectangle('Position',[params.roiBack(2) params.roiBack(1) params.roiBack(3) params.roiBack(3)],'EdgeColor','r');
+    line(NaN,NaN,'Color','r'); leg{length(leg)+1}='ROI Background';% Hack for legend display of the rectangle
+    end
+    if isfield(params,'roi') && ~isempty(params.roi)
+    rectangle('Position',[params.roi(2) params.roi(1) params.roi(3) params.roi(3)],'EdgeColor','b');
+    line(NaN,NaN,'Color','b'); leg{length(leg)+1}='ROI Patterns';% Hack for legend display of the rectangle
+    end
+    if ~isempty(leg), legend(leg); end
+    drawnow;
 end
 
 %% FlexSIM pipeline
