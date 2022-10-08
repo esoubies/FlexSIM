@@ -1,6 +1,6 @@
-function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wfAcq)
+function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf)
 %--------------------------------------------------------------------------
-% Function [k_final, phase, a] = EstimatePatterns(params,y,k_init, wfAcq)
+% Function [k_final, phase, a] = EstimatePatterns(params,y,k_init, wf)
 %
 % Estimate the parameters of 2D sinusoidal patterns of the form 
 %    w(x) = 1 + a cos(<k,x> + phase),
@@ -29,7 +29,7 @@ function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wfAc
 %           y          -> SIM data stack
 %           k_init     -> Initial wavevector. If provided, skips the grid search and runs only the
 %                         iterative optimization. Set to 0 to perform grid search 
-%           wfAcq      -> Widefield image. Provide if acquired. Otherwise set to 0                      
+%           wf         -> Widefield image.                   
 %
 %
 % Outputs : k_final -> array with the estimated wavevectors (if method=0, of size nbOr*nbPh. Otherwise, of size nbOr)
@@ -48,12 +48,11 @@ function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wfAc
 % Crop to the ROI, keeping the original size before
 if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)   % Detect ROI and Crop to ROI
     y = y(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
-    if any(wfAcq, 'all')
-        wfAcq = wfAcq(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
-    end
+    wf = wf(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
 end
 sz = size(y);                                      % Calculate size of ROI
 y = (y - min(y(:))) / (max(y(:)) - min(y(:)));     % Normalize stack images
+wf= (wf-min(wf(:))) / (max(wf(:)) - min(wf(:)));
 
 if ~k_init
     compute_k_init=true;
@@ -77,26 +76,19 @@ end
 [grids.I, grids.J] = meshgrid(0:sz(2)-1,0:sz(1)-1);           % Numerical mesh - multipurpose
 grids.X = grids.I*params.res; grids.Y=grids.J*params.res;     % Scaled (by resolution) mesh 
 OTF = GenerateOTF(params.Na, params.lamb, sz, params.res, 1); % Computation of the OTF
-if ~any(wfAcq, 'all') && params.method < 2                   % If the WF has not been given and can be estimated 
-    wfAcq  = mean(y,3);                                           % Calculate WF as the mean of all images
-end
 
 %% Loop over batch of images (1 batch = 1 orr + x phases)
 % TODO: add back the displays (need to think how to manage the patch-based case)
 OrientCount = 1; 
-
 for idx = imgIdxs 
-    disp([' Batch of images: ', num2str(idx')]);      % Display info to the user     
+    disp([' Batch of images: ', num2str(idx')]);      % Display info to the user
     disp('   - Remove WF and mask...');
-%     if ~ismember('w', char(params.AcqConv)) && params.method == 2
-    if ~any(wfAcq, 'all') && params.method == 2
-        wf=mean(y(:,:,idx),3);                            % TODO : this is valid only when we have method 2 and we are sure that we can compute the wf like that
-        [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
-    else
-        [G,wf] = RemoveWFandMask(y(:,:,idx),wfAcq,params);
+    if ~ismember('w', char(params.StackOrder)) && params.method >= 1
+        wf=mean(y(:,:,idx),3);     % If widefield is not provided and method =1 or 2, recompute a wf image per orientation                        
     end
-    
-%     if params.displ > 1 && OrientCount == 1           % Debug mode - display conditioned images
+    [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
+        
+    %     if params.displ > 1 && OrientCount == 1           % Debug mode - display conditioned images
     if params.displ > 1                                 % Debug mode - display conditioned images
         f = figure; 
         if params.method
@@ -124,8 +116,6 @@ for idx = imgIdxs
     if compute_k_init
         disp('   - Grid-based evaluation of J landscape...');
         [Jp,K1,K2] = GridEvalJ(params,wf,G,grids);
-
-        
 
         if params.displ > 1                           % If requested, display J grid
             mJp=max(Jp(:));
@@ -171,7 +161,6 @@ for idx = imgIdxs
     end
     
     disp('   - Computing phases and amplitutes...'); 
-    % TODO: compute the phases accordingly to the choice of method
     [phase(OrientCount, :),a(OrientCount, :)]=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
     
     OrientCount=OrientCount+1;

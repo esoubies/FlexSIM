@@ -41,24 +41,20 @@ else
 end
 
 % - Reorder stack with FlexSIM conventions
-[y, wfAcq] = OrderY(y, params);             % Reorder and extract data if necessary
-if wfAcq
-    wf=imresize(wfAcq ,size(wfAcq)*2);
-else
-    wf=mean(y,3);
-    wf=imresize(wf ,size(wf)*2);
-end
-
+[y, wf] = OrderY(y, params);             % Reorder and extract data if necessary
+if isscalar(wf), wf=mean(y,3); end       % If widefield not provide, compute it by averraging
+wfUp=imresize(wf,size(wf)*2);            % For displays
+ 
 % -- Displays
 if params.displ > 0
     fig_y=-1;fig_patt=-1;fig_patt_par=-1;fig_rec=-1;  % Initialize figures
     fig_y=DisplayStack(y,'SIM Raw data',fig_y);
     leg={};
-    if ~isempty(PosRoiBack)
+    if ~isempty(params.SzRoiBack)
         rectangle('Position',[PosRoiBack(2) PosRoiBack(1) params.SzRoiBack params.SzRoiBack],'EdgeColor','r');
         line(NaN,NaN,'Color','r'); leg{length(leg)+1}='ROI Background';% Hack for legend display of the rectangle
     end
-    if ~isempty(PosRoiPatt)
+    if ~isempty(params.SzRoiPatt)
         rectangle('Position',[PosRoiPatt(2) PosRoiPatt(1) params.SzRoiPatt params.SzRoiPatt],'EdgeColor','b');
         line(NaN,NaN,'Color','b'); leg{length(leg)+1}='ROI Patterns';% Hack for legend display of the rectangle
     end
@@ -92,7 +88,8 @@ for id_patch = 1:nbPatches
     % -- Pattern Estimation
     disp(['<strong>=== ',prefix_disp,' Patterns parameter estimation START</strong> ...']);
     
-    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, wfAcq);
+    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, wf);
+
     if params.estiPattLowFreq
         Lf{id_patch} = EstimateLowFreqPatterns(patches{id_patch},5);
     else
@@ -121,7 +118,7 @@ for id_patch = 1:nbPatches
     
     % -- Displays
     if params.displ > 0
-        fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2,norm_patches),wf,fig_rec);
+        fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2,norm_patches),wfUp,fig_rec);
     end
     
     % - Save reconstruction / patterns 
@@ -142,7 +139,7 @@ if params.szPatch>0
         prefix_disp=['[Correction Patch #',num2str(ii),']'];
         sz_p=size(patches{ii});    
         disp(['<strong>--- ',prefix_disp,' Patterns parameter correction  START</strong> ...']);
-        [k(:,:,ii), phase, a] = EstimatePatterns(params, patches{ii},kmed, wfAcq);
+        [k(:,:,ii), phase, a] = EstimatePatterns(params, patches{ii},kmed, wf);
         a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
         patterns{ii} = GenerateReconstructionPatterns(params,k(:,:,ii),phase,a,sz_p,Lf{ii});
         disp(['<strong>--- ',prefix_disp,' New reconstruction START</strong> ...']);
@@ -151,7 +148,7 @@ if params.szPatch>0
         if params.displ >0
             fig_patt_par=DisplayPattParams(patches{ii},params,k(:,:,ii),phase,a,fig_patt_par,ii);
             fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
-            fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2,norm_patches),wf,fig_rec);
+            fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2,norm_patches),wfUp,fig_rec);
         end
     end
 end
