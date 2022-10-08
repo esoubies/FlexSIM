@@ -1,4 +1,4 @@
-function [k_final, phase, a] = EstimatePatterns(params,y,k_init, wfAcq)
+function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wfAcq)
 %--------------------------------------------------------------------------
 % Function [k_final, phase, a] = EstimatePatterns(params,y,k_init, wfAcq)
 %
@@ -14,6 +14,7 @@ function [k_final, phase, a] = EstimatePatterns(params,y,k_init, wfAcq)
 %                         - res: resolution of the SIM data stac
 %                         - nbOr: number of orientations
 %                         - nbPh: number of phases
+%                         - SzRoiPatt: Size of the ROI used for patterns estimation
 %                         - method: method used to estimate the parameters, 3 choices
 %                                    0 - treat all images independently
 %                                    1 - use all images with same orientation to estimate a unique wavevector
@@ -24,10 +25,11 @@ function [k_final, phase, a] = EstimatePatterns(params,y,k_init, wfAcq)
 %                         - nPoints: Number of points in the J evaluation grid
 %                         - FilterRefinement: Number of times that the filter is upgraded (gradient descent cycles)
 %                         - displ: if >1, displays intermediate results
-%           y       -> SIM data stack
-%           k_init  -> Initial wavevector. If provided, skips the grid search and runs only the
-%                      iterative optimization. Set to 0 to perform grid search 
-%           wfAcq   -> Widefield image. Provide if acquired. Otherwise set to 0                      
+%           PosRoiPatt -> Top-left corner of the ROI used for patterns estimation
+%           y          -> SIM data stack
+%           k_init     -> Initial wavevector. If provided, skips the grid search and runs only the
+%                         iterative optimization. Set to 0 to perform grid search 
+%           wfAcq      -> Widefield image. Provide if acquired. Otherwise set to 0                      
 %
 %
 % Outputs : k_final -> array with the estimated wavevectors (if method=0, of size nbOr*nbPh. Otherwise, of size nbOr)
@@ -44,12 +46,10 @@ function [k_final, phase, a] = EstimatePatterns(params,y,k_init, wfAcq)
 
 %% Preprocessing of stack & initialization of useful variables
 % Crop to the ROI, keeping the original size before
-if isfield(params,'roi') && ~isempty(params.roi)   % Crop to ROI
-    y = y(params.roi(1):params.roi(1)+params.roi(3)-1, ...
-        params.roi(2):params.roi(2)+params.roi(3)-1,:);
+if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)   % Detect ROI and Crop to ROI
+    y = y(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
     if any(wfAcq, 'all')
-        wfAcq = wfAcq(params.roi(1):params.roi(1)+params.roi(3)-1, ...
-        params.roi(2):params.roi(2)+params.roi(3)-1,:);
+        wfAcq = wfAcq(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
     end
 end
 sz = size(y);                                      % Calculate size of ROI

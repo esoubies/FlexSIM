@@ -1,4 +1,4 @@
-function patt = GenerateReconstructionPatterns(params,k,phase,a,sz,Lf)
+function patt = GenerateReconstructionPatterns(params,PosRoiPatt,k,phase,a,sz,Lf)
 %--------------------------------------------------------------------------
 % function patt = GenerateReconstructionPatterns(params,k,phase,a,sz,Lf)
 %
@@ -7,17 +7,18 @@ function patt = GenerateReconstructionPatterns(params,k,phase,a,sz,Lf)
 % from its parameters (amplitude, phase and  wavevector) and the
 % low-frequency component Lf.
 %
-% Inputs :  params  -> Structures with fields:
-%                         - roi: region on interest on which the parameters  have been estimated (see function EstimatePatterns)
+% Inputs :  params    -> Structures with fields:
+%                         - SzRoiPatt: Size of the ROI used for patterns estimation
 %                         - res: resolution of the SIM data stack (patterns will be generated on a twice finer grid)
 %                         - nbOr: number of orientations
 %                         - nbPh: number of phases
 %                         - method: method used to estimate the parameters (see function EstimatePatterns)
-%           k       -> Array (nbOr x 2) containing the wavevector for each orientation
-%           phase   -> Array containing the absolute phases (method = 0 or 1) or phase offsets (method =2)
-%           a       -> Array containing the amplitudes of the patterns
-%           sz      -> Size of the raw SIM stack
-%           Lf_comp -> Low-freq component of the patterns, default 1 (see EstimateLowFreqPatterns.m)
+%           SzRoiPatt -> Top-left position of the ROI used for patterns estimation
+%           k         -> Array (nbOr x 2) containing the wavevector for each orientation
+%           phase     -> Array containing the absolute phases (method = 0 or 1) or phase offsets (method =2)
+%           a         -> Array containing the amplitudes of the patterns
+%           sz        -> Size of the raw SIM stack
+%           Lf_comp   -> Low-freq component of the patterns, default 1 (see EstimateLowFreqPatterns.m)
 % 
 % Outputs : patt   -> Sampled patterns
 %
@@ -27,9 +28,9 @@ function patt = GenerateReconstructionPatterns(params,k,phase,a,sz,Lf)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 % Extracting variables
-if isfield(params,'roi') && ~isempty(params.roi)
-    lx=-(params.roi(2)-1)*params.res:params.res/2:(sz(2)-params.roi(2)+1)*params.res-params.res/2;
-    ly=-(params.roi(1)-1)*params.res:params.res/2:(sz(1)-params.roi(1)+1)*params.res-params.res/2;
+if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)
+    lx=-(PosRoiPatt(2)-1)*params.res:params.res/2:(sz(2)-PosRoiPatt(2)+1)*params.res-params.res/2;
+    ly=-(PosRoiPatt(1)-1)*params.res:params.res/2:(sz(1)-PosRoiPatt(1)+1)*params.res-params.res/2;
     [X,Y]=meshgrid(lx,ly); 
 else
     [X,Y]=meshgrid(0:2*sz(2)-1,0:2*sz(1)-1); X=X*params.res/2; Y=Y*params.res/2;

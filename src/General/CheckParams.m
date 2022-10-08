@@ -42,8 +42,11 @@ assert(mod(params.nbPh, 1) == 0 && params.nbPh > 0, 'Parameter `nbPh` should be 
 
 
 % Parameters for patterns estimation
-assert(ismember(numel(params.roi), [0, 3]), ...
-    'The region of interest (params.roi) should either be an empty array or have the form `[initial y-coord, initial x-coord, size]`')
+assert(isfield(params, "SzRoiBack"),'Missing parameter `SzRoiBack` (should be either empty or an odd number)');
+assert(isempty(params.SzRoiBack) || mod(params.SzRoiBack,2)==1,'Parameter SzRoiBack should be either empty or an odd number');
+assert(isfield(params, "SzRoiPatt"),'Missing parameter `SzRoiPatt` (should be either empty or an odd number)');
+assert(isempty(params.SzRoiPatt) || mod(params.SzRoiPatt,2)==1,'Parameter SzRoiPatt should be either empty or an odd number');
+
 assert(isfield(params, "nMinima"),'Missing parameter `nMinima` (positive integer)')
 assert(numel(params.limits) == 2, ...
     '`params.limits` should have a lower and upper bound for the FT masking, thus should have 2 elements')

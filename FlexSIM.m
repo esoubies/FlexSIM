@@ -24,8 +24,24 @@ time0=tic;
 %% Data loading + routinary checks
 y = double(loadtiff(params.DataPath));       % Read data 
 CheckParams(params);                         % Check conformity of parameters
-y = RemoveBackground(y,params);  % Remove constant background and normalize in [0,1]
-[y, wfAcq] = OrderY(y, params);              % Reorder and extract data if necessary
+
+%% Pre-processing
+% - Remove background
+if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)  
+    PosRoiBack=DetectPatch(sum(y,3),params.SzRoiBack,-1);    % Detect the ROI for background
+    y = RemoveBackground(y,PosRoiBack,params.SzRoiBack);     % Remove constant background and normalize in [0,1]
+else
+    PosRoiBack=[1,1];
+end
+% - Detect ROI for pattern estimation
+if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)  
+    PosRoiPatt=DetectPatch(sum(y,3),params.SzRoiPatt,1);
+else
+    PosRoiPatt=[1,1];
+end
+
+% - Reorder stack with FlexSIM conventions
+[y, wfAcq] = OrderY(y, params);             % Reorder and extract data if necessary
 if wfAcq
     wf=imresize(wfAcq ,size(wfAcq)*2);
 else
@@ -38,13 +54,13 @@ if params.displ > 0
     fig_y=-1;fig_patt=-1;fig_patt_par=-1;fig_rec=-1;  % Initialize figures
     fig_y=DisplayStack(y,'SIM Raw data',fig_y);
     leg={};
-    if isfield(params,'roiBack') && ~isempty(params.roiBack)
-    rectangle('Position',[params.roiBack(2) params.roiBack(1) params.roiBack(3) params.roiBack(3)],'EdgeColor','r');
-    line(NaN,NaN,'Color','r'); leg{length(leg)+1}='ROI Background';% Hack for legend display of the rectangle
+    if ~isempty(PosRoiBack)
+        rectangle('Position',[PosRoiBack(2) PosRoiBack(1) params.SzRoiBack params.SzRoiBack],'EdgeColor','r');
+        line(NaN,NaN,'Color','r'); leg{length(leg)+1}='ROI Background';% Hack for legend display of the rectangle
     end
-    if isfield(params,'roi') && ~isempty(params.roi)
-    rectangle('Position',[params.roi(2) params.roi(1) params.roi(3) params.roi(3)],'EdgeColor','b');
-    line(NaN,NaN,'Color','b'); leg{length(leg)+1}='ROI Patterns';% Hack for legend display of the rectangle
+    if ~isempty(PosRoiPatt)
+        rectangle('Position',[PosRoiPatt(2) PosRoiPatt(1) params.SzRoiPatt params.SzRoiPatt],'EdgeColor','b');
+        line(NaN,NaN,'Color','b'); leg{length(leg)+1}='ROI Patterns';% Hack for legend display of the rectangle
     end
     if ~isempty(leg), legend(leg); end
     drawnow;
@@ -76,7 +92,7 @@ for id_patch = 1:nbPatches
     % -- Pattern Estimation
     disp(['<strong>=== ',prefix_disp,' Patterns parameter estimation START</strong> ...']);
     
-    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, patches{id_patch}, 0, wfAcq);
+    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, wfAcq);
     if params.estiPattLowFreq
         Lf{id_patch} = EstimateLowFreqPatterns(patches{id_patch},5);
     else
@@ -85,7 +101,7 @@ for id_patch = 1:nbPatches
     
     % -- Generate Patterns for reconstruction
     a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-    patterns{id_patch} = GenerateReconstructionPatterns(params,k(:,:,id_patch),phase,a,sz_p,Lf{id_patch});
+    patterns{id_patch} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,id_patch),phase,a,sz_p,Lf{id_patch});
     
     % -- Displays
     if params.displ > 0

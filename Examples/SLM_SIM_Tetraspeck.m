@@ -21,7 +21,7 @@ params.sav = 1;                         % Boolean if true save the result
 %% Data related parameters
 % -- Properties of the SIM data stack
 params.StackOrder= 'pa';                % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
-params.roiBack=[281 191 13];            % Select ROI for background estimation ([initial y-coord, initial x-coord, size])
+params.SzRoiBack=13;                    % Size (odd number or empty) of the ROI for background estimation (position automatically detected so as to minimize the intensity within the ROI)
 params.nbOr = 4;                        % Number of orientations
 params.nbPh = 3;                        % Number of phases 
 
@@ -38,7 +38,7 @@ params.overlapPatch=0;            % Overlap between patches if szPatch>0
 params.enhanceContrast=0;         % When 0 (and patch-based) rescale the reconstruction to widefield intensity variations. When 1, keep enhanced contrast due to patch-based rec
 
 % -- Parameters for patterns estimation
-params.roi = [128 128 256];       % Select ROI for pattern estimation ([initial y-coord, initial x-coord, size])
+params.SzRoiPatt = 257;           % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
 params.limits = [0.45, 0.55];     % Ring over which the J function is evaluated for initializing (fc = 1)
 params.ringMaskLim = [0, 1.1];    % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
 params.nMinima = 2;               % Number of starting points for the refinement steps

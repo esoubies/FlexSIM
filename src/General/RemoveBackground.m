@@ -1,13 +1,13 @@
-function [y]  = RemoveBackground(y, params)
+function y = RemoveBackground(y,PosRoiBack,SzRoi)
 %--------------------------------------------------------------------------
-% Function y = RemoveBackground(y, params)
+% Function y = RemoveBackground(y,PosRoiBack,SzRoi)
 % 
 % Estimate a constant background from an ROI that does not contains objects
 % and subtract it to the stack. 
 %
-% Inputs : y       -> Raw SIM data
-%          params  -> Structures with acquisition fields (see EstimatePatterns 
-%                     for details). 
+% Inputs : y          -> Raw SIM data
+%          PosRoiBack -> Top left corner of the ROI
+%          SzRoi      -> Size of the ROI
 %
 % Outputs: y       -> Raw SIM stack without background
 %
@@ -15,9 +15,7 @@ function [y]  = RemoveBackground(y, params)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
-if isfield(params,'roiBack') && ~isempty(params.roiBack)
-    roi=y(params.roiBack(1):params.roiBack(1)+params.roiBack(3)-1,params.roiBack(2):params.roiBack(2)+params.roiBack(3)-1,:);
-    y=max(y-mean(roi,[1 2]),0);
-end
+roi=y(PosRoiBack(1):PosRoiBack(1)+SzRoi-1,PosRoiBack(2):PosRoiBack(2)+SzRoi-1,:);
+y=max(y-mean(roi,[1 2]),0);
 
 end
