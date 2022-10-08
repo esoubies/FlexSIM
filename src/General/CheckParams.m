@@ -8,67 +8,163 @@ function CheckParams(params)
 % Inputs  : params -> Structure containing all the necessary data (optical
 %                    and reconstruction parameters, paths, etc.)  
 %
-% Copyright (2022) A. Nogueron (anogueron.1996@gmail.com) , E. Soubies 
-% (emmanuel.soubies@irit.fr) 
+% Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
+%                  E. Soubies  (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
-% Initial tests to ensure that the necessary parameters for FlexSIM to run are present
+missg="Missing parameter ";
+invld="Invalid parameter ";
+%% General parameters
+% -- Path and files
+prefix="[Paths and files] ";
+% DataPath
+msg="Should be in tif format.";
+assert(isfield(params, "DataPath"),prefix + missg + "`DataPath`. " + msg);
+assert(strcmp(params.DataPath(end-3:end),'.tif'), prefix + invld + "`DataPath'. " + msg);  
+% pathToFlexSIM
+assert(isfield(params, "DataPath"),prefix + missg + "`pathToFlexSIM`. ");
 
-% Tests on general parameters
-assert(contains(params.DataPath, 'tif'), 'The SIM data should be in tiff format!')
-if params.nbPh == 1
-    assert(params.method == 0, ...  % Ensure that the widefield is there
-         "When providing only one phase, set `params.method == 1`.")
-    assert(any(ismember(char(params.StackOrder), 'w')), ...  % Ensure that the widefield is there
-         "Widefield image is necessary when providing one image pero orientation. " + ...
-         "Ensure that the acquisition convention is one of `paw, apw, wap, wpa`")
+% -- Display and saving
+prefix="[Display and saving] ";
+% dipsl and sav
+msg="Should be a boolean.";
+assert(isfield(params, "displ"),prefix + missg + "`displ`. " + msg);
+assert(params.displ==0 || params.displ==1, prefix + invld + "`displ'. " + msg);  
+assert(isfield(params, "sav"),prefix + missg + "`sav`. " + msg);
+assert(params.sav==0 || params.sav==1, prefix + invld + "`sav'. " + msg);  
+
+
+%% Data related parameters
+% -- Properties of the SIM data stack
+prefix="[SIM data Stack] ";
+% nbOr and nbPh
+msg="Should be a positive integer.";
+assert(isfield(params, "nbOr"),prefix + missg + "`nbOr`. " + msg);
+assert(mod(params.nbOr, 1) == 0 && params.nbOr> 0,prefix + invld + "`nbOr`. " + msg);
+assert(isfield(params, "nbPh"),prefix + missg + "`nbPh`. " + msg);
+assert(mod(params.nbPh, 1) == 0 && params.nbPh > 0,prefix + invld + "`nbPh`. " + msg);
+% StackOrder
+msg="Choose one of {`ap`, `pa`, `paw`, `apw`, `wap`, `wpa`} as acquisition convention (p(hase), a(ngle) and w(idefield)).";
+assert(isfield(params, "StackOrder"),prefix + missg + "`StackOrder`. " + msg);
+assert(ismember(params.StackOrder, ["ap", "pa", "paw", "apw", "wap", "wpa"]),prefix + invld + "`StackOrder`. " + msg);
+if params.nbPh == 1       % Ensure that the widefield is there
+    assert(any(ismember(char(params.StackOrder), 'w')),prefix + invld + "`StackOrder`. " + ...
+        "Widefield image is necessary when providing one image per orientation. " + ...
+        "Ensure that the acquisition convention is one of `paw, apw, wap, wpa`")
+end
+% SzRoiBack
+msg="Should be either empty or an odd number.";
+assert(isfield(params, "SzRoiBack"),prefix + missg + "`SzRoiBack`. " + msg);
+assert(isempty(params.SzRoiBack) || mod(params.SzRoiBack,2)==1,prefix + invld + "`SzRoiBack`. " + msg);
+
+% -- OTF Approximation
+prefix="[OTF Approximation]";
+% lamb, res, Na
+msg="Should be a positive real.";
+assert(isfield(params, "lamb"),prefix + missg + "`lamb`. " + msg);
+assert(params.lamb> 0,prefix + invld + "`lamb`. " + msg);
+assert(isfield(params, "res"),prefix + missg + "`res`. " + msg);
+assert( params.res > 0,prefix + invld + "`res`. " + msg);
+assert(isfield(params, "Na"),prefix + missg + "`Na`. " + msg);
+assert( params.Na > 0,prefix + invld + "`Na`. " + msg);
+% damp
+msg="Should be a real in (0,1].";
+assert(isfield(params, "damp"),prefix + missg + "`damp`. " + msg);
+assert(params.damp> 0 && params.damp <=1 ,prefix + invld + "`damp`. " + msg);
+
+%% FlexSIM parameters
+% -- Patch-based processing
+prefix="[Patch-based processing] ";
+% szPatch
+msg="Should be a non-negative integer.";
+assert(isfield(params, "szPatch"),prefix + missg + "`szPatch`. " + msg);
+assert(params.szPatch>= 0,prefix + invld + "`szPatch`. " + msg);
+if params.szPatch>0 % Check the two other parameters only if patch-based process is active (szPatch>0)
+% overlapPatch
+assert(isfield(params, "overlapPatch"),prefix + missg + "`overlapPatch`. " + msg);
+assert(params.overlapPatch>= 0,prefix + invld + "`overlapPatch`. " + msg);
+% enhanceContrast
+msg="Should be a boolean.";
+assert(isfield(params, "enhanceContrast"),prefix + missg + "`enhanceContrast`. " + msg);
+assert(params.enhanceContrast==0 || params.enhanceContrast==1, prefix + invld + "`enhanceContrast'. " + msg);  
 end
 
-% Test optical and acquisition parameters
-assert(ismember(params.StackOrder, ["ap", "pa", "paw", "apw", "wap", "wpa"]), ...
-    'Choose one of {`paz`, `pza` or `zap`} as acquisition convention (p(hase), a(ngle) and Z)')
-assert(50 < params.lamb && params.lamb < 1000, ...
-    'Acquisition wavelength [nm] expected for `params.lamb` (visible light range accepted)')
-assert(1 < params.Na && params.Na < 3, ...
-    'Numerical aperture accepted ranges from 1 to 3')
-assert(0 < params.damp && params.damp < 1, ...
-    'Damping parameter is expected in the range [0, 1]')
-assert(isfield(params, "nbOr"), ...
-    'Missing parameter `nbOr` (positive integer)')
-assert(mod(params.nbOr, 1) == 0 && params.nbOr> 0, 'Parameter `nbOr` should be a positive integer')
-assert(isfield(params, "nbPh"), ...
-    'Missing parameter `nbPh` (positive integer)')
-assert(mod(params.nbPh, 1) == 0 && params.nbPh > 0, 'Parameter `nbPh` should be a positive integer')
-
-
-% Parameters for patterns estimation
-assert(isfield(params, "SzRoiBack"),'Missing parameter `SzRoiBack` (should be either empty or an odd number)');
-assert(isempty(params.SzRoiBack) || mod(params.SzRoiBack,2)==1,'Parameter SzRoiBack should be either empty or an odd number');
-assert(isfield(params, "SzRoiPatt"),'Missing parameter `SzRoiPatt` (should be either empty or an odd number)');
-assert(isempty(params.SzRoiPatt) || mod(params.SzRoiPatt,2)==1,'Parameter SzRoiPatt should be either empty or an odd number');
-
-assert(isfield(params, "nMinima"),'Missing parameter `nMinima` (positive integer)')
-assert(numel(params.limits) == 2, ...
-    '`params.limits` should have a lower and upper bound for the FT masking, thus should have 2 elements')
-assert(all(params.limits < 2), ['The limits for the wave vector search (params.limits) should be a ' ...
-    'multiple of the cutoff frequency. The range accepted is [0, 2]'])
-assert(numel(params.ringMaskLim) == 2, ...
-    '`params.ringMaskLim` should have a lower and upper bound for the FT masking, thus should have 2 elements')
-assert(all(params.ringMaskLim < 2), ['The limits for the WF and image masking (params.ringMaskLim) should ' ...
-    'be a multiple of the cutoff frequency. The range accepted is [0, 2]'])
-assert(max(params.limits(1)-0.5,0)>=params.ringMaskLim(1), ['The WF masking `ringMaskLim(1)'' is too large compared to the search region given in `limits''. `ringMaskLim(1)''' ...
-    'should be set to ',num2str(max(params.limits(1)-0.5,0))])
-assert(mod(params.nMinima, 1) == 0 && params.nMinima > 0, 'Parameter `nMinima` should be a positive integer')
+% -- Parameters for patterns estimation
+prefix="[Patterns Estimation] ";
+% SzRoiPatt
+msg="Should be either empty or an odd number.";
+assert(isfield(params, "SzRoiPatt"),prefix + missg + "`SzRoiPatt`. " + msg);
+assert(isempty(params.SzRoiPatt) || mod(params.SzRoiPatt,2)==1,prefix + invld + "`SzRoiPatt`. " + msg);
+% limits
+msg="Should be a vector of length 2 with values within [0,2].";
+assert(isfield(params, "limits"),prefix + missg + "`limits`. " + msg);
+assert(numel(params.limits) == 2,prefix + invld + "`limits`. " + msg);
+assert(all(params.limits<= 2) && all(params.limits>=0) ,prefix + invld + "`limits`. " + msg);
+% ringMaskLim
+assert(isfield(params, "ringMaskLim"),prefix + missg + "`ringMaskLim`. " + msg);
+assert(numel(params.ringMaskLim) == 2,prefix + invld + "`ringMaskLim`. " + msg);
+assert(all(params.ringMaskLim<= 2) && all(params.ringMaskLim>=0) ,prefix + invld + "`ringMaskLim`. " + msg);
+assert(max(params.limits(1)-0.5,0)>=params.ringMaskLim(1), prefix +"The WF masking `ringMaskLim(1)` is too large compared to the search region given in `limits`."+...
+    "`ringMaskLim(1)` should not exceed " +num2str(max(params.limits(1)-0.5,0)));
+% nMinima, FilterRefinement, nPoints
+msg="Should be a positive integer.";
+assert(isfield(params, "nMinima"),prefix + missg + "`nMinima`. " + msg);
+assert(mod(params.nMinima, 1) == 0 && params.nMinima> 0,prefix + invld + "`nMinima`. " + msg);
+assert(isfield(params, "FilterRefinement"),prefix + missg + "`FilterRefinement`. " + msg);
+assert(mod(params.FilterRefinement, 1) == 0 && params.FilterRefinement> 0,prefix + invld + "`FilterRefinement`. " + msg);
+assert(isfield(params, "nPoints"),prefix + missg + "`nPoints`. " + msg);
+assert(mod(params.nPoints, 1) == 0 && params.nPoints> 0,prefix + invld + "`nPoints`. " + msg);
 if params.nPoints < 50
-    warning('The grid for the J landscape evaluation is too rough. Results might be inaccurate')
+    warning(prefix + "Parameter nPoints is low. Results might be inaccurate");
 elseif params.nPoints > 300
-    warning('The grid for the J landscape evaluation is too fine. Computation might be slow')
+    warning(prefix + "Parameter nPoints is large. Computation might be slow");
 end
-assert(isfield(params, "FilterRefinement"), ...
-    'Missing parameter `FilterRefinement` (positive integer)')
-assert(mod(params.FilterRefinement, 1) == 0 && params.FilterRefinement> 0, 'Parameter `nMinima` should be a positive integer')
-assert(mod(params.method, 1) == 0 && params.method > -1 && params.method < 3, ...
-    'Parameter `method` should be in {0, 1, 2}')
+% method
+msg="Should be an integer within {0, 1, 2}.";
+assert(isfield(params, "method"),prefix + missg + "`method`. " + msg);
+assert(mod(params.method, 1) == 0 && params.method > -1 && params.method < 3,prefix + invld + "`method`. " + msg);
+if params.nbPh == 1              % Other check related to the choice of method
+    assert(params.method == 0, "When providing only one phase, set parameter `method` should be set to 0.");
+end
+% estiPattLowFreq
+msg="Should be a boolean.";
+assert(isfield(params, "estiPattLowFreq"),prefix + missg + "`estiPattLowFreq`. " + msg);
+assert(params.estiPattLowFreq==0 || params.estiPattLowFreq==1, prefix + invld + "`estiPattLowFreq'. " + msg);  
+
+                                  
+% -- Parameters for image Reconstruction 
+prefix="[Image Reconstruction] ";
+% mu, stepTol
+msg="Should be a positive real.";
+assert(isfield(params, "mu"),prefix + missg + "`mu`. " + msg);
+assert(params.mu> 0,prefix + invld + "`mu`. " + msg);
+assert(isfield(params, "stepTol"),prefix + missg + "`stepTol`. " + msg);
+assert( params.stepTol > 0,prefix + invld + "`stepTol`. " + msg);
+% padSZ, maxIt
+msg="Should be a non-negative integer.";
+assert(isfield(params, "padSz"),prefix + missg + "`padSz`. " + msg);
+assert(params.padSz>= 0,prefix + invld + "`padSz`. " + msg);
+assert(isfield(params, "maxIt"),prefix + missg + "`maxIt`. " + msg);
+assert(params.maxIt>= 0,prefix + invld + "`maxIt`. " + msg);
+% sepOrr
+msg="Should be a boolean.";
+assert(isfield(params, "sepOrr"),prefix + missg + "`sepOrr`. " + msg);
+assert(params.sepOrr==0 || params.sepOrr==1, prefix + invld + "`sepOrr'. " + msg);  
+% regType
+msg="Should be an integer within {1, 2, 3}.";
+assert(isfield(params, "regType"),prefix + missg + "`regType`. " + msg);
+assert(mod(params.regType, 1) == 0 && params.regType > 0 && params.regType < 4,prefix + invld + "`regType`. " + msg);
+
+
+
+
+
+
+
+
+
+
+
 
 
 

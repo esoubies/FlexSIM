@@ -21,9 +21,9 @@ function res = FlexSIM(params)
 %--------------------------------------------------------------------------
 
 time0=tic;
-%% Data loading + routinary checks
+%% Routinary checks + Data loading 
+CheckParams(params);                       % Check conformity of parameters
 y = double(loadtiff(params.DataPath));       % Read data 
-CheckParams(params);                         % Check conformity of parameters
 
 %% Pre-processing
 % - Remove background
