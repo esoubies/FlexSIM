@@ -67,10 +67,13 @@ end
 norm_patches=[];
 if params.szPatch==0
     patches={y};
+    patches_wf={wf};
 elseif params.szPatch>0 && params.enhanceContrast
     patches=Image2Patches(y,params.szPatch,params.overlapPatch); 
+    patches_wf=Image2Patches(wf,params.szPatch,params.overlapPatch); 
 else
     [patches,norm_patches]=Image2Patches(y,params.szPatch,params.overlapPatch);
+    patches_wf=Image2Patches(wf,params.szPatch,params.overlapPatch); 
 end
 
 % -- Initializations
@@ -88,7 +91,7 @@ for id_patch = 1:nbPatches
     % -- Pattern Estimation
     disp(['<strong>=== ',prefix_disp,' Patterns parameter estimation START</strong> ...']);
     
-    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, wf);
+    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, patches_wf{id_patch});
 
     if params.estiPattLowFreq
         Lf{id_patch} = EstimateLowFreqPatterns(patches{id_patch},5);
@@ -139,9 +142,9 @@ if params.szPatch>0
         prefix_disp=['[Correction Patch #',num2str(ii),']'];
         sz_p=size(patches{ii});    
         disp(['<strong>--- ',prefix_disp,' Patterns parameter correction  START</strong> ...']);
-        [k(:,:,ii), phase, a] = EstimatePatterns(params, patches{ii},kmed, wf);
+        [k(:,:,ii), phase, a] = EstimatePatterns(params,PosRoiPatt, patches{ii},kmed, patches_wf{ii});
         a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-        patterns{ii} = GenerateReconstructionPatterns(params,k(:,:,ii),phase,a,sz_p,Lf{ii});
+        patterns{ii} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,ii),phase,a,sz_p,Lf{ii});
         disp(['<strong>--- ',prefix_disp,' New reconstruction START</strong> ...']);
         rec{ii} = Reconstruct(patches{ii},patterns{ii},params);
         % -- Displays

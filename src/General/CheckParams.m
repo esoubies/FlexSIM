@@ -1,6 +1,6 @@
 function CheckParams(params)
 %--------------------------------------------------------------------------
-% Function res = Tests(params)
+% Function res = CheckParams(params)
 %
 % Tests is the first function called by FlexSIM, and does basic searches,
 % variable intialization, etc. for the proper functioning of FlexSIM

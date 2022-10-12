@@ -1,6 +1,6 @@
 function patt = GenerateReconstructionPatterns(params,PosRoiPatt,k,phase,a,sz,Lf)
 %--------------------------------------------------------------------------
-% function patt = GenerateReconstructionPatterns(params,k,phase,a,sz,Lf)
+% function patt = GenerateReconstructionPatterns(params,PosRoiPatt,k,phase,a,sz,Lf)
 %
 % Sample a 2D sinusoidal pattern
 %    w(x) = Lf(x) + a cos(<k,x> + phase)

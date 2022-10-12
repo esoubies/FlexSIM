@@ -18,9 +18,10 @@ function Lf = EstimateLowFreqPatterns(y,filt_sz)
 %--------------------------------------------------------------------------
 
 sz=size(y);
-h = fspecial('gaussian',min(min(sz(1:2)),128),filt_sz);
+h = fspecial('gaussian',min(min(sz(1:2)),6*filt_sz),filt_sz);
 % y_filt = imfilter(y./mean(y,3),h,'symmetric');
 y_filt = imfilter(y,h,'symmetric')./imfilter(mean(y,3),h,'symmetric');
+ 
 Lf=zeros(size(y_filt(:,:,1))*2);
 for kk=1:size(y_filt,3)
     Lf(:,:,kk)=imresize(y_filt(:,:,kk),size(y_filt(:,:,kk))*2);
