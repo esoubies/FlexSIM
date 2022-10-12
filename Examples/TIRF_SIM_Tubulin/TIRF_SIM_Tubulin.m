@@ -10,7 +10,7 @@ clear; close all; clc;
 %% General parameters
 % -- Path and files
 params.DataPath = fullfile(pwd,'TIRF_SIM_Tubulin.tif');   % Path to the SIM stack 
-params.pathToFlexSIM = '../';                             % Path to the root of GitHub FlexSIM repo
+params.pathToFlexSIM = '../../';                             % Path to the root of GitHub FlexSIM repo
 if ~exist(params.DataPath, 'file')
     websave(params.DataPath, 'https://github.com/fairSIM/test-datasets/releases/download/TIRF-SIM-Georgia/TIRF_Tubulin_525nm.tif');
 end

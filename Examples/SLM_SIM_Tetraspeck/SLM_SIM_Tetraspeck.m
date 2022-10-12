@@ -10,7 +10,7 @@ clear; close all; clc;
 %% General parameters
 % -- Path and files
 params.DataPath = fullfile(pwd,'SLM_SIM_Tetraspeck.tif');    % Path to the SIM stack
-params.pathToFlexSIM = '../';                                % Path to the root of GitHub FlexSIM repo
+params.pathToFlexSIM = '../../';                                % Path to the root of GitHub FlexSIM repo
 if ~exist(params.DataPath, 'file')
     websave(params.DataPath, 'https://github.com/fairSIM/test-datasets/releases/download/SLM-SIM-Bielefeld/SLM-SIM_Tetraspeck200_680nm.tif');
 end
