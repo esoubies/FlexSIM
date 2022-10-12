@@ -84,10 +84,6 @@ if params.szPatch>0 % Check the two other parameters only if patch-based process
 % overlapPatch
 assert(isfield(params, "overlapPatch"),prefix + missg + "`overlapPatch`. " + msg);
 assert(params.overlapPatch>= 0,prefix + invld + "`overlapPatch`. " + msg);
-% enhanceContrast
-msg="Should be a boolean.";
-assert(isfield(params, "enhanceContrast"),prefix + missg + "`enhanceContrast`. " + msg);
-assert(params.enhanceContrast==0 || params.enhanceContrast==1, prefix + invld + "`enhanceContrast'. " + msg);  
 end
 
 % -- Parameters for patterns estimation

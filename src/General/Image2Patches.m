@@ -1,6 +1,6 @@
-function [patches,norm_patches] = Image2Patches(im,sz_patch,overlap)
+function patches = Image2Patches(im,sz_patch,overlap)
 %--------------------------------------------------------------------------
-% function [patches,norm_patches] = Image2Patches(im,sz_patch,overlap)
+% function patches = Image2Patches(im,sz_patch,overlap)
 %
 % Extract 2D patches from an image
 %
@@ -24,7 +24,6 @@ step=sz_patch-overlap;
 
 % -- Extract patches
 patches=cell(I,J);
-norm_patches=zeros(I,J);
 for i=1:I
     for j=1:J
         idx_b=1 + (i-1)*step; 
@@ -32,7 +31,6 @@ for i=1:I
         jdx_b=1 + (j-1)*step; 
         jdx_e=min(sz_patch + (j-1)*step,sz(2));
         patches{i,j}=im(idx_b:idx_e,jdx_b:jdx_e,:);
-        norm_patches(i,j)=norm(patches{i,j}(:));
     end
 end
 

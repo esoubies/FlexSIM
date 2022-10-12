@@ -68,11 +68,8 @@ norm_patches=[];
 if params.szPatch==0
     patches={y};
     patches_wf={wf};
-elseif params.szPatch>0 && params.enhanceContrast
+elseif params.szPatch>0
     patches=Image2Patches(y,params.szPatch,params.overlapPatch); 
-    patches_wf=Image2Patches(wf,params.szPatch,params.overlapPatch); 
-else
-    [patches,norm_patches]=Image2Patches(y,params.szPatch,params.overlapPatch);
     patches_wf=Image2Patches(wf,params.szPatch,params.overlapPatch); 
 end
 
@@ -121,13 +118,13 @@ for id_patch = 1:nbPatches
     
     % -- Displays
     if params.displ > 0
-        fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2,norm_patches),wfUp,fig_rec);
+        fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wfUp,fig_rec);
     end
     
     % - Save reconstruction / patterns 
     if params.sav
         prefix=params.DataPath(1:end-4);
-        saveastiff(single(Patches2Image(rec,params.overlapPatch*2,norm_patches)),strcat(prefix,'_Rec.tif'));
+        saveastiff(single(Patches2Image(rec,params.overlapPatch*2)),strcat(prefix,'_Rec.tif'));
         saveastiff(single(Patches2Image(patterns,params.overlapPatch*2)),strcat(prefix,'_Patt.tif'));
     end
 end
@@ -151,7 +148,7 @@ if params.szPatch>0
         if params.displ >0
             fig_patt_par=DisplayPattParams(patches{ii},params,k(:,:,ii),phase,a,fig_patt_par,ii);
             fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
-            fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2,norm_patches),wfUp,fig_rec);
+            fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wfUp,fig_rec);
         end
     end
 end
@@ -160,14 +157,14 @@ end
 % - Save reconstruction / patterns / reconst. parameters / pattern parameters
 if params.sav
     prefix=params.DataPath(1:end-4);
-    saveastiff(single(Patches2Image(rec,params.overlapPatch*2,norm_patches)),strcat(prefix,'_Rec.tif'));
+    saveastiff(single(Patches2Image(rec,params.overlapPatch*2)),strcat(prefix,'_Rec.tif'));
     saveastiff(single(Patches2Image(patterns,params.overlapPatch*2)),strcat(prefix,'_Patt.tif'));
     save(strcat(prefix,'_Params'),'params');
 end
 
 % - Fill output variable
 res.k = k; res.phase = phase; res.a = a; 
-res.rec=Patches2Image(rec,params.overlapPatch*2,norm_patches);
+res.rec=Patches2Image(rec,params.overlapPatch*2);
 res.patt=Patches2Image(patterns,params.overlapPatch*2);
 
 disp(['<strong>=== FlexSIM END. Elapsed time (s): ',num2str(toc(time0)),' </strong>']);

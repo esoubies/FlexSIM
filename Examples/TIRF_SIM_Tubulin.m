@@ -35,7 +35,6 @@ params.damp = 0.3;     % damping parameter (in [0,1], 1= no damping) to attenuat
 % -- Patch-based processing
 params.szPatch=0;                 % If >0, FlexSIM will perform pattern estimation and reconstruction by patches of size 'szPatch'
 params.overlapPatch=0;            % Overlap between patches if szPatch>0
-params.enhanceContrast=0;         % When 0 (and patch-based) rescale the reconstruction to widefield intensity variations. When 1, keep enhanced contrast due to patch-based rec
 
 % -- Parameters for patterns estimation
 params.SzRoiPatt = 129;           % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)

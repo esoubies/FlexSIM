@@ -1,12 +1,11 @@
-function im = Patches2Image(patches,overlap,wght)
+function im = Patches2Image(patches,overlap)
 %--------------------------------------------------------------------------
-% function im = Patches2Image(patches,overlap,wght)
+% function im = Patches2Image(patches,overlap)
 %
 % Reconstruct image from 2D patches
 %
 % Inputs: patches  -> cell array of patches (see function Image2Patches)
 %         overlap  -> overlap [in px] between patches
-%         wght     -> weights to be applied to each patch (array of same  size of the cell patches)
 %
 % Output: im       -> reconstructed image
 %
@@ -15,10 +14,6 @@ function im = Patches2Image(patches,overlap,wght)
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
-
-% -- Default params & Tests
-if nargin <3 || isempty(wght), wght=ones(size(patches)); end
-assert(isequal(size(patches),size(wght)),'patches and wght parameters must have the same size');
 
 % -- Pre-computations
 [I,J]=size(patches);
@@ -43,12 +38,12 @@ for i=1:I
             jdx_b=1 + (j-1)*step;
             jdx_e=min(sz_patch + (j-1)*step,sz_2);
             if isequal(size(patches{i,j}),size(Apo))
-                im(idx_b:idx_e,jdx_b:jdx_e,:) = im(idx_b:idx_e,jdx_b:jdx_e,:) + patches{i,j}.*Apo*wght(i,j);
+                im(idx_b:idx_e,jdx_b:jdx_e,:) = im(idx_b:idx_e,jdx_b:jdx_e,:) + patches{i,j}.*Apo;
                 ww(idx_b:idx_e,jdx_b:jdx_e)=ww(idx_b:idx_e,jdx_b:jdx_e)+Apo;
             else
                 [X,Y]=meshgrid(linspace(-1,1,size(patches{i,j},2)),linspace(-1,1,size(patches{i,j},1)));
                 Apo_bis=1./(1+exp(30*(abs(X)-0.8)))./(1+exp(30*(abs(Y)-0.8)));
-                im(idx_b:idx_e,jdx_b:jdx_e,:) = im(idx_b:idx_e,jdx_b:jdx_e,:) + patches{i,j}.*Apo_bis*wght(i,j);
+                im(idx_b:idx_e,jdx_b:jdx_e,:) = im(idx_b:idx_e,jdx_b:jdx_e,:) + patches{i,j}.*Apo_bis;
                 ww(idx_b:idx_e,jdx_b:jdx_e)=ww(idx_b:idx_e,jdx_b:jdx_e)+Apo_bis;
             end
         end
