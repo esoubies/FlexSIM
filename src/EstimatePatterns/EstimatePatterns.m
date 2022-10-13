@@ -1,6 +1,6 @@
-function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf)
+function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stack)
 %--------------------------------------------------------------------------
-% Function [k_final, phase, a] = EstimatePatterns(params,y,k_init, wf)
+% Function [k_final, phase, a] = EstimatePatterns(params,y,k_init, wf_stack)
 %
 % Estimate the parameters of 2D sinusoidal patterns of the form 
 %    w(x) = 1 + a cos(<k,x> + phase),
@@ -48,11 +48,11 @@ function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf)
 % Crop to the ROI, keeping the original size before
 if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)   % Detect ROI and Crop to ROI
     y = y(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
-    wf = wf(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
+    wf_stack = wf_stack(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
 end
 sz = size(y);                                      % Calculate size of ROI
 y = (y - min(y(:))) / (max(y(:)) - min(y(:)));     % Normalize stack images
-wf= (wf-min(wf(:))) / (max(wf(:)) - min(wf(:)));
+wf_stack= (wf_stack-min(wf_stack(:))) / (max(wf_stack(:)) - min(wf_stack(:)));
 
 if ~k_init
     compute_k_init=true;
@@ -65,12 +65,6 @@ imgIdxs = 1:params.nbPh*params.nbOr;    % Select the indexes to use (through img
 if params.method                        % according to the selected phase,z angle convention
     imgIdxs = reshape(imgIdxs, [params.nbPh, params.nbOr]);  
 end 
-if params.method > 0                  % If there are assumptions on multiple...
-    params.nbImgs = params.nbPh;      % images, we will use all the phases
-else     
-    imgIdxs = imgIdxs(1,:);           % Else we will only use the first... 
-    params.nbImgs = 1;                % image of each orientation
-end
 
 % Common quantities of interest
 [grids.I, grids.J] = meshgrid(0:sz(2)-1,0:sz(1)-1);           % Numerical mesh - multipurpose
@@ -80,14 +74,12 @@ OTF = GenerateOTF(params.Na, params.lamb, sz, params.res, 1); % Computation of t
 %% Loop over batch of images (1 batch = 1 orr + x phases)
 % TODO: add back the displays (need to think how to manage the patch-based case)
 OrientCount = 1; 
-for idx = imgIdxs 
+for idx = imgIdxs
     disp([' Batch of images: ', num2str(idx')]);      % Display info to the user
     disp('   - Remove WF and mask...');
-    if ~ismember('w', char(params.StackOrder)) && params.method >= 1
-        wf=mean(y(:,:,idx),3);     % If widefield is not provided and method =1 or 2, recompute a wf image per orientation                        
-    end
+    wf = wf_stack(:,:,min(size(wf_stack,3),3));
     [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
-        
+
     %     if params.displ > 1 && OrientCount == 1           % Debug mode - display conditioned images
     if params.displ > 1                                 % Debug mode - display conditioned images
         f = figure; 

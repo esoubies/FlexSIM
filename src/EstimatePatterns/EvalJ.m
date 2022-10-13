@@ -25,7 +25,7 @@ function [c, g] = EvalJ(ktest, wf, G, params, grids, filt, att_filt, grad)
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
-nb_imgs = params.nbImgs;
+nb_imgs = size(G,3)  ;
 
 if all(size(att_filt) == size(wf))      % If a filter was given, filter data             
     G=real(ifft2(fft2(G).*att_filt));

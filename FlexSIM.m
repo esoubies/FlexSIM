@@ -41,9 +41,8 @@ else
 end
 
 % - Reorder stack with FlexSIM conventions
-[y, wf] = OrderY(y, params);             % Reorder and extract data if necessary
-if isscalar(wf), wf=mean(y,3); end       % If widefield not provide, compute it by averraging
-wfUp=imresize(wf,size(wf)*2);            % For displays
+[y, wf] = OrderY(y, params);                                    % Reorder and extract data if necessary
+wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
  
 % -- Displays
 if params.displ > 0
@@ -64,7 +63,6 @@ end
 
 %% FlexSIM pipeline
 % -- Extract patches (if required)
-norm_patches=[];
 if params.szPatch==0
     patches={y};
     patches_wf={wf};
@@ -91,7 +89,7 @@ for id_patch = 1:nbPatches
     [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, patches_wf{id_patch});
 
     if params.estiPattLowFreq
-        Lf{id_patch} = EstimateLowFreqPatterns(patches{id_patch},5);
+        Lf{id_patch} = EstimateLowFreqPatterns(params,patches{id_patch},patches_wf{id_patch},5);
     else
         Lf{id_patch}=1;
     end
