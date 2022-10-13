@@ -13,10 +13,10 @@ function [ph,a]=GetPhaseAndAmp(k,wf,G,grids,OTF,sz,params)
 %--------------------------------------------------------------------------
 
 % -- Build matrix A
-[att_filt, filt] = BuildFilter(k, sz, OTF, params, grids);
-A=BuildA(k, wf, filt, params, grids); AA = A'*A;
+[OTFshiftCrop, OTFCrop] = BuildFilter(k, sz, OTF, params, grids);
+A=BuildA(k, wf, OTFCrop, params, grids); AA = A'*A;
 % -- Build second term b
-G_filt=real(ifft2(fft2(G).*att_filt));
+G_filt=real(ifft2(fft2(G).*OTFshiftCrop));
 % -- Solve linear system
 if params.method == 2
     s = AA\A'*G_filt(:);

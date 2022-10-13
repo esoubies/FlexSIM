@@ -33,6 +33,6 @@ end
 
 % Generate a normalized OTF
 fc=2*Na/lamb*res;        % cut-off frequency
-OTF=fftshift(1/pi*(2*acos(abs(rho)/fc)-sin(2*acos(abs(rho)/fc))).*(rho<fc).*damp.^(abs(rho)/fc));
+OTF=ifftshift(1/pi*(2*acos(abs(rho)/fc)-sin(2*acos(abs(rho)/fc))).*(rho<fc).*damp.^(abs(rho)/fc));
 OTF=double(OTF)/max(max(OTF));    
 end
