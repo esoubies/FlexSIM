@@ -26,10 +26,12 @@ assert(isfield(params, "DataPath"),prefix + missg + "`pathToFlexSIM`. ");
 
 % -- Display and saving
 prefix="[Display and saving] ";
-% dipsl and sav
+% dipsl
+msg="Should be an integer within {0, 1, 2}.";
+assert(isfield(params, "displ"),prefix + missg + "`method`. " + msg);
+assert(mod(params.displ, 1) == 0 && params.displ > -1 && params.displ < 3,prefix + invld + "`method`. " + msg);
+% sav
 msg="Should be a boolean.";
-assert(isfield(params, "displ"),prefix + missg + "`displ`. " + msg);
-assert(params.displ==0 || params.displ==1, prefix + invld + "`displ'. " + msg);  
 assert(isfield(params, "sav"),prefix + missg + "`sav`. " + msg);
 assert(params.sav==0 || params.sav==1, prefix + invld + "`sav'. " + msg);  
 
