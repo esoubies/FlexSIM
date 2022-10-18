@@ -29,7 +29,7 @@ Lf=zeros(sz(1:2)*2);
 for ii=1:params.nbOr
     for jj=1:params.nbPh
         id=(ii-1)*params.nbPh+jj;
-        y_filt = imfilter(y(:,:,id),h,'symmetric')./imfilter(wf_stack(:,:,min(ii,size(wf_stack,3))),h,'symmetric');
+        y_filt = imfilter(y(:,:,id),h,'symmetric')./max(imfilter(wf_stack(:,:,min(ii,size(wf_stack,3))),h,'symmetric'),eps);
         Lf(:,:,id)=imresize(y_filt,sz(1:2)*2);
     end
 end
