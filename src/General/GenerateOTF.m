@@ -21,14 +21,18 @@ function OTF = GenerateOTF(Na,lamb,sz,res,damp)
 if mod(sz(1),2)==0
     ll_v=linspace(-0.5,0,sz(1)/2+1);
     lr_v=linspace(0,0.5,sz(1)/2);
+    lv=[ll_v,lr_v(2:end)];
+else
+    lv=linspace(-0.5,0.5,sz(1));
+end
+if mod(sz(2),2)==0
     ll_h=linspace(-0.5,0,sz(2)/2+1);
     lr_h=linspace(0,0.5,sz(2)/2);
-    [X,Y]=meshgrid([ll_h,lr_h(2:end)],[ll_v,lr_v(2:end)]);
+    lh=[ll_h,lr_h(2:end)];
 else
-    ll_v=linspace(-0.5,0.5,sz(1));
-    ll_h=linspace(-0.5,0.5,sz(2));
-    [X,Y]=meshgrid(ll_h,ll_v);
+    lh=linspace(-0.5,0.5,sz(2));
 end
+[X,Y]=meshgrid(lh,lv);
 [~,rho]=cart2pol(X,Y);
 
 % Generate a normalized OTF
