@@ -12,6 +12,15 @@ addpath(genpath(pwd))               % Add source files to path
 global syst_type                    % Keep track of system type
 if ispc
     syst_type = 'W'; 
+    MinGW = 'MATLAB Support for MinGW-w64 C/C++ Compiler'; 
+    addOns = matlab.addons.installedAddons;
+    if ~any(ismember(addOns.Name, MinGW))   % Check the existence of the necessary compiler
+        error('MinGW-w64 C compiler (required for reconstruction) not found. Install MAtlab MinGW add-on by downloading the .mlpkginstall file from https://ch.mathworks.com/matlabcentral/fileexchange/52848-matlab-support-for-mingw-w64-c-c-compiler and dragging it to the commnand line.')
+%         disp(['MinGW-w64 C compiler (required for reconstruction) not found. Installing MAtlab add-on from https://www.mingw-w64.org/'])
+%         MinGWAddon = 'MinGW.mlpkginstall'; 
+%         websave(MinGWAddon, 'https://ch.mathworks.com/login?uri=https%3A%2F%2Fch.mathworks.com%2Fmatlabcentral%2Ffileexchange%2F52848-matlab-support-for-mingw-w64-c-c-compiler&form_type=community')
+%         matlab.addons.install(MinGWAddon, true)
+    end
 elseif ismac
     syst_type = 'M'; 
 else
@@ -21,29 +30,9 @@ end
 if exist('GlobalBioIm', 'dir')             % Check existance for GlobalBioIm in path
     GBIPath = what('GlobalBioIm').path;
     addpath(genpath(GBIPath))
-%     if exist('LinOp', 'dir')               % Check existance of specific functions to be used
-%         if ~exist('LinOpConv', 'file')     % Check existance            
-%             addpath(genpath('LinOp'))
-%             savepath
-%         end
-%     else
-%         addpath(genpath('GlobalBioIm'))
-%         savepath
-%     end    
 else
-    % Search on the whole computer?
-%     disp('GlobalBioIm not found in PATH. Searching on computer ...');
-%     switch syst_type
-%         case 'W'
-%             system()
-%         case 'M'
-%         case 'L'     
-%     path_list = dir(fullfile('C:','**','GlobalBioIm'));  
-%     if numel(path_list) == 0                             % If it is not found on the whole computer
     disp('GlobalBioIm not found in computer. Dowloading in current directory...');
     system('git clone https://github.com/Biomedical-Imaging-Group/GlobalBioIm') % Download GlobalBioIm in the same dir as  FlexSIM
     run('GlobalBioIm/setGlobalBioImPath.m')
-%     else
-%         run('.../setGlobalBioImPath.m')
     savepath
 end
