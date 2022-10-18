@@ -9,6 +9,7 @@
 *.asv
 *.mat
 GlobalBioIm/*
+GlobalBioIm
 
 # Python distribution / packaging
 .Python
