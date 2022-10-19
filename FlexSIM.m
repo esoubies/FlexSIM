@@ -24,18 +24,21 @@ time0=tic;
 %% Routinary checks + Data loading 
 CheckParams(params);                       % Check conformity of parameters
 y = double(loadtiff(params.DataPath));       % Read data 
+if params.GPU
+    y = gpuArray(y);    
+end
 
 %% Pre-processing
 % - Remove background
 if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)  
-    PosRoiBack=DetectPatch(sum(y,3),params.SzRoiBack,-1);    % Detect the ROI for background
-    y = RemoveBackground(y,PosRoiBack,params.SzRoiBack);     % Remove constant background and normalize in [0,1]
+    PosRoiBack=DetectPatch(sum(gather(y),3),params.SzRoiBack,-1);  % Detect the ROI for background
+    y = RemoveBackground(y,PosRoiBack,params.SzRoiBack);           % Remove constant background and normalize in [0,1]
 else
     PosRoiBack=[1,1];
 end
 % - Detect ROI for pattern estimation
 if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)  
-    PosRoiPatt=DetectPatch(sum(y,3),params.SzRoiPatt,1);
+    PosRoiPatt=DetectPatch(sum(gather(y),3),params.SzRoiPatt,1);
 else
     PosRoiPatt=[1,1];
 end
@@ -47,7 +50,7 @@ wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
 % -- Displays
 if params.displ > 0
     fig_y=-1;fig_patt=-1;fig_patt_par=-1;fig_rec=-1;  % Initialize figures
-    fig_y=DisplayStack(y,'SIM Raw data',fig_y);
+    fig_y=DisplayStack(gather(y),'SIM Raw data',fig_y);
     leg={};
     if ~isempty(params.SzRoiBack)
         rectangle('Position',[PosRoiBack(2) PosRoiBack(1) params.SzRoiBack params.SzRoiBack],'EdgeColor','r');
@@ -85,9 +88,8 @@ for id_patch = 1:nbPatches
     
     % -- Pattern Estimation
     disp(['<strong>=== ',prefix_disp,' Patterns parameter estimation START</strong> ...']);
-    
-    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, patches_wf{id_patch});
-
+        
+    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, patches_wf{id_patch});    
     if params.estiPattLowFreq
         Lf{id_patch} = EstimateLowFreqPatterns(params,patches{id_patch},patches_wf{id_patch},5);
     else

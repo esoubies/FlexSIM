@@ -1,6 +1,6 @@
-function A = BuildA(ktest, wf, filt, params, results)
+function A = BuildA(ktest, wf, filt, params, grids)
 %--------------------------------------------------------------------------
-% function A = BuildA(ktest, wf, filt, params, results)
+% function A = BuildA(ktest, wf, filt, params, grids)
 %
 % Builds the system A = [a1(:),a2(:)], where 
 % a1 =   wf.* cos(2*(k_1*X+k_2*Y));            
@@ -15,7 +15,7 @@ function A = BuildA(ktest, wf, filt, params, results)
 %           filt    -> The filter (in FT domain) to apply to A. If set to 0,
 %                      no filter is applied%           
 %           params  -> Structure containing the input parameters of the system
-%           results -> Structure that stores intermediate and final results
+%           grids   -> Structure that stores all necessary grids
 %
 % Outputs : A       -> Array of size [N, 2] (N being the # of pixels) that
 %                      contains the sin and cos components of the pattern
@@ -26,7 +26,7 @@ function A = BuildA(ktest, wf, filt, params, results)
 % (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 % Calculate necessary sins and cos first we get the grids corresponding to the test wavevector
-k1x = 2*ktest(1)*results.X; k2y = 2*ktest(2)*results.Y;
+k1x = 2*ktest(1)*grids.X; k2y = 2*ktest(2)*grids.Y;
 % Now sins and cos of each (the ones correspondong to the X grid multiplied by the wf)
 ck1x_wf = wf.*cos(k1x); ck2y = cos(k2y); sk1x_wf = wf.*sin(k1x); sk2y = sin(k2y);      
 % Elementwise multiplications of the combinations needed for a1 & a2
@@ -47,8 +47,8 @@ end
 % If there is the assumption of equally spaced phases, build according system
 if params.method == 2    
     % Preallocate A for performance
-    A = zeros([params.nbPh*numel(results.X(:)), 2]); 
-    A(1:numel(results.X(:)), :) = [a1(:),a2(:)];
+    A = zeros([params.nbPh*numel(grids.X(:)), 2]); 
+    A(1:numel(grids.X(:)), :) = [a1(:),a2(:)];
     for i = 2:params.nbPh
         deltaph = (i - 1)*pi/params.nbPh;         % Calculate deltaPhi
         c3 = cos(2*deltaph); s3 = sin(2*deltaph); % Calculate additional sines and cos
@@ -60,7 +60,7 @@ if params.method == 2
             a1 =    c1c2*c3 - s1s2*c3 - s1c2*s3 - c1s2*s3;
             a2 = - (s1c2*c3 + c1s2*c3 + c1c2*s3 - s1s2*s3); 
         end
-        A((i-1)*numel(results.X(:))+1:i*numel(results.X(:)),:) = [a1(:),a2(:)];
+        A((i-1)*numel(grids.X(:))+1:i*numel(grids.X(:)),:) = [a1(:),a2(:)];
     end
 else
         A = [a1(:),a2(:)];                          % Simply declare A

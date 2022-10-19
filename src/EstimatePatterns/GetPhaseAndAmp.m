@@ -21,7 +21,7 @@ G_filt=real(ifft2(fft2(G).*OTFshiftCrop));
 if params.method == 2
     s = AA\A'*G_filt(:);
 elseif params.method == 1
-    s = zeros(2, 3);
+    s = zeros(2, params.nbPh);
     for phNb = 1:params.nbPh
         G_filt_tmp= G_filt(:,:,phNb);
         s(:,phNb) = AA\A'*G_filt_tmp(:);

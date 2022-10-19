@@ -70,6 +70,13 @@ end
 [grids.I, grids.J] = meshgrid(0:sz(2)-1,0:sz(1)-1);           % Numerical mesh - multipurpose
 grids.X = grids.I*params.res; grids.Y=grids.J*params.res;     % Scaled (by resolution) mesh 
 OTF = GenerateOTF(params.Na, params.lamb, sz, params.res, 1); % Computation of the OTF
+if params.GPU
+    OTF = gpuArray(OTF); 
+    grids.I = gpuArray(grids.I);
+    grids.J = gpuArray(grids.J);
+    grids.X = gpuArray(grids.X);
+    grids.Y = gpuArray(grids.Y); 
+end
 
 %% Loop over batch of images (1 batch = 1 orr + x phases)
 % TODO: add back the displays (need to think how to manage the patch-based case)

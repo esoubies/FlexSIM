@@ -32,6 +32,9 @@ else
 end
 % -- Generate OTF/PSF
 otf = GenerateOTF(params.Na,params.lamb,min([256,256],sz(1:2)),params.res/2,params.damp);
+if params.GPU
+    otf = gpuArray(otf);
+end
 psf = fftshift(real(ifft2(otf)));
 % -- Normalization
 maxy=max(y(:));y=y/maxy;

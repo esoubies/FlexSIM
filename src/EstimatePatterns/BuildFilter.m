@@ -33,7 +33,7 @@ I = grids.I+1; J = grids.J+1;
 MaskedOTF=MaskFT(fftshift(OTF), FCut, params.ringMaskLim);
 % Build the filter corresponding to the shifted and cropped OTF (for b)
 OTF0=double(OTF.*ifftshift((sqrt((I-kPix(1)-floor(sz(2)/2)-1).^2+(J-kPix(2)-floor(sz(1)/2)-1).^2)<rr)+(sqrt((I+kPix(1)-floor(sz(2)/2)-1).^2+(J+kPix(2)-floor(sz(1)/2)-1).^2)<rr))>0);
-OTFshiftCrop=ifftshift(imtranslate(MaskedOTF,kPix(:)')+imtranslate(MaskedOTF,-kPix(:)')).*OTF0;
+OTFshiftCrop=ifftshift(imtranslate(gather(MaskedOTF),kPix(:)')+imtranslate(gather(MaskedOTF),-kPix(:)')).*OTF0;
 % Build the filter corresponding to the cropped OTF
 OTFCrop = OTF.*double(OTFshiftCrop>0); 
 end

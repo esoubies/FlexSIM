@@ -48,6 +48,9 @@ switch string(params.StackOrder)
 end
 if wf==0 && params.nbPh > 1
     wf=zeros([sz(1:2),params.nbOr]);
+    if params.GPU
+        wf = gpuArray(wf);
+    end
     for ii=1:params.nbOr
         wf(:,:,ii)=mean(y(:,:,(ii-1)*params.nbPh+1:ii*params.nbPh),3);
     end

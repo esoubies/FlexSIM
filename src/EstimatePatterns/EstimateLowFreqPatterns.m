@@ -26,6 +26,9 @@ h = fspecial('gaussian',min(min(sz(1:2)),6*filt_sz),filt_sz);
 
 % -- Loop over orientations and phases
 Lf=zeros(sz(1:2)*2);
+if params.GPU
+    Lf = gpuArray(Lf); 
+end
 for ii=1:params.nbOr
     for jj=1:params.nbPh
         id=(ii-1)*params.nbPh+jj;

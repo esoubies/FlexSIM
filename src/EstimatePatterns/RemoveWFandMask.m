@@ -31,6 +31,9 @@ mask=double(((I-p(1)).^2+(J-p(2)).^2) < r^2);
 
 % -- Initializations
 G=zeros(sz);
+if params.GPU
+    G = gpuArray(G);
+end
 fft_wf = fftshift(fft2(wf));
 
 % -- Loop over images of the stack

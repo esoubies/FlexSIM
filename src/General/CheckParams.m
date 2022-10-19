@@ -23,6 +23,16 @@ assert(isfield(params, "DataPath"),prefix + missg + "`DataPath`. " + msg);
 assert(strcmp(params.DataPath(end-3:end),'.tif'), prefix + invld + "`DataPath'. " + msg);  
 % pathToFlexSIM
 assert(isfield(params, "DataPath"),prefix + missg + "`pathToFlexSIM`. ");
+% GPU usage
+prefix="[GPU]";
+msg="Should be a boolean";
+assert(isfield(params, "GPU"),prefix + missg + "`GPU`. " + msg);
+assert(ismember(params.GPU, [0, 1]), prefix + invld + "`GPU`. " + msg);
+if params.GPU
+    msg = "No GPU was found. Set parameter to `0`.";
+    assert(gpuDeviceCount, prefix + invld + "`GPU`. " + msg);
+end
+
 
 % -- Display and saving
 prefix="[Display and saving] ";
