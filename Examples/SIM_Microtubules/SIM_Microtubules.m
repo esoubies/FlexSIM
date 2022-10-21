@@ -20,6 +20,7 @@ end
 % -- Display and saving
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
 params.sav = 1;                         % Boolean if true save the result
+params.GPU = 0;                         % Boolean on whether to use GPU or not
 
 %% Data related parameters
 % -- Properties of the SIM data stack
