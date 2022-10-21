@@ -100,10 +100,10 @@ for idx = imgIdxs
         if numel(size(G)) > 2            
             ImgPan = uipanel('position',[0.05,0.55,0.4,0.4], 'title','SIM Images', 'Parent', f);
             ImgFTPan = uipanel('position',[0.05,0.05,0.4,0.4], 'title','SIM Images FT', 'Parent', f);
-            sliceViewer(G, "Colormap",viridis, "Parent",ImgPan);
-            sliceViewer(log10(abs(fftshift(fft2(G))+1)), "Colormap",viridis, "Parent",ImgFTPan);                                                                  
-            imshow(wf, [], 'Parent', WFPan); colormap(viridis);
-            imshow(log10(abs(fftshift(fft2(G))+1)), [], 'Parent', WFFTPan); colormap(viridis);
+            sliceViewer(gather(G), "Colormap",viridis, "Parent",ImgPan);
+            sliceViewer(gather(log10(abs(fftshift(fft2(G))+1))), "Colormap",viridis, "Parent",ImgFTPan);                                                                  
+            imshow(gather(wf), [], 'Parent', WFPan); colormap(viridis);
+            imshow(gather(log10(abs(fftshift(fft2(G))+1))), [], 'Parent', WFFTPan); colormap(viridis);
         else
             subplot(2, 2, 1); imshow(G, [], "Parent",ImgPan); colormap(viridis);
             subplot(2, 2, 3); imshow(log10(abs(fftshift(fft2(G))+1)), [], "Parent",ImgFTPan); colormap(viridis);
@@ -113,47 +113,52 @@ for idx = imgIdxs
     end
     
     if compute_k_init
-        disp('   - Grid-based evaluation of J landscape...');
-        [Jp,K1,K2] = GridEvalJ(params,wf,G,grids);
-
-        if params.displ > 1                           % If requested, display J grid
-            mJp=max(Jp(:));
-            fg=figure; subplot(1,2,1); axis xy;hold on; view(45,45);
-            surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
-            colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14); %axis([0 maxp -maxp maxp]);grid;
-%             for nth = 1:params.nMinima
-%                 h(nth)=plot3(k_est_landscape(nth, 1),k_est_landscape(nth, 2),mJp,'Color', 'k','Marker', '.', 'markersize',20); %#ok<AGROW>            
-%             end        
-            sgtitle(sprintf('J landscape for orientation #%d', OrientCount))
-            title('Landscape and initial local minima');
-            subplot(1,2,2); axis xy;hold on; title('Zoom');
-            surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
-            colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14)
-%             for nth = 1:params.nMinima
-%                 h(nth)=plot3(k_est_landscape(nth, 1),k_est_landscape(nth, 2),mJp,'Color', 'k','Marker', '.', 'markersize',20);           
-%             end  
-            drawnow;
-        end
- 
-        disp(['   - Extracting the ',num2str(params.nMinima),' smallest local minima...']);
-        k_init= ExtractLocMin(params,Jp,K1,K2);
-        
-        disp('   - Refine position of extracted local min...');
-        fprintf('%s','     - local min #');
-        for ithk = 1:params.nMinima
-            if mod(ithk,ceil(params.nMinima/10))==0
-                if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
+        if params.nPoints
+            disp('   - Grid-based evaluation of J landscape...');
+            [Jp,K1,K2] = GridEvalJ(params,wf,G,grids);
+    
+            if params.displ > 1                           % If requested, display J grid
+                mJp=max(Jp(:));
+                fg=figure; subplot(1,2,1); axis xy;hold on; view(45,45);
+                surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
+                colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14); %axis([0 maxp -maxp maxp]);grid;
+    %             for nth = 1:params.nMinima
+    %                 h(nth)=plot3(k_est_landscape(nth, 1),k_est_landscape(nth, 2),mJp,'Color', 'k','Marker', '.', 'markersize',20); %#ok<AGROW>            
+    %             end        
+                sgtitle(sprintf('J landscape for orientation #%d', OrientCount))
+                title('Landscape and initial local minima');
+                subplot(1,2,2); axis xy;hold on; title('Zoom');
+                surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
+                colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14)
+    %             for nth = 1:params.nMinima
+    %                 h(nth)=plot3(k_est_landscape(nth, 1),k_est_landscape(nth, 2),mJp,'Color', 'k','Marker', '.', 'markersize',20);           
+    %             end  
+                drawnow;
             end
-            k(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
+     
+            disp(['   - Extracting the ',num2str(params.nMinima),' smallest local minima...']);
+            k_init= ExtractLocMin(params,Jp,K1,K2);              
+            disp('   - Refine position of extracted local min...');
+            fprintf('%s','     - local min #');
+            for ithk = 1:params.nMinima
+                if mod(ithk,ceil(params.nMinima/10))==0
+                    if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
+                end   
+                k(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
+            end
+            
+            disp('   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
+            Jp=zeros(1,params.nMinima);
+            for iii = 1:params.nMinima
+                Jp(iii) = EvalJ(k_init(iii,:), wf, G, params, grids, 0, 0, 0);
+            end
+            [~,optIdx] = min(Jp);
+            k_final(OrientCount, :) = k_init(optIdx, :);        
+        else
+            disp('   - K init by peak detection n Fourier Space...');
+            k = PeakDetect(G, params); 
+            k_final(OrientCount,:) = IterRefinementWavevec(k' ,wf,G,grids,OTF,sz,params);
         end
-        
-        disp('   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
-        Jp=zeros(1,params.nMinima);
-        for iii = 1:params.nMinima
-            Jp(iii) = EvalJ(k(iii,:), wf, G, params, grids, 0, 0, 0);
-        end
-        [~,optIdx] = min(Jp);
-        k_final(OrientCount, :) = k(optIdx, :);
     else
         disp('   - Refine position of wavevector...');
         k_final(OrientCount, :) = IterRefinementWavevec(k_init(OrientCount, :)',wf,G,grids,OTF,sz,params);
