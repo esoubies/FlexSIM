@@ -20,6 +20,9 @@ cf_tolerance = 1e-6; % Tolerance on the relative difference of the cost function
 tau_init=1e-2;       % Initial descent step-size
 
 % -- Initializations
+if params.displ>2
+    fig=figure;
+end
 k=k_init;
 count_it = 1;  
 
@@ -61,7 +64,13 @@ for nit_filt = 1:params.FilterRefinement   % Iterate filter refinement
         % Calculate and store new cost
         count_it=count_it+1;                  
         cf(count_it) = EvalJ(ktmp, wf, G, params, grids, filt, att_filt, 0);
-        
+        if params.displ>2
+            figure(fig);
+            plot(cf,'linewidth',2); xlim([0 nit_tot]);grid;
+            title('Freq/Phase Opti: Cv curve')
+            set(gca,'FontSIze',14);
+            drawnow;
+        end
         % Stop grad descent if step size or cost improvement become negligible
         if (tau<tau_min) || abs(cf(count_it)-cf(count_it-1))/abs(cf(count_it-1))<cf_tolerance
             break;

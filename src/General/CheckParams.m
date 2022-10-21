@@ -37,9 +37,9 @@ end
 % -- Display and saving
 prefix="[Display and saving] ";
 % dipsl
-msg="Should be an integer within {0, 1, 2}.";
-assert(isfield(params, "displ"),prefix + missg + "`method`. " + msg);
-assert(mod(params.displ, 1) == 0 && params.displ > -1 && params.displ < 3,prefix + invld + "`method`. " + msg);
+msg="Should be an integer within {0, 1, 2, 3}.";
+assert(isfield(params, "displ"),prefix + missg + "`displ`. " + msg);
+assert(mod(params.displ, 1) == 0 && params.displ > -1 && params.displ < 4,prefix + invld + "`displ`. " + msg);
 % sav
 msg="Should be a boolean.";
 assert(isfield(params, "sav"),prefix + missg + "`sav`. " + msg);
@@ -123,8 +123,8 @@ assert(mod(params.nMinima, 1) == 0 && params.nMinima> 0,prefix + invld + "`nMini
 assert(isfield(params, "FilterRefinement"),prefix + missg + "`FilterRefinement`. " + msg);
 assert(mod(params.FilterRefinement, 1) == 0 && params.FilterRefinement> 0,prefix + invld + "`FilterRefinement`. " + msg);
 assert(isfield(params, "nPoints"),prefix + missg + "`nPoints`. " + msg);
-assert(mod(params.nPoints, 1) == 0 && params.nPoints> 0,prefix + invld + "`nPoints`. " + msg);
-if params.nPoints < 50
+assert(mod(params.nPoints, 1) == 0 && params.nPoints > -1 ,prefix + invld + "`nPoints`. " + "Should be a nonnegative integer.");
+if params.nPoints < 50 && params.nPoints > 0
     warning(prefix + "Parameter nPoints is low. Results might be inaccurate");
 elseif params.nPoints > 300
     warning(prefix + "Parameter nPoints is large. Computation might be slow");
