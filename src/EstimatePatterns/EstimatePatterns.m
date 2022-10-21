@@ -144,7 +144,7 @@ for idx = imgIdxs
                 if mod(ithk,ceil(params.nMinima/10))==0
                     if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
                 end   
-                k(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
+                k_init(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
             end
             
             disp('   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
