@@ -19,6 +19,9 @@ function rec = Reconstruct(y,patt,params)
 %--------------------------------------------------------------------------
 
 %% Initial computations
+if params.GPU
+    useGPU(1)
+end
 sz=size(y);
 szUp=sz*2;szUp=szUp(1:2); 
 downFact=[2,2];
