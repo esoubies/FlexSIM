@@ -45,8 +45,8 @@ msg="Should be a boolean";
 assert(isfield(params, "GPU"),prefix + missg + "`GPU`. " + msg);
 assert(ismember(params.GPU, [0, 1]), prefix + invld + "`GPU`. " + msg);
 if params.GPU
-    msg = "No GPU was found. Set parameter GPU to `0`.";
-    assert(gpuDeviceCount, prefix + invld + "`GPU`. " + msg);
+    assert(license('test','Distrib_Computing_Toolbox'),prefix  + "Parallel Computing Toolbox not installed. Set parameter GPU to 0.")
+    assert(gpuDeviceCount, prefix + "No GPU was found. Set parameter GPU to `0`.");
 end
 
 
@@ -100,6 +100,14 @@ if params.szPatch>0 % Check the two other parameters only if patch-based process
 % overlapPatch
 assert(isfield(params, "overlapPatch"),prefix + missg + "`overlapPatch`. " + msg);
 assert(params.overlapPatch>= 0,prefix + invld + "`overlapPatch`. " + msg);
+end
+% parallelProcess
+msg="Should be a boolean.";
+assert(isfield(params, "parallelProcess"),prefix + missg + "`parallelProcess`. " + msg);
+assert(params.parallelProcess==0 || params.parallelProcess==1, prefix + invld + "`parallelProcess'. " + msg);  
+if params.parallelProcess % Check is parallel tolbox is available 
+  assert(license('test','Distrib_Computing_Toolbox'),prefix + "Parallel Computing Toolbox not installed. Set parameter parallelProcess to 0.")
+  assert(params.verbose==0,"prefix + parameter verbose should be set to 0 when parallelProcess is activated.");
 end
 
 % -- Parameters for patterns estimation

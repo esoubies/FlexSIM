@@ -20,24 +20,25 @@ function res = FlexSIM(params)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
+warning off backtrace
 time0=tic;
-%% Routinary checks + Data loading 
+%% Routinary checks + Data loading
 CheckParams(params);                       % Check conformity of parameters
-y = double(loadtiff(params.DataPath));       % Read data 
+y = double(loadtiff(params.DataPath));     % Read data
 if params.GPU
-    y = gpuArray(y);    
+    y = gpuArray(y);
 end
 
 %% Pre-processing
 % - Remove background
-if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)  
+if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)
     PosRoiBack=DetectPatch(sum(gather(y),3),params.SzRoiBack,-1);  % Detect the ROI for background
     y = RemoveBackground(y,PosRoiBack,params.SzRoiBack);           % Remove constant background and normalize in [0,1]
 else
     PosRoiBack=[1,1];
 end
 % - Detect ROI for pattern estimation
-if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)  
+if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)
     PosRoiPatt=DetectPatch(sum(gather(y),3),params.SzRoiPatt,1);
 else
     PosRoiPatt=[1,1];
@@ -46,7 +47,7 @@ end
 % - Reorder stack with FlexSIM conventions
 [y, wf] = OrderY(y, params);                                    % Reorder and extract data if necessary
 wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
- 
+
 % -- Displays
 if params.displ > 0
     fig_y=-1;fig_patt=-1;fig_patt_par=-1;fig_rec=-1;  % Initialize figures
@@ -70,8 +71,8 @@ if params.szPatch==0
     patches={y};
     patches_wf={wf};
 elseif params.szPatch>0
-    patches=Image2Patches(y,params.szPatch,params.overlapPatch); 
-    patches_wf=Image2Patches(wf,params.szPatch,params.overlapPatch); 
+    patches=Image2Patches(y,params.szPatch,params.overlapPatch);
+    patches_wf=Image2Patches(wf,params.szPatch,params.overlapPatch);
 end
 
 % -- Initializations
@@ -81,76 +82,124 @@ rec=CellZeros(patches,[2,2],[1,2]);
 Lf=CellZeros(patches,[2,2,1],[1,2,3]);
 
 % -- Loop over patches
-prefix_disp='';
-for id_patch = 1:nbPatches
-    if params.szPatch>0, prefix_disp=['[Patch #',num2str(id_patch),'/',num2str(nbPatches),']']; end
-    sz_p=size(patches{id_patch});                             % Patch size
-    
-    % -- Pattern Estimation
-    disp(['<strong>=== ',prefix_disp,' Patterns parameter estimation START</strong> ...']);
+if nbPatches==1 || ~params.parallelProcess
+    % No parallelization over patches
+    prefix_disp='';
+    for id_patch = 1:nbPatches
+        if params.szPatch>0, prefix_disp=['[Patch #',num2str(id_patch),'/',num2str(nbPatches),']']; end
+        sz_p=size(patches{id_patch});                             % Patch size
         
-    [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, patches_wf{id_patch});    
-    if params.estiPattLowFreq
-        Lf{id_patch} = EstimateLowFreqPatterns(params,patches{id_patch},patches_wf{id_patch},5);
-    else
-        Lf{id_patch}=1;
-    end
-    
-    % -- Generate Patterns for reconstruction
-    a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-    patterns{id_patch} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,id_patch),phase,a,sz_p,Lf{id_patch});
-    
-    % -- Displays
-    if params.displ > 0
-        % - Display of estimated patterns
-        fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
-        % - Displays related to estimated parameters
-        if params.szPatch==0
-            fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,0);
+        % -- Pattern Estimation
+        disp(['<strong>=== ',prefix_disp,' Patterns estimation</strong> ...']);
+        
+        [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, patches_wf{id_patch});
+        if params.estiPattLowFreq
+            Lf{id_patch} = EstimateLowFreqPatterns(params,patches{id_patch},patches_wf{id_patch},5);
         else
-            fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,id_patch);
+            Lf{id_patch}=1;
+        end
+        
+        % -- Generate Patterns for reconstruction
+        a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
+        patterns{id_patch} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,id_patch),phase,a,sz_p,Lf{id_patch});
+        
+        % -- Displays
+        if params.displ > 0
+            % - Display of estimated patterns
+            fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
+            % - Displays related to estimated parameters
+            if params.szPatch==0
+                fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,0);
+            else
+                fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,id_patch);
+            end
+        end
+        
+        % -- Reconstruction
+        disp(['<strong>=== ',prefix_disp,' Reconstruction</strong> ...']);
+        rec{id_patch} = Reconstruct(patches{id_patch},patterns{id_patch},params);
+        
+        % -- Displays
+        if params.displ > 0
+            fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wfUp,fig_rec);
+        end
+        
+        % - Save reconstruction / patterns
+        if params.sav
+            prefix=params.DataPath(1:end-4);
+            saveastiff(single(Patches2Image(rec,params.overlapPatch*2)),strcat(prefix,'_Rec.tif'));
+            saveastiff(single(Patches2Image(patterns,params.overlapPatch*2)),strcat(prefix,'_Patt.tif'));
         end
     end
     
-    % -- Reconstruction
-    disp(['<strong>=== ',prefix_disp,' Reconstruction START</strong> ...']);
-    rec{id_patch} = Reconstruct(patches{id_patch},patterns{id_patch},params);
-    
-    % -- Displays
-    if params.displ > 0
-        fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wfUp,fig_rec);
+    % -- Re-run reconstruction for patches with wrong patterns
+    if params.szPatch>0
+        disp('<strong>=== Detect and correct patches with bad estimated patterns</strong> ...');
+        kmed=median(k,3); % median wavevector
+        relErr=sum(sum((k-kmed).^2,1),2)./sum(sum((k).^2,1),2);
+        idx_err=find(relErr>1e-3);
+        for ii=idx_err'
+            prefix_disp=['[Correction Patch #',num2str(ii),']'];
+            sz_p=size(patches{ii});
+            disp(['<strong>--- ',prefix_disp,' Patterns correction</strong> ...']);
+            [k(:,:,ii), phase, a] = EstimatePatterns(params,PosRoiPatt, patches{ii},kmed, patches_wf{ii});
+            a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
+            patterns{ii} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,ii),phase,a,sz_p,Lf{ii});
+            disp(['<strong>--- ',prefix_disp,' New reconstruction</strong> ...']);
+            rec{ii} = Reconstruct(patches{ii},patterns{ii},params);
+            % -- Displays
+            if params.displ >0
+                fig_patt_par=DisplayPattParams(patches{ii},params,k(:,:,ii),phase,a,fig_patt_par,ii);
+                fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
+                fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wfUp,fig_rec);
+            end
+        end
+    end
+else
+    % Parallelization over patches
+    disp('<strong>START FlexSIM in parallel patch-based mode ... </strong>');
+    parfor id_patch = 1:nbPatches
+        t = getCurrentTask(); 
+        prefix_disp=['[Worker #',num2str(t.ID),'] Patch #',num2str(id_patch),'/',num2str(nbPatches),':'];
+        sz_p=size(patches{id_patch});                             % Patch size
+        
+        % -- Pattern Estimation
+        disp(['-- ',prefix_disp,' Patterns estimation...']);
+        
+        [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, patches_wf{id_patch});
+        if params.estiPattLowFreq
+            Lf{id_patch} = EstimateLowFreqPatterns(params,patches{id_patch},patches_wf{id_patch},5);
+        else
+            Lf{id_patch}=1;
+        end
+        
+        % -- Generate Patterns for reconstruction
+        a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
+        patterns{id_patch} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,id_patch),phase,a,sz_p,Lf{id_patch});
+   
+        % -- Reconstruction
+        disp(['-- ',prefix_disp,' Reconstruction...']);
+        rec{id_patch} = Reconstruct(patches{id_patch},patterns{id_patch},params);
     end
     
-    % - Save reconstruction / patterns 
-    if params.sav
-        prefix=params.DataPath(1:end-4);
-        saveastiff(single(Patches2Image(rec,params.overlapPatch*2)),strcat(prefix,'_Rec.tif'));
-        saveastiff(single(Patches2Image(patterns,params.overlapPatch*2)),strcat(prefix,'_Patt.tif'));
-    end
-end
-
-% -- Re-run reconstruction for patches with wrong patterns
-if params.szPatch>0
-    disp('<strong>=== Detect and correct patches with bad estimated patterns</strong> ...');
+    % -- Re-run reconstruction for patches with wrong patterns
     kmed=median(k,3); % median wavevector
     relErr=sum(sum((k-kmed).^2,1),2)./sum(sum((k).^2,1),2);
     idx_err=find(relErr>1e-3);
-    for ii=idx_err'
-        prefix_disp=['[Correction Patch #',num2str(ii),']'];
-        sz_p=size(patches{ii});    
-        disp(['<strong>--- ',prefix_disp,' Patterns parameter correction  START</strong> ...']);
-        [k(:,:,ii), phase, a] = EstimatePatterns(params,PosRoiPatt, patches{ii},kmed, patches_wf{ii});
-        a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-        patterns{ii} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,ii),phase,a,sz_p,Lf{ii});
-        disp(['<strong>--- ',prefix_disp,' New reconstruction START</strong> ...']);
-        rec{ii} = Reconstruct(patches{ii},patterns{ii},params);
-        % -- Displays
-        if params.displ >0
-            fig_patt_par=DisplayPattParams(patches{ii},params,k(:,:,ii),phase,a,fig_patt_par,ii);
-            fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
-            fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wfUp,fig_rec);
+    parfor idx=1:nbPatches
+        if sum(idx_err==idx)==1
+            t = getCurrentTask();
+            prefix_disp=['[Worker #',num2str(t.ID),'] Patch #',num2str(idx),':'];
+            sz_p=size(patches{idx});
+            disp(['-- ',prefix_disp,' Patterns correction...']);
+            [k(:,:,idx), phase, a] = EstimatePatterns(params,PosRoiPatt, patches{idx},kmed, patches_wf{idx});
+            a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
+            patterns{idx} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,idx),phase,a,sz_p,Lf{idx});
+            disp(['-- ',prefix_disp,' New reconstruction...']);
+            rec{idx} = Reconstruct(patches{idx},patterns{idx},params);
         end
     end
+    
 end
 
 %% Save
