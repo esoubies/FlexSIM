@@ -14,8 +14,9 @@ params.pathToFlexSIM = '../../';                                % Path to the ro
 if ~exist(params.DataPath, 'file')
     websave(params.DataPath, 'https://github.com/fairSIM/test-datasets/releases/download/SLM-SIM-Bielefeld/SLM-SIM_Tetraspeck200_680nm.tif');
 end
-% -- Display and saving
+% -- Display, saving and GPU acceleration
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
+params.verbose=1;                       % 0: minimal text displays / 1: detailled text displays
 params.sav = 1;                         % Boolean if true save the result
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 

@@ -23,27 +23,31 @@ assert(isfield(params, "DataPath"),prefix + missg + "`DataPath`. " + msg);
 assert(strcmp(params.DataPath(end-3:end),'.tif'), prefix + invld + "`DataPath'. " + msg);  
 % pathToFlexSIM
 assert(isfield(params, "DataPath"),prefix + missg + "`pathToFlexSIM`. ");
+
+
+% -- Display, saving and GPU acceleration
+prefix="[Display, saving] ";
+% dipsl
+msg="Should be an integer within {0, 1, 2, 3}.";
+assert(isfield(params, "displ"),prefix + missg + "`displ`. " + msg);
+assert(mod(params.displ, 1) == 0 && params.displ > -1 && params.displ < 4,prefix + invld + "`displ`. " + msg);
+% verbose
+msg="Should be an integer within {0, 1}";
+assert(isfield(params, "verbose"),prefix + missg + "`verbose`. " + msg);
+assert(params.verbose==0 || params.verbose==1, prefix + invld + "`verbose'. " + msg);  
+% sav
+msg="Should be a boolean.";
+assert(isfield(params, "sav"),prefix + missg + "`sav`. " + msg);
+assert(params.sav==0 || params.sav==1, prefix + invld + "`sav'. " + msg);  
 % GPU usage
 prefix="[GPU]";
 msg="Should be a boolean";
 assert(isfield(params, "GPU"),prefix + missg + "`GPU`. " + msg);
 assert(ismember(params.GPU, [0, 1]), prefix + invld + "`GPU`. " + msg);
 if params.GPU
-    msg = "No GPU was found. Set parameter to `0`.";
+    msg = "No GPU was found. Set parameter GPU to `0`.";
     assert(gpuDeviceCount, prefix + invld + "`GPU`. " + msg);
 end
-
-
-% -- Display and saving
-prefix="[Display and saving] ";
-% dipsl
-msg="Should be an integer within {0, 1, 2, 3}.";
-assert(isfield(params, "displ"),prefix + missg + "`displ`. " + msg);
-assert(mod(params.displ, 1) == 0 && params.displ > -1 && params.displ < 4,prefix + invld + "`displ`. " + msg);
-% sav
-msg="Should be a boolean.";
-assert(isfield(params, "sav"),prefix + missg + "`sav`. " + msg);
-assert(params.sav==0 || params.sav==1, prefix + invld + "`sav'. " + msg);  
 
 
 %% Data related parameters

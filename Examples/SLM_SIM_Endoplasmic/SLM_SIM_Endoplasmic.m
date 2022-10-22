@@ -16,8 +16,9 @@ if ~exist(params.DataPath, 'file')
     y = double(loadtiff(params.DataPath)); 
     saveastiff(single(y(:,:,1:9)),params.DataPath); % Remove the 3 last slides of the stack that are not SIM data
 end
-% -- Display and saving
+% -- Display, saving and GPU acceleration
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
+params.verbose=1;                       % 0: minimal text displays / 1: detailled text displays
 params.sav = 1;                         % Boolean if true save the result
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 

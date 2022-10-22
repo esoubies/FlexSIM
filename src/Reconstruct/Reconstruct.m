@@ -100,6 +100,7 @@ for id1=0:n1-1
         Opt.eta=1.5;
     end
     Opt.OutOp=OutputOpti(1,round(params.maxIt/10));  % Verbose monitoring
+    Opt.verbose=params.verbose;
     Opt.CvOp=TestCvgStepRelative(params.stepTol);    % Test convergence criterion
     Opt.ItUpOut=round(params.maxIt/10);              % Call OutputOpti update every ItUpOut iterations
     Opt.maxiter=params.maxIt;                        % Max number of iterations

@@ -82,8 +82,8 @@ end
 % TODO: add back the displays (need to think how to manage the patch-based case)
 OrientCount = 1; 
 for idx = imgIdxs
-    disp([' Batch of images: ', num2str(idx')]);      % Display info to the user
-    disp('   - Remove WF and mask...');
+    DispMsg(params.verbose,[' Batch of images: ', num2str(idx')]);     % Display info to the user
+    DispMsg(params.verbose,'   - Remove WF and mask...');
     wf = wf_stack(:,:,min(size(wf_stack,3),3));
     [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
 
@@ -114,7 +114,7 @@ for idx = imgIdxs
     
     if compute_k_init
         if params.nPoints
-            disp('   - Grid-based evaluation of J landscape...');
+            DispMsg(params.verbose,'   - Grid-based evaluation of J landscape...');
             [Jp,K1,K2] = GridEvalJ(params,wf,G,grids);
     
             if params.displ > 1                           % If requested, display J grid
@@ -136,18 +136,18 @@ for idx = imgIdxs
                 drawnow;
             end
      
-            disp(['   - Extracting the ',num2str(params.nMinima),' smallest local minima...']);
+            DispMsg(params.verbose,['   - Extracting the ',num2str(params.nMinima),' smallest local minima...']);
             k_init= ExtractLocMin(params,Jp,K1,K2);              
-            disp('   - Refine position of extracted local min...');
-            fprintf('%s','     - local min #');
+            DispMsg(params.verbose,'   - Refine position of extracted local min...');
+            if params.verbose>0, fprintf('%s','     - local min #');end;
             for ithk = 1:params.nMinima
-                if mod(ithk,ceil(params.nMinima/10))==0
+                if mod(ithk,ceil(params.nMinima/10))==0 && params.verbose>0
                     if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
                 end   
                 k_init(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
             end
             
-            disp('   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
+            DispMsg(params.verbose,'   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
             Jp=zeros(1,params.nMinima);
             for iii = 1:params.nMinima
                 Jp(iii) = EvalJ(k_init(iii,:), wf, G, params, grids, 0, 0, 0);
@@ -155,16 +155,16 @@ for idx = imgIdxs
             [~,optIdx] = min(Jp);
             k_final(OrientCount, :) = k_init(optIdx, :);        
         else
-            disp('   - K init by peak detection n Fourier Space...');
+            DispMsg(params.verbose,'   - K init by peak detection n Fourier Space...');
             k = PeakDetect(G, params); 
             k_final(OrientCount,:) = IterRefinementWavevec(k' ,wf,G,grids,OTF,sz,params);
         end
     else
-        disp('   - Refine position of wavevector...');
+        DispMsg(params.verbose,'   - Refine position of wavevector...');
         k_final(OrientCount, :) = IterRefinementWavevec(k_init(OrientCount, :)',wf,G,grids,OTF,sz,params);
     end
     
-    disp('   - Computing phases and amplitutes...'); 
+    DispMsg(params.verbose,'   - Computing phases and amplitutes...'); 
     [phase(OrientCount, :),a(OrientCount, :)]=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
     
     OrientCount=OrientCount+1;

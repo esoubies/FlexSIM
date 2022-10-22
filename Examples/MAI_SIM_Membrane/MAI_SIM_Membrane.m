@@ -16,6 +16,7 @@ if ~exist(params.DataPath, 'file')
 end
 % -- Display, saving and GPU acceleration
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
+params.verbose=1;                       % 0: minimal text displays / 1: detailled text displays
 params.sav = 1;                         % Boolean if true save the result
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 
