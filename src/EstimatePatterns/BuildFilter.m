@@ -1,6 +1,6 @@
 function [OTFshiftCrop, OTFCrop] = BuildFilter(k, sz, OTF, params, grids)
 %--------------------------------------------------------------------------
-% [OTFshiftCrop, OTFCrop] = BuildFilter(k, sz, params, grids)
+% [OTFshiftCrop, OTFCrop] = BuildFilter(k, sz, OTF, params, grids)
 %
 % Builds filters that will be applied to A (`filt`) and to the WF (`attFilt`)
 %

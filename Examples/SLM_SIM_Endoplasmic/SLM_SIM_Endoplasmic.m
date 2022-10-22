@@ -41,10 +41,10 @@ params.overlapPatch=0;            % Overlap between patches if szPatch>0
 
 % -- Parameters for patterns estimation
 params.SzRoiPatt = 257;           % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
-params.limits = [0.7, 0.9];     % Ring over which the J function is evaluated for initializing (fc = 1)
-params.ringMaskLim = [0, 1.1];      % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
+params.limits = [0.7, 0.9];       % Ring over which the J function is evaluated for initializing (fc = 1)
+params.ringMaskLim = [0, 1.1];    % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
 params.nMinima = 2;               % Number of starting points for the refinement steps
-params.nPoints = 150;             % Number of points in the J evaluation grid
+params.nPoints = 150;             % Number of points in the J evaluation grid. If set to 0, initialization is done via peak detection
 params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
 params.method = 1;                % Method : 0 - treat all images independently
                                   %          1 - use all images with same orientation to estimate a unique wavevector

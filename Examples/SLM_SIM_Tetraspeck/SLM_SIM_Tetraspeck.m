@@ -42,7 +42,7 @@ params.SzRoiPatt = 257;           % Size (odd number or empty) of the ROI for pa
 params.limits = [0.45, 0.55];     % Ring over which the J function is evaluated for initializing (fc = 1)
 params.ringMaskLim = [0, 1];      % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
 params.nMinima = 2;               % Number of starting points for the refinement steps
-params.nPoints = 150;             % Number of points in the J evaluation grid
+params.nPoints = 150;             % Number of points in the J evaluation grid. If set to 0, initialization is done via peak detection
 params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
 params.method = 2;                % Method : 0 - treat all images independently
                                   %          1 - use all images with same orientation to estimate a unique wavevector

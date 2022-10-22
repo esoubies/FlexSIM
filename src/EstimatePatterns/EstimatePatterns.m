@@ -1,6 +1,6 @@
 function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stack)
 %--------------------------------------------------------------------------
-% Function [k_final, phase, a] = EstimatePatterns(params,y,k_init, wf_stack)
+% Function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stack)
 %
 % Estimate the parameters of 2D sinusoidal patterns of the form 
 %    w(x) = 1 + a cos(<k,x> + phase),

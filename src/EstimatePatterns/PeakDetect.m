@@ -1,6 +1,6 @@
 function [k] = PeakDetect(G,params)
 %--------------------------------------------------------------------------
-% Function k = PeakDetect (ft, fc, radii)
+% Function k = PeakDetect(G,params)
 %
 % Takes as input a preconditioned set of SIM images, adds them and finds a
 % detected wavevector from the location of the pixel with the highest 
