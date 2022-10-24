@@ -19,9 +19,12 @@ function rec = Reconstruct(y,patt,params)
 %--------------------------------------------------------------------------
 
 %% Initial computations
-if params.GPU
-    useGPU(1)
-end
+% if params.GPU
+%     useGPU(1)
+% else
+%     useGPU(0)
+% end
+
 sz=size(y);
 szUp=sz*2;szUp=szUp(1:2); 
 downFact=[2,2];
@@ -35,9 +38,9 @@ else
 end
 % -- Generate OTF/PSF
 otf = GenerateOTF(params.Na,params.lamb,min([256,256],sz(1:2)),params.res/2,params.damp);
-if params.GPU
-    otf = gpuArray(otf);
-end
+% if params.GPU
+%     otf = gpuArray(otf);
+% end
 psf = fftshift(real(ifft2(otf)));
 % -- Normalization
 maxy=max(y(:));y=y/maxy;

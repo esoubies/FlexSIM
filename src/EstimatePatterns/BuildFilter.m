@@ -29,11 +29,12 @@ else
     rr = 0.5 * norm(kPix);
 end
 I = grids.I+1; J = grids.J+1;
-% Masked OTF (as done for the WF in RemoveWFandMask)
-MaskedOTF=MaskFT(fftshift(OTF), FCut, params.ringMaskLim);
 % Build the filter corresponding to the shifted and cropped OTF (for b)
 OTF0=double(OTF.*ifftshift((sqrt((I-kPix(1)-floor(sz(2)/2)-1).^2+(J-kPix(2)-floor(sz(1)/2)-1).^2)<rr)+(sqrt((I+kPix(1)-floor(sz(2)/2)-1).^2+(J+kPix(2)-floor(sz(1)/2)-1).^2)<rr))>0);
-OTFshiftCrop=ifftshift(imtranslate(gather(MaskedOTF),kPix(:)')+imtranslate(gather(MaskedOTF),-kPix(:)')).*OTF0;
+OTFshift1= GenerateOTF(params.Na,params.lamb,sz,params.res,params.damp,kPix./ sz(2:-1:1)');
+OTFshift2= GenerateOTF(params.Na,params.lamb,sz,params.res,params.damp,-kPix./ sz(2:-1:1)');
+OTFshiftCrop=MaskFT(fftshift(OTFshift1), FCut, params.ringMaskLim,kPix)+MaskFT(fftshift(OTFshift2), FCut, params.ringMaskLim,-kPix);
+OTFshiftCrop=ifftshift(OTFshiftCrop).*OTF0;
 % Build the filter corresponding to the cropped OTF
 OTFCrop = OTF.*double(OTFshiftCrop>0); 
 end

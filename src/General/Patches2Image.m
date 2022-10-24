@@ -28,8 +28,13 @@ sz_3=size(patches{1},3);
 Apo=1./(1+exp(30*(abs(X)-0.8)))./(1+exp(30*(abs(Y)-0.8)));
 
 % -- Reconstruct image
-im=zeros([sz_1,sz_2,sz_3]);
-ww=zeros([sz_1,sz_2]);
+if isa(patches{1,1},'gpuArray')
+    im=zeros([sz_1,sz_2,sz_3],'double','gpuArray');
+    ww=zeros([sz_1,sz_2],'double','gpuArray');
+else
+    im=zeros([sz_1,sz_2,sz_3]);
+    ww=zeros([sz_1,sz_2]);
+end
 for i=1:I
     for j=1:J
         if norm(patches{i,j}(:))>0

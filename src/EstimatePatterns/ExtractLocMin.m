@@ -13,7 +13,11 @@ function k = ExtractLocMin(params,Jp,K1,K2)
 %--------------------------------------------------------------------------
 
 % -- Initializations
-k = zeros(params.nMinima, 2);   % Give user info and initialize...
+if params.GPU
+    k = zeros(params.nMinima, 2,'double','gpuArray');   % Give user info and initialize...
+else
+    k = zeros(params.nMinima, 2);   % Give user info and initialize...
+end
 
 % -- Extract n local mins
 for nth = 1:params.nMinima

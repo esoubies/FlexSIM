@@ -37,7 +37,7 @@ if ismember(params.method, [0, 2])               % If no summation needed...
     if params.method == 0
         G = G(:,:,1);                            % If we're only using one image select it
     end
-    s = AA\A'*G(:);                              
+    s = AA\A'*G(:);
     c = 0.5*norm(A*s-G(:))^2/numel(G);           % Extract cost and gradient
     if grad                                        
         g(1) = - (A*[s(2);-s(1)].*2.*repmat(grids.X(:), nb_imgs, 1))'*(A*s-G(:))/numel(G);

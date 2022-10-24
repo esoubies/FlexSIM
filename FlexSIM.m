@@ -117,7 +117,7 @@ if nbPatches==1 || ~params.parallelProcess
         
         % -- Reconstruction
         disp(['<strong>=== ',prefix_disp,' Reconstruction</strong> ...']);
-        rec{id_patch} = Reconstruct(patches{id_patch},patterns{id_patch},params);
+        rec{id_patch} = Reconstruct(gather(patches{id_patch}),gather(patterns{id_patch}),params);
         
         % -- Displays
         if params.displ > 0
@@ -146,7 +146,7 @@ if nbPatches==1 || ~params.parallelProcess
             a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
             patterns{ii} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,ii),phase(:,id_patch),a,sz_p,Lf{ii});
             disp(['<strong>--- ',prefix_disp,' New reconstruction</strong> ...']);
-            rec{ii} = Reconstruct(patches{ii},patterns{ii},params);
+            rec{ii} = Reconstruct(gather(patches{ii}),gather(patterns{ii}),params);
             % -- Displays
             if params.displ >0
                 fig_patt_par=DisplayPattParams(patches{ii},params,k(:,:,ii),phase(:,id_patch),a,fig_patt_par,ii);
@@ -176,7 +176,7 @@ else
         patterns{id_patch} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,id_patch),phase(:,id_patch),a,sz_p,Lf{id_patch});
    
         % -- Reconstruction
-        rec{id_patch} = Reconstruct(patches{id_patch},patterns{id_patch},params);
+        rec{id_patch} = Reconstruct(gather(patches{id_patch}),gather(patterns{id_patch}),params);
     end
     
     % -- Re-run reconstruction for patches with wrong patterns
@@ -191,7 +191,7 @@ else
             [k(:,:,idx), phase(:,idx), a] = EstimatePatterns(params,PosRoiPatt, patches{idx},kmed, patches_wf{idx});
             a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
             patterns{idx} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,idx),phase(:,idx),a,sz_p,Lf{idx});
-            rec{idx} = Reconstruct(patches{idx},patterns{idx},params);
+            rec{idx} = Reconstruct(gather(patches{idx}),gather(patterns{idx}),params);
         end
     end  
 end

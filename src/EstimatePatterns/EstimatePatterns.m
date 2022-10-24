@@ -148,7 +148,11 @@ for idx = imgIdxs
             end
             
             DispMsg(params.verbose,'   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
-            Jp=zeros(1,params.nMinima);
+            if params.GPU
+                Jp=zeros(1,params.nMinima,'double','gpuArray');
+            else
+                Jp=zeros(1,params.nMinima);
+            end
             for iii = 1:params.nMinima
                 Jp(iii) = EvalJ(k_init(iii,:), wf, G, params, grids, 0, 0, 0);
             end

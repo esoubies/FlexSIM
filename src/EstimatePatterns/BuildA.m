@@ -47,7 +47,12 @@ end
 % If there is the assumption of equally spaced phases, build according system
 if params.method == 2    
     % Preallocate A for performance
-    A = zeros([params.nbPh*numel(grids.X(:)), 2]); 
+    if params.GPU
+        A= zeros([params.nbPh*numel(grids.X(:)), 2],'double','gpuArray');
+    else
+        A = zeros([params.nbPh*numel(grids.X(:)), 2]);
+    end
+    
     A(1:numel(grids.X(:)), :) = [a1(:),a2(:)];
     for i = 2:params.nbPh
         deltaph = (i - 1)*pi/params.nbPh;         % Calculate deltaPhi
@@ -64,5 +69,5 @@ if params.method == 2
     end
 else
         A = [a1(:),a2(:)];                          % Simply declare A
-end      
+end  
 end

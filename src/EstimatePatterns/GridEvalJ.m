@@ -38,7 +38,11 @@ K = cat(3, K1, K2);
 Knorm = vecnorm(K, 2, 3);                             % Calculate norms in advance
 
 % -- Initializations
-Jp = zeros(params.nPoints, params.nPoints/2);         % Initialize Jp for batch
+if params.GPU
+    Jp = zeros(params.nPoints, params.nPoints/2,'double','gpuArray');  % Initialize Jp for batch
+else
+    Jp = zeros(params.nPoints, params.nPoints/2);         % Initialize Jp for batch
+end
 
 % -- Evaluation of J over the grid
 for ii=1:params.nPoints                           % Iterate the grid and if the wavevector
