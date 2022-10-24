@@ -28,7 +28,7 @@ else
 end
 
 if exist('GlobalBioIm', 'dir')             % Check existance for GlobalBioIm in path
-    GBIPath = what('GlobalBioIm').path;
+    GBIPath = getfield(what('GlobalBioIm'),'path');
     addpath(genpath(GBIPath))
 else
     disp('GlobalBioIm not found in computer. Dowloading in current directory...');

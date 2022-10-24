@@ -45,8 +45,8 @@ msg="Should be a boolean";
 assert(isfield(params, "GPU"),prefix + missg + "`GPU`. " + msg);
 assert(ismember(params.GPU, [0, 1]), prefix + invld + "`GPU`. " + msg);
 if params.GPU
-    assert(license('test','Distrib_Computing_Toolbox'),prefix  + "Parallel Computing Toolbox not installed. Set parameter GPU to 0.")
-    assert(gpuDeviceCount, prefix + "No GPU was found. Set parameter GPU to `0`.");
+    assert(logical(license('test','Distrib_Computing_Toolbox')),prefix  + "Parallel Computing Toolbox not installed. Set parameter GPU to 0.")
+    assert(logical(gpuDeviceCount), prefix + "No GPU was found. Set parameter GPU to `0`.");
 end
 
 
