@@ -92,7 +92,7 @@ if nbPatches==1 || ~params.parallelProcess
         % -- Pattern Estimation
         disp(['<strong>=== ',prefix_disp,' Patterns estimation</strong> ...']);
         
-        [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, patches_wf{id_patch});
+        [k(:,:,id_patch), phase(:,id_patch), a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, patches_wf{id_patch});
         if params.estiPattLowFreq
             Lf{id_patch} = EstimateLowFreqPatterns(params,patches{id_patch},patches_wf{id_patch},5);
         else
@@ -101,7 +101,7 @@ if nbPatches==1 || ~params.parallelProcess
         
         % -- Generate Patterns for reconstruction
         a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-        patterns{id_patch} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,id_patch),phase,a,sz_p,Lf{id_patch});
+        patterns{id_patch} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,id_patch),phase(:,id_patch),a,sz_p,Lf{id_patch});
         
         % -- Displays
         if params.displ > 0
@@ -109,9 +109,9 @@ if nbPatches==1 || ~params.parallelProcess
             fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
             % - Displays related to estimated parameters
             if params.szPatch==0
-                fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,0);
+                fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase(:,id_patch),a,fig_patt_par,0);
             else
-                fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase,a,fig_patt_par,id_patch);
+                fig_patt_par=DisplayPattParams(patches{id_patch},params,k(:,:,id_patch),phase(:,id_patch),a,fig_patt_par,id_patch);
             end
         end
         
@@ -142,14 +142,14 @@ if nbPatches==1 || ~params.parallelProcess
             prefix_disp=['[Correction Patch #',num2str(ii),']'];
             sz_p=size(patches{ii});
             disp(['<strong>--- ',prefix_disp,' Patterns correction</strong> ...']);
-            [k(:,:,ii), phase, a] = EstimatePatterns(params,PosRoiPatt, patches{ii},kmed, patches_wf{ii});
+            [k(:,:,ii), phase(:,id_patch), a] = EstimatePatterns(params,PosRoiPatt, patches{ii},kmed, patches_wf{ii});
             a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-            patterns{ii} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,ii),phase,a,sz_p,Lf{ii});
+            patterns{ii} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,ii),phase(:,id_patch),a,sz_p,Lf{ii});
             disp(['<strong>--- ',prefix_disp,' New reconstruction</strong> ...']);
             rec{ii} = Reconstruct(patches{ii},patterns{ii},params);
             % -- Displays
             if params.displ >0
-                fig_patt_par=DisplayPattParams(patches{ii},params,k(:,:,ii),phase,a,fig_patt_par,ii);
+                fig_patt_par=DisplayPattParams(patches{ii},params,k(:,:,ii),phase(:,id_patch),a,fig_patt_par,ii);
                 fig_patt=DisplayStack(Patches2Image(patterns,params.overlapPatch*2),'Estimated Patterns',fig_patt);
                 fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wfUp,fig_rec);
             end
@@ -160,13 +160,11 @@ else
     disp('<strong>START FlexSIM in parallel patch-based mode ... </strong>');
     parfor id_patch = 1:nbPatches
         t = getCurrentTask(); 
-        prefix_disp=['[Worker #',num2str(t.ID),'] Patch #',num2str(id_patch),'/',num2str(nbPatches),':'];
+        disp(['-- [Worker #',num2str(t.ID),'] Process patch #',num2str(id_patch),'/',num2str(nbPatches)]);
         sz_p=size(patches{id_patch});                             % Patch size
         
-        % -- Pattern Estimation
-        disp(['-- ',prefix_disp,' Patterns estimation...']);
-        
-        [k(:,:,id_patch), phase, a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, patches_wf{id_patch});
+        % -- Pattern Estimation        
+        [k(:,:,id_patch), phase(:,id_patch), a] = EstimatePatterns(params, PosRoiPatt, patches{id_patch}, 0, patches_wf{id_patch});
         if params.estiPattLowFreq
             Lf{id_patch} = EstimateLowFreqPatterns(params,patches{id_patch},patches_wf{id_patch},5);
         else
@@ -175,10 +173,9 @@ else
         
         % -- Generate Patterns for reconstruction
         a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-        patterns{id_patch} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,id_patch),phase,a,sz_p,Lf{id_patch});
+        patterns{id_patch} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,id_patch),phase(:,id_patch),a,sz_p,Lf{id_patch});
    
         % -- Reconstruction
-        disp(['-- ',prefix_disp,' Reconstruction...']);
         rec{id_patch} = Reconstruct(patches{id_patch},patterns{id_patch},params);
     end
     
@@ -189,17 +186,14 @@ else
     parfor idx=1:nbPatches
         if sum(idx_err==idx)==1
             t = getCurrentTask();
-            prefix_disp=['[Worker #',num2str(t.ID),'] Patch #',num2str(idx),':'];
+            disp(['-- [Worker #',num2str(t.ID),'] Correct patch #',num2str(idx)]);
             sz_p=size(patches{idx});
-            disp(['-- ',prefix_disp,' Patterns correction...']);
-            [k(:,:,idx), phase, a] = EstimatePatterns(params,PosRoiPatt, patches{idx},kmed, patches_wf{idx});
+            [k(:,:,idx), phase(:,idx), a] = EstimatePatterns(params,PosRoiPatt, patches{idx},kmed, patches_wf{idx});
             a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-            patterns{idx} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,idx),phase,a,sz_p,Lf{idx});
-            disp(['-- ',prefix_disp,' New reconstruction...']);
+            patterns{idx} = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,idx),phase(:,idx),a,sz_p,Lf{idx});
             rec{idx} = Reconstruct(patches{idx},patterns{idx},params);
         end
-    end
-    
+    end  
 end
 
 %% Save
@@ -212,7 +206,7 @@ if params.sav
 end
 
 % - Fill output variable
-res.k = k; res.phase = phase; res.a = a; 
+res.k = k; res.phase = phase; 
 res.rec=Patches2Image(rec,params.overlapPatch*2);
 res.patt=Patches2Image(patterns,params.overlapPatch*2);
 
