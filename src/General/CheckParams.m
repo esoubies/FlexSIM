@@ -106,7 +106,7 @@ msg="Should be a boolean.";
 assert(isfield(params, "parallelProcess"),prefix + missg + "`parallelProcess`. " + msg);
 assert(params.parallelProcess==0 || params.parallelProcess==1, prefix + invld + "`parallelProcess'. " + msg);  
 if params.parallelProcess % Check is parallel tolbox is available 
-  assert(license('test','Distrib_Computing_Toolbox'),prefix + "Parallel Computing Toolbox not installed. Set parameter parallelProcess to 0.")
+  assert(logical(license('test','Distrib_Computing_Toolbox')),prefix + "Parallel Computing Toolbox not installed. Set parameter parallelProcess to 0.")
   assert(params.verbose==0,"prefix + parameter verbose should be set to 0 when parallelProcess is activated.");
 end
 
