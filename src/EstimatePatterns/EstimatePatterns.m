@@ -102,8 +102,8 @@ for idx = imgIdxs
             ImgFTPan = uipanel('position',[0.05,0.05,0.4,0.4], 'title','SIM Images FT', 'Parent', f);
             sliceViewer(gather(G), "Colormap",viridis, "Parent",ImgPan);
             sliceViewer(gather(log10(abs(fftshift(fft2(G))+1))), "Colormap",viridis, "Parent",ImgFTPan);                                                                  
-            imshow(gather(wf), [], 'Parent', WFPan); colormap(viridis);
-            imshow(gather(log10(abs(fftshift(fft2(G))+1))), [], 'Parent', WFFTPan); colormap(viridis);
+            imshow(gather(wf), [], 'Parent', WFPan); colormap(viridis); title('WF');
+            imshow(gather(log10(abs(fftshift(fft2(wf))+1))), [], 'Parent', WFFTPan); colormap(viridis); title('WF FT')
         else
             subplot(2, 2, 1); imshow(G, [], "Parent",ImgPan); colormap(viridis);
             subplot(2, 2, 3); imshow(log10(abs(fftshift(fft2(G))+1)), [], "Parent",ImgFTPan); colormap(viridis);
@@ -160,7 +160,11 @@ for idx = imgIdxs
             k_final(OrientCount, :) = k_init(optIdx, :);        
         else
             DispMsg(params.verbose,'   - K init by peak detection n Fourier Space...');
-            k = PeakDetect(G, params); 
+            if params.method == 2
+                k = CrossCorr(G, params); 
+            else
+                k = PeakDetect(G, params); 
+            end
             k_final(OrientCount,:) = IterRefinementWavevec(k' ,wf,G,grids,OTF,sz,params);
         end
     else

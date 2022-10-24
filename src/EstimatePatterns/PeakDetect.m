@@ -24,17 +24,22 @@ fftg = sum(fftg, 3);
 fftg = MaskFT(fftg, FCut, [0.5, 1.1]); 
 sz = size(fftg); 
 if mod(sz(2), 2) == 1                                    % Odd in x scenario
-    fftg = fftg(:, ceil(sz(2)/2):end);                % from kx == 0 to max
-    wv_x = linspace(0,sz(2)-1,ceil(sz(2)-1/2));
+    fftg_r = fftg(:, ceil(sz(2)/2):end);                % from kx == 0 to max
+    wv_x = linspace(0,floor(sz(2)/2),ceil(sz(2)/2));
 else
-    fftg = fftg(:, sz(2)/2:end);                      % from kx == 
-    wv_x = linspace(-0.5,(sz(2)-1)/2, size(fftg, 2));    
+    fftg_r = fftg(:, sz(2)/2:end);                      % from kx == 
+    wv_x = linspace(-0.5,(sz(2)-1)/2, size(fftg_r, 2));    
 end
 wv_y = linspace(-(sz(1)-1)/2,(sz(1)-1)/2,sz(1));
 
-[~,idxMax]=max(fftg(:));                     % Extract and store maxima
-[ii,jj]=ind2sub(size(fftg),idxMax);
+[~,idxMax]=max(fftg_r(:));                     % Extract and store maxima
+[ii,jj]=ind2sub(size(fftg_r),idxMax);
 k = [wv_x(jj) wv_y(ii)]; 
 k = k*pi./sz/params.res;
 k = k*sign(k(1));
+if params.displ == 2
+    figure; sgtitle('Wavevector Initialization through Peak Detection') 
+    imshow(abs(fftg), []); colormap(viridis); title('$\Sigma FT\{G\}$', Interpreter='latex'); impixelinfo        
+    hold on; plot(jj+size(G,2)-length(wv_x) , ii, 'ro', 'MarkerSize', 8, 'LineWidth', 3); legend('Detected $\mathbf{k}$', Interpreter='latex')
+end
 end
