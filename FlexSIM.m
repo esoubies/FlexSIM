@@ -20,7 +20,11 @@ function res = FlexSIM(params)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
-warning off backtrace
+if params.parallelProcess
+    parfevalOnAll(@warning,0,'off','all');
+else
+    warning('off','all')
+end
 time0=tic;
 %% Routinary checks + Data loading
 CheckParams(params);                       % Check conformity of parameters
