@@ -54,7 +54,7 @@ sz = size(y);                                      % Calculate size of ROI
 y = (y - min(y(:))) / (max(y(:)) - min(y(:)));     % Normalize stack images
 wf_stack= (wf_stack-min(wf_stack(:))) / (max(wf_stack(:)) - min(wf_stack(:)));
 
-if ~k_init
+if ~gather(k_init)
     compute_k_init=true;
 else
     compute_k_init=false;
