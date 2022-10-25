@@ -40,7 +40,7 @@ params.overlapPatch=0;            % Overlap between patches if szPatch>0
 params.parallelProcess=0;         % If 1, paralellizes the loop over patches
 
 % -- Parameters for patterns estimation
-params.SzRoiPatt = 129;           % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
+params.SzRoiPatt = [];           % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
 params.limits = [0.95, 1.05];     % Ring over which the J function is evaluated for initializing (fc = 1)
 params.ringMaskLim = [0.4, 1.1];  % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
 params.nMinima = 1;               % Number of starting points for the refinement steps
