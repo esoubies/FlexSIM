@@ -79,7 +79,6 @@ if params.GPU
 end
 
 %% Loop over batch of images (1 batch = 1 orr + x phases)
-% TODO: add back the displays (need to think how to manage the patch-based case)
 OrientCount = 1; 
 for idx = imgIdxs
     DispMsg(params.verbose,[' Batch of images: ', num2str(idx')]);     % Display info to the user
@@ -87,7 +86,6 @@ for idx = imgIdxs
     wf = wf_stack(:,:,min(size(wf_stack,3),3));
     [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
 
-    %     if params.displ > 1 && OrientCount == 1           % Debug mode - display conditioned images
     if params.displ > 1                                 % Debug mode - display conditioned images
         f = figure; 
         if params.method
@@ -115,58 +113,51 @@ for idx = imgIdxs
     if compute_k_init
         if params.nPoints
             DispMsg(params.verbose,'   - Grid-based evaluation of J landscape...');
-            [Jp,K1,K2] = GridEvalJ(params,wf,G,grids);
-    
+            [map,K1,K2] = GridEvalJ(params,wf,G,grids);
+            
             if params.displ > 1                           % If requested, display J grid
-                mJp=max(Jp(:));
+                mJp=max(map(:));
                 fg=figure; subplot(1,2,1); axis xy;hold on; view(45,45);
-                surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
+                surf(K1,K2,map,'FaceColor','interp','EdgeColor','interp');
                 colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14); %axis([0 maxp -maxp maxp]);grid;
-    %             for nth = 1:params.nMinima
-    %                 h(nth)=plot3(k_est_landscape(nth, 1),k_est_landscape(nth, 2),mJp,'Color', 'k','Marker', '.', 'markersize',20); %#ok<AGROW>            
-    %             end        
                 sgtitle(sprintf('J landscape for orientation #%d', OrientCount))
                 title('Landscape and initial local minima');
                 subplot(1,2,2); axis xy;hold on; title('Zoom');
-                surf(K1,K2,Jp,'FaceColor','interp','EdgeColor','interp');
+                surf(K1,K2,map,'FaceColor','interp','EdgeColor','interp');
                 colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14)
-    %             for nth = 1:params.nMinima
-    %                 h(nth)=plot3(k_est_landscape(nth, 1),k_est_landscape(nth, 2),mJp,'Color', 'k','Marker', '.', 'markersize',20);           
-    %             end  
                 drawnow;
             end
-     
-            DispMsg(params.verbose,['   - Extracting the ',num2str(params.nMinima),' smallest local minima...']);
-            k_init= ExtractLocMin(params,Jp,K1,K2);              
-            DispMsg(params.verbose,'   - Refine position of extracted local min...');
-            if params.verbose>0, fprintf('%s','     - local min #');end;
-            for ithk = 1:params.nMinima
-                if mod(ithk,ceil(params.nMinima/10))==0 && params.verbose>0
-                    if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
-                end   
-                k_init(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
-            end
-            
-            DispMsg(params.verbose,'   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
-            if params.GPU
-                Jp=zeros(1,params.nMinima,'double','gpuArray');
-            else
-                Jp=zeros(1,params.nMinima);
-            end
-            for iii = 1:params.nMinima
-                Jp(iii) = EvalJ(k_init(iii,:), wf, G, params, grids, 0, 0, 0);
-            end
-            [~,optIdx] = min(Jp);
-            k_final(OrientCount, :) = k_init(optIdx, :);        
         else
-            DispMsg(params.verbose,'   - K init by peak detection n Fourier Space...');
-            if params.method == 2
-                k = CrossCorr(G, params); 
-            else
-                k = PeakDetect(G, params); 
-            end
-            k_final(OrientCount,:) = IterRefinementWavevec(k' ,wf,G,grids,OTF,sz,params);
+            DispMsg(params.verbose,'   - Cross-correl btw WF and data in Fourier...');
+            [map,K1,K2] = CrossCorr(G,wf, params);
+            map=-map; % As map corresponds here to cross-correl that we want to maximize (hence minimize the opposite)            
         end
+        
+        DispMsg(params.verbose,['   - Extracting ',num2str(params.nMinima),' candidate wave-vectors...']);
+        k_init= ExtractLocMin(params,map,K1,K2);
+        for vv=1:size(k_init,1), if k_init(vv,1)~=0, k_init(vv,:)=k_init(vv,:).*sign(k_init(vv,1));end; end
+                    
+        DispMsg(params.verbose,'   - Refine position of candidate wave-vectors...');
+        if params.verbose>0, fprintf('%s','     - candidate #');end;
+        for ithk = 1:params.nMinima
+            if mod(ithk,ceil(params.nMinima/10))==0 && params.verbose>0
+                if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
+            end
+            k_init(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
+            for vv=1:size(k_init,1), if k_init(vv,1)~=0, k_init(vv,:)=k_init(vv,:).*sign(k_init(vv,1));end; end
+        end
+        
+        DispMsg(params.verbose,'   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
+        if params.GPU
+            Jp=zeros(1,params.nMinima,'double','gpuArray');
+        else
+            Jp=zeros(1,params.nMinima);
+        end
+        for iii = 1:params.nMinima
+            Jp(iii) = EvalJ(k_init(iii,:), wf, G, params, grids, 0, 0, 0);
+        end
+        [~,optIdx] = min(Jp);
+        k_final(OrientCount, :) = k_init(optIdx, :);
     else
         DispMsg(params.verbose,'   - Refine position of wavevector...');
         k_final(OrientCount, :) = IterRefinementWavevec(k_init(OrientCount, :)',wf,G,grids,OTF,sz,params);

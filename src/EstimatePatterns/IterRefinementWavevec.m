@@ -29,8 +29,8 @@ count_it = 1;
 % -- Outer loop (each time we update the filters)
 for nit_filt = 1:params.FilterRefinement   % Iterate filter refinement
     % Update filters and (re)initialization of step-size
-    [att_filt, filt] = BuildFilter(k, sz, OTF, params, grids);   
-    tau=tau_init;                                                 
+    [att_filt, filt] = BuildFilter(k, sz, OTF, params, grids);                       
+    tau=tau_init; 
     
     % Calculate current cost
     cf(count_it) = EvalJ(k, wf, G, params, grids, filt, att_filt, 0); %#ok<AGROW>
@@ -61,6 +61,11 @@ for nit_filt = 1:params.FilterRefinement   % Iterate filter refinement
             end
         end
         
+        % Stop grad descent if step size becomes negligible
+        if (tau<tau_min) 
+            break;
+        end
+        
         % Calculate and store new cost
         count_it=count_it+1;                  
         cf(count_it) = EvalJ(ktmp, wf, G, params, grids, filt, att_filt, 0);
@@ -71,10 +76,12 @@ for nit_filt = 1:params.FilterRefinement   % Iterate filter refinement
             set(gca,'FontSIze',14);
             drawnow;
         end
-        % Stop grad descent if step size or cost improvement become negligible
-        if (tau<tau_min) || abs(cf(count_it)-cf(count_it-1))/abs(cf(count_it-1))<cf_tolerance
+        
+        % Stop grad descent if cost improvement becomes negligible
+        if abs(cf(count_it)-cf(count_it-1))/abs(cf(count_it-1))<cf_tolerance
             break;
         end
+
     end
     
 end
