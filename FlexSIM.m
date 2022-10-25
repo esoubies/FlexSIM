@@ -20,11 +20,7 @@ function res = FlexSIM(params)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
-if params.parallelProcess
-    parfevalOnAll(@warning,0,'off','all');
-else
-    warning('off','all')
-end
+warning('off','all')
 time0=tic;
 %% Routinary checks + Data loading
 CheckParams(params);                       % Check conformity of parameters
@@ -162,7 +158,10 @@ if nbPatches==1 || ~params.parallelProcess
 else
     % Parallelization over patches
     disp('<strong>START FlexSIM in parallel patch-based mode ... </strong>');
-    parfor id_patch = 1:nbPatches
+    nbcores=feature('numcores');
+    parpool('local',nbcores);
+    parfevalOnAll(@warning,0,'off','all');
+    parfor (id_patch = 1:nbPatches,nbcores)
         t = getCurrentTask(); 
         disp(['-- [Worker #',num2str(t.ID),'] Process patch #',num2str(id_patch),'/',num2str(nbPatches)]);
         sz_p=size(patches{id_patch});                             % Patch size
@@ -187,7 +186,7 @@ else
     kmed=median(k,3); % median wavevector
     relErr=sum(sum((k-kmed).^2,1),2)./sum(sum((k).^2,1),2);
     idx_err=find(relErr>1e-3);
-    parfor idx=1:nbPatches
+    parfor (idx=1:nbPatches,nbcores)
         if sum(idx_err==idx)==1
             t = getCurrentTask();
             disp(['-- [Worker #',num2str(t.ID),'] Correct patch #',num2str(idx)]);
@@ -198,6 +197,7 @@ else
             rec{idx} = Reconstruct(gather(patches{idx}),gather(patterns{idx}),params);
         end
     end  
+    delete(gcp('nocreate'));
 end
 
 %% Save
