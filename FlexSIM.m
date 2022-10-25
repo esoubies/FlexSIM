@@ -158,6 +158,7 @@ if nbPatches==1 || ~params.parallelProcess
 else
     % Parallelization over patches
     disp('<strong>START FlexSIM in parallel patch-based mode ... </strong>');
+    if ~isempty(gcp('nocreate')), delete(gcp('nocreate')); end
     nbcores=feature('numcores');
     parpool('local',nbcores);
     parfevalOnAll(@warning,0,'off','all');
