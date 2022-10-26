@@ -52,9 +52,9 @@ params.method = 2;                % Method : 0 - treat all images independently
 params.estiPattLowFreq=1;         % If true, estimate the low-freq component of the patterns
                                   
 % -- Parameters for image Reconstruction 
-params.sepOrr = 1;                % Boolean if true treat each orientation separately
+params.sepOrr = 0;                % Boolean if true treat each orientation separately
 params.padSz=20;                  % Padding size for the optimization variable (to account for boundaries effects)
-params.mu =  1e-3;                % Regularization parameter
+params.mu =  5e-5;                % Regularization parameter
 params.regType=1;                 % Choice regul: 1 for Tikhonov (i.e., Wiener), 2 for Total Variation, 3 for Good roughness
 params.maxIt = 100;               % Maximum number of iterations (stopping criteria)
 params.stepTol = 1e-3;            % Relative error tolerance between two iterates (stopping criteria)

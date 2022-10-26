@@ -46,13 +46,13 @@ params.ringMaskLim = [0, 1.1];    % Lower and upper limit of mask to finish hidi
 params.nMinima = 1;               % Number of starting points for the refinement steps
 params.nPoints = 0;               % Number of points in the J evaluation grid. If set to 0, initialization is done via cross-correlation in Fourier domain.
 params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
-params.method = 1;                % Method : 0 - treat all images independently
+params.method = 2;                % Method : 0 - treat all images independently
                                   %          1 - use all images with same orientation to estimate a unique wavevector
                                   %          2 - 1 + assume equally spaced phases
 params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns
                                   
 % -- Parameters for image Reconstruction 
-params.sepOrr = 1;                % Boolean if true treat each orientation separately
+params.sepOrr = 0;                % Boolean if true treat each orientation separately
 params.padSz=20;                  % Padding size for the optimization variable (to account for boundaries effects)
 params.mu =  5e-5;                % Regularization parameter
 params.regType=1;                 % Choice regul: 1 for Tikhonov (i.e., Wiener), 2 for Total Variation, 3 for Good roughness

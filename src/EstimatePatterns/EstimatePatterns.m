@@ -135,7 +135,6 @@ for idx = imgIdxs
         
         DispMsg(params.verbose,['   - Extracting ',num2str(params.nMinima),' candidate wave-vectors...']);
         k_init= ExtractLocMin(params,map,K1,K2);
-        for vv=1:size(k_init,1), if k_init(vv,1)~=0, k_init(vv,:)=k_init(vv,:).*sign(k_init(vv,1));end; end
                     
         DispMsg(params.verbose,'   - Refine position of candidate wave-vectors...');
         if params.verbose>0, fprintf('%s','     - candidate #');end;
@@ -144,7 +143,6 @@ for idx = imgIdxs
                 if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
             end
             k_init(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
-            for vv=1:size(k_init,1), if k_init(vv,1)~=0, k_init(vv,:)=k_init(vv,:).*sign(k_init(vv,1));end; end
         end
         
         DispMsg(params.verbose,'   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J

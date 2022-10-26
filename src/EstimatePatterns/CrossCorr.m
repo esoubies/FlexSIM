@@ -28,13 +28,13 @@ sz=size(fftwf);
 % Perform cross-correlation btw the fft of wf and the fft of processed data G
 fftwfpad=padarray(padarray(fftwf,ceil(sz(1:2)/2),'pre'),floor(sz(1:2)/2),'post');
 fftGpad=padarray(padarray(fftG,ceil(sz(1:2)/2),'pre'),floor(sz(1:2)/2),'post');
-corr=fftshift(ifft2(fft2(ifftshift(fftwfpad)).*fft2(ifftshift(fftGpad))));
-corr=corr(ceil(sz(1)/2)+1:end-floor(sz(1)/2),ceil(sz(2)/2)+1:end-floor(sz(2)/2),:);
+corrtmp=fftshift(ifft2(fft2(ifftshift(fftwfpad)).*fft2(ifftshift(fftGpad))));
+corrtmp=corrtmp(ceil(sz(1)/2)+1:end-floor(sz(1)/2),ceil(sz(2)/2)+1:end-floor(sz(2)/2),:);
 if params.method==2
-    wght=reshape(exp(2*1i*[0:params.nbPh-1]*pi/params.nbPh),[1,1,params.nbPh]);
-    corr=MaskFT((abs(sum(corr.*wght,3))),FCut,params.limits);
+    wght=reshape(exp(-2*1i*[0:params.nbPh-1]*pi/params.nbPh),[1,1,params.nbPh]);
+    corr=MaskFT((abs(sum(corrtmp.*wght,3))),FCut,params.limits);
 else
-    corr=MaskFT((sum(abs(corr),3)),FCut,params.limits);
+    corr=MaskFT((sum(abs(corrtmp),3)),FCut,params.limits);
 end
 
 
