@@ -21,8 +21,9 @@ function [corr,K1,K2] = CrossCorr(G,wf,params)
 
 % Pre-computations
 FCut = 2*params.Na/params.lamb*params.res;            % Cut-off frequency
-fftwf=fftshift(fft2(wf));
-fftG=fftshift(fft2(G));
+sz=size(wf);
+fftwf=fftshift(fft2(padarray(padarray(wf,ceil(sz(1:2)/2),'pre'),floor(sz(1:2)/2),'post')));
+fftG=fftshift(fft2(padarray(padarray(G,ceil(sz(1:2)/2),'pre'),floor(sz(1:2)/2),'post')));
 sz=size(fftwf);
 
 % Perform cross-correlation btw the fft of wf and the fft of processed data G
