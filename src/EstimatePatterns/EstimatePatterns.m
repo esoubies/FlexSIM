@@ -81,8 +81,8 @@ end
 %% Loop over batch of images (1 batch = 1 orr + x phases)
 OrientCount = 1; 
 for idx = imgIdxs
-    DispMsg(params.verbose,[' Batch of images: ', num2str(idx')]);     % Display info to the user
-    DispMsg(params.verbose,'   - Remove WF and mask...');
+    DispMsg(1,[' Batch of images: ', num2str(idx')]);     % Display info to the user
+    DispMsg(1,'   - Remove WF and mask...');
     wf = wf_stack(:,:,min(size(wf_stack,3),3));
     [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
 
@@ -112,7 +112,7 @@ for idx = imgIdxs
     
     if compute_k_init
         if params.nPoints
-            DispMsg(params.verbose,'   - Grid-based evaluation of J landscape...');
+            DispMsg(1,'   - Grid-based evaluation of J landscape...');
             [map,K1,K2] = GridEvalJ(params,wf,G,grids);
             
             if params.displ > 1                           % If requested, display J grid
@@ -128,24 +128,24 @@ for idx = imgIdxs
                 drawnow;
             end
         else
-            DispMsg(params.verbose,'   - Cross-correl btw WF and data in Fourier...');
+            DispMsg(1,'   - Cross-correl btw WF and data in Fourier...');
             [map,K1,K2] = CrossCorr(G,wf, params);
             map=-map; % As map corresponds here to cross-correl that we want to maximize (hence minimize the opposite)            
         end
         
-        DispMsg(params.verbose,['   - Extracting ',num2str(params.nMinima),' candidate wave-vectors...']);
+        DispMsg(1,['   - Extracting ',num2str(params.nMinima),' candidate wave-vectors...']);
         k_init= ExtractLocMin(params,map,K1,K2);
                     
-        DispMsg(params.verbose,'   - Refine position of candidate wave-vectors...');
-        if params.verbose>0, fprintf('%s','     - candidate #');end;
+        DispMsg(1,'   - Refine position of candidate wave-vectors...');
+        fprintf('%s','     - candidate #');
         for ithk = 1:params.nMinima
-            if mod(ithk,ceil(params.nMinima/10))==0 && params.verbose>0
+            if mod(ithk,ceil(params.nMinima/10))==0
                 if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
             end
             k_init(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
         end
         
-        DispMsg(params.verbose,'   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
+        DispMsg(1,'   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
         if params.GPU
             Jp=zeros(1,params.nMinima,'double','gpuArray');
         else
@@ -157,11 +157,11 @@ for idx = imgIdxs
         [~,optIdx] = min(Jp);
         k_final(OrientCount, :) = k_init(optIdx, :);
     else
-        DispMsg(params.verbose,'   - Refine position of wavevector...');
+        DispMsg(1,'   - Refine position of wavevector...');
         k_final(OrientCount, :) = IterRefinementWavevec(k_init(OrientCount, :)',wf,G,grids,OTF,sz,params);
     end
     
-    DispMsg(params.verbose,'   - Computing phases and amplitutes...'); 
+    DispMsg(1,'   - Computing phases and amplitutes...'); 
     [phase(OrientCount, :),a(OrientCount, :)]=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
     
     OrientCount=OrientCount+1;

@@ -88,35 +88,12 @@ msg="Should be a real in (0,1].";
 assert(isfield(params, "damp"),prefix + missg + "`damp`. " + msg);
 assert(params.damp> 0 && params.damp <=1 ,prefix + invld + "`damp`. " + msg);
 
-%% FlexSIM parameters
-% -- Patch-based processing
-prefix="[Patch-based processing] ";
-% szPatch
-msg="Should be a non-negative integer.";
-assert(isfield(params, "szPatch"),prefix + missg + "`szPatch`. " + msg);
-assert(params.szPatch>= 0,prefix + invld + "`szPatch`. " + msg);
-if ~isempty(params.SzRoiBack) && params.szPatch>0, assert(params.szPatch>=params.SzRoiBack,"Incompatible `szPatch` and `SzRoiBack` paramater. Should be set as szPatch > SzRoiBack"); end
-if params.szPatch>0 % Check the two other parameters only if patch-based process is active (szPatch>0)
-% overlapPatch
-assert(isfield(params, "overlapPatch"),prefix + missg + "`overlapPatch`. " + msg);
-assert(params.overlapPatch>= 0,prefix + invld + "`overlapPatch`. " + msg);
-end
-% parallelProcess
-msg="Should be a boolean.";
-assert(isfield(params, "parallelProcess"),prefix + missg + "`parallelProcess`. " + msg);
-assert(params.parallelProcess==0 || params.parallelProcess==1, prefix + invld + "`parallelProcess'. " + msg);  
-if params.parallelProcess % Check is parallel tolbox is available 
-  assert(logical(license('test','Distrib_Computing_Toolbox')),prefix + "Parallel Computing Toolbox not installed. Set parameter parallelProcess to 0.")
-  assert(params.verbose==0,"prefix + parameter verbose should be set to 0 when parallelProcess is activated.");
-end
-
-% -- Parameters for patterns estimation
+%% Parameters for patterns estimation
 prefix="[Patterns Estimation] ";
 % SzRoiPatt
 msg="Should be either empty or an odd number.";
 assert(isfield(params, "SzRoiPatt"),prefix + missg + "`SzRoiPatt`. " + msg);
 assert(isempty(params.SzRoiPatt) || mod(params.SzRoiPatt,2)==1,prefix + invld + "`SzRoiPatt`. " + msg);
-if params.szPatch >0 && ~isempty(params.SzRoiPatt), assert(params.szPatch>=params.SzRoiPatt,"Incompatible `szPatch` and `SzRoiPatt` paramater. Should be set as szPatch > SzRoiPatt"); end
 % limits
 msg="Should be a vector of length 2 with values within [0,2].";
 assert(isfield(params, "limits"),prefix + missg + "`limits`. " + msg);
@@ -154,7 +131,29 @@ assert(isfield(params, "estiPattLowFreq"),prefix + missg + "`estiPattLowFreq`. "
 assert(params.estiPattLowFreq==0 || params.estiPattLowFreq==1, prefix + invld + "`estiPattLowFreq'. " + msg);  
 
                                   
-% -- Parameters for image Reconstruction 
+%% Parameters for image Reconstruction 
+% -- Patch-based processing
+prefix="[Patch-based processing] ";
+% szPatch
+msg="Should be a non-negative integer.";
+assert(isfield(params, "szPatch"),prefix + missg + "`szPatch`. " + msg);
+assert(params.szPatch>= 0,prefix + invld + "`szPatch`. " + msg);
+if ~isempty(params.SzRoiBack) && params.szPatch>0, assert(params.szPatch>=params.SzRoiBack,"Incompatible `szPatch` and `SzRoiBack` paramater. Should be set as szPatch > SzRoiBack"); end
+if params.szPatch>0 % Check the two other parameters only if patch-based process is active (szPatch>0)
+% overlapPatch
+assert(isfield(params, "overlapPatch"),prefix + missg + "`overlapPatch`. " + msg);
+assert(params.overlapPatch>= 0,prefix + invld + "`overlapPatch`. " + msg);
+end
+% parallelProcess
+msg="Should be a boolean.";
+assert(isfield(params, "parallelProcess"),prefix + missg + "`parallelProcess`. " + msg);
+assert(params.parallelProcess==0 || params.parallelProcess==1, prefix + invld + "`parallelProcess'. " + msg);  
+if params.parallelProcess % Check is parallel tolbox is available 
+  assert(logical(license('test','Distrib_Computing_Toolbox')),prefix + "Parallel Computing Toolbox not installed. Set parameter parallelProcess to 0.")
+  assert(params.verbose==0,"prefix + parameter verbose should be set to 0 when parallelProcess is activated.");
+end
+
+% -- Operators, costs, and optim
 prefix="[Image Reconstruction] ";
 % mu, stepTol
 msg="Should be a positive real.";
