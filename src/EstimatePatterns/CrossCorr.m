@@ -29,7 +29,7 @@ sz=size(fftwf);
 % Perform cross-correlation btw the fft of wf and the fft of processed data G
 fftwfpad=padarray(padarray(fftwf,ceil(sz(1:2)/2),'pre'),floor(sz(1:2)/2),'post');
 fftGpad=padarray(padarray(fftG,ceil(sz(1:2)/2),'pre'),floor(sz(1:2)/2),'post');
-corrtmp=fftshift(ifft2(fft2(ifftshift(fftwfpad)).*fft2(ifftshift(fftGpad))));
+corrtmp=fftshift(ifft2(conj(fft2(ifftshift(fftwfpad))).*fft2(ifftshift(fftGpad))));
 corrtmp=corrtmp(ceil(sz(1)/2)+1:end-floor(sz(1)/2),ceil(sz(2)/2)+1:end-floor(sz(2)/2),:);
 if params.method==2
     wght=reshape(exp(-2*1i*[0:params.nbPh-1]*pi/params.nbPh),[1,1,params.nbPh]);
@@ -37,7 +37,6 @@ if params.method==2
 else
     corr=MaskFT((sum(abs(corrtmp),3)),FCut,params.limits);
 end
-
 
 % Generate grid and get radius
 if mod(sz(1),2)==0
