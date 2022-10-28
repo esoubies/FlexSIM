@@ -23,11 +23,14 @@ params.sav = 1;                         % Boolean if true save the result
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 
 %% Data related parameters
-% -- Properties of the SIM data stack
-params.StackOrder= 'pa';                % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
-params.SzRoiBack=[];                    % Size (odd number or empty) of the ROI for background estimation (position automatically detected so as to minimize the intensity within the ROI)
-params.nbOr = 3;                        % Number of orientations
-params.nbPh = 3;                        % Number of phases 
+% -- Background estimation
+params.SzRoiBack=[];        % Size (odd number or empty) of the ROI for background estimation (position automatically detected so as to minimize the intensity within the ROI)
+
+% -- Patterns
+params.StackOrder= 'pa';    % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+params.nbOr = 3;            % Number of orientations
+params.nbPh = 3;            % Number of phases 
+params.pattAmp=0.8;           % Amplitude of the patterns in [0,1]
 
 % -- OTF Approximation
 params.lamb = 510;     % Emission wavelength

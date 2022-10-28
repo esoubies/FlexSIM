@@ -21,17 +21,20 @@ params.sav = 1;                         % Boolean if true save the result
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 
 %% Data related parameters
-% -- Properties of the SIM data stack
-params.StackOrder = 'pa';               % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
-params.SzRoiBack=31;                    % Size (odd number or empty) of the ROI for background estimation (position automatically detected so as to minimize the intensity within the ROI)
-params.nbOr = 3;                        % Number of orientations
-params.nbPh = 3;                        % Number of phases 
+% -- Background estimation
+params.SzRoiBack=31;        % Size (odd number or empty) of the ROI for background estimation (position automatically detected so as to minimize the intensity within the ROI)
+
+% -- Patterns
+params.StackOrder = 'pa';   % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+params.nbOr = 3;            % Number of orientations
+params.nbPh = 3;            % Number of phases 
+params.pattAmp=1;           % Amplitude of the patterns in [0,1]
 
 % -- OTF Approximation
-params.lamb = 525;     % Emission wavelength
-params.res = 63;       % Pixel size (nm)
-params.Na = 1.49;      % Objective numerica aperture
-params.damp = 0.3;     % damping parameter (in [0,1], 1= no damping) to attenuate middle freq in the approx OTF
+params.lamb = 525;        % Emission wavelength
+params.res = 63;          % Pixel size (nm)
+params.Na = 1.49;         % Objective numerica aperture
+params.damp = 0.3;        % damping parameter (in [0,1], 1= no damping) to attenuate middle freq in the approx OTF
 
 %% Parameters for patterns estimation
 params.SzRoiPatt = [];            % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)

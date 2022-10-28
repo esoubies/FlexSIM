@@ -47,12 +47,11 @@ if params.method
         for j = 1:params.nbPh
             if params.method == 2
                phoff = phase(i);
-               ai = a(i);
-               patt(:,:,(i-1)*params.nbPh+j) = 1 + ai*(cos(2*(phoff+(j-1)*pi/params.nbPh))*cos(2*(ki(1)*X+ki(2)*Y)) ...
+               patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*(phoff+(j-1)*pi/params.nbPh))*cos(2*(ki(1)*X+ki(2)*Y)) ...
                                                      - sin(2*(phoff+(j-1)*pi/params.nbPh))*sin(2*(ki(1)*X+ki(2)*Y)));
             else
-                aij = a(i, j); ph = phase(i, j);
-                patt(:,:,(i-1)*params.nbPh+j) = 1 + aij*(cos(2*ph)*cos(2*(ki(1)*X+ki(2)*Y)) ...
+                ph = phase(i, j);
+                patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*ph)*cos(2*(ki(1)*X+ki(2)*Y)) ...
                                                       - sin(2*ph)*sin(2*(ki(1)*X+ki(2)*Y)));
             end
         end

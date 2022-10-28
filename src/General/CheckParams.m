@@ -51,8 +51,15 @@ end
 
 
 %% Data related parameters
-% -- Properties of the SIM data stack
-prefix="[SIM data Stack] ";
+prefix="[Background estimation] ";
+% -- Background estimation
+% SzRoiBack
+msg="Should be either empty or an odd number.";
+assert(isfield(params, "SzRoiBack"),prefix + missg + "`SzRoiBack`. " + msg);
+assert(isempty(params.SzRoiBack) || mod(params.SzRoiBack,2)==1,prefix + invld + "`SzRoiBack`. " + msg);
+
+% -- Patterns
+prefix="[Patterns] ";
 % nbOr and nbPh
 msg="Should be a positive integer.";
 assert(isfield(params, "nbOr"),prefix + missg + "`nbOr`. " + msg);
@@ -68,10 +75,11 @@ if params.nbPh == 1       % Ensure that the widefield is there
         "Widefield image is necessary when providing one image per orientation. " + ...
         "Ensure that the acquisition convention is one of `paw, apw, wap, wpa`")
 end
-% SzRoiBack
-msg="Should be either empty or an odd number.";
-assert(isfield(params, "SzRoiBack"),prefix + missg + "`SzRoiBack`. " + msg);
-assert(isempty(params.SzRoiBack) || mod(params.SzRoiBack,2)==1,prefix + invld + "`SzRoiBack`. " + msg);
+% pattAmp
+msg="Should be a real in (0,1].";
+assert(isfield(params, "pattAmp"),prefix + missg + "`pattAmp`. " + msg);
+assert(params.pattAmp> 0 && params.pattAmp <=1 ,prefix + invld + "`pattAmp`. " + msg);
+
 
 % -- OTF Approximation
 prefix="[OTF Approximation]";

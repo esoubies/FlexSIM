@@ -1,4 +1,4 @@
-function fig_id=DisplayPattParams(y,params,k,phase,a,fig_id,id_patch)
+function fig_id=DisplayPattParams(y,params,k,phase,fig_id,id_patch)
 %% Pre-computations
 sz_y=size(y); first=0;
 if ~isgraphics(fig_id)
@@ -54,20 +54,20 @@ id_font=find(cell2mat(cellfun(@(x) sum(strcmp(x,listfonts)),mono_fonts,'UniformO
 
 % - Display Table
 if params.method==0
-    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase, a);       % Initialize the data
-    Col_name={' Kx[px]',' Ky[px]',' Ph',' Amp'};
+    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase);       % Initialize the data
+    Col_name={' Kx[px]',' Ky[px]',' Ph'};
     for ii=1:params.nbOr*params.nbPh
         Row_name{ii}=['Img #',num2str(ii)];
     end
 elseif params.method==1
-    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase, a);       % Initialize the data
-    Col_name={' Kx[px]',' Ky[px]',' Ph #1',' Ph #2',' Ph #3',' Amp #1',' Amp #2',' Amp #3'};
+    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase);       % Initialize the data
+    Col_name={' Kx[px]',' Ky[px]',' Ph #1',' Ph #2',' Ph #3'};
     for ii=1:params.nbOr
         Row_name{ii}=['Or #',num2str(ii)];
     end
 elseif params.method==2
-    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase,mod(phase + pi/3,pi),mod(phase + 2*pi/3,pi), a);       % Initialize the data
-    Col_name={' Kx[px]',' Ky[px]',' Ph #1',' Ph #2',' Ph #3',' Amp'};
+    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase,mod(phase + pi/3,pi),mod(phase + 2*pi/3,pi));       % Initialize the data
+    Col_name={' Kx[px]',' Ky[px]',' Ph #1',' Ph #2',' Ph #3'};
     for ii=1:params.nbOr
         Row_name{ii}=['Or #',num2str(ii)];
     end

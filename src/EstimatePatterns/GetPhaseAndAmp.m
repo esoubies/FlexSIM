@@ -1,6 +1,6 @@
-function [ph,a]=GetPhaseAndAmp(k,wf,G,grids,OTF,sz,params)
+function ph=GetPhaseAndAmp(k,wf,G,grids,OTF,sz,params)
 %--------------------------------------------------------------------------
-% function [ph,a]=GetPhaseAndAmp(k,wf,G,grids,OTF,sz,params)
+% function ph=GetPhaseAndAmp(k,wf,G,grids,OTF,sz,params)
 %
 % Given a wavevector k, compute the optimal phase and amplitude through the
 % minimization of J (solving of a linear system). See the function EvalJ for
@@ -39,21 +39,21 @@ tmp = tmp + pi * (ac < 0);
 ph=mod(tmp,2*pi)/2;   
 
 % - Get amplitude of the pattern
-% TODO : To improve...
-A=BuildA(k, wf, 0, params, grids);
-AA = A'*A;                                   % Recalculate ac and as without...
-if params.method == 2                        % filters and extract amplitude
-    s = AA\A'*G(:);
-elseif params.method == 1
-    s = zeros(2, 3);
-    for phNb = 1:params.nbPh
-        G_filt_tmp= G_filt(:,:,phNb);
-        s(:,phNb) = AA\A'*G_filt_tmp(:);
-    end
-else
-    G_filt_tmp= G_filt;
-    s = AA\A'*G_filt_tmp(:);
-end
-a=sqrt(s(1,:).^2 + s(2,:).^2);
+% Not used : a is now a parameter that needs to be adjusted by the user
+% A=BuildA(k, wf, 0, params, grids);
+% AA = A'*A;                                   % Recalculate ac and as without...
+% if params.method == 2                        % filters and extract amplitude
+%     s = AA\A'*G(:);
+% elseif params.method == 1
+%     s = zeros(2, 3);
+%     for phNb = 1:params.nbPh
+%         G_filt_tmp= G_filt(:,:,phNb);
+%         s(:,phNb) = AA\A'*G_filt_tmp(:);
+%     end
+% else
+%     G_filt_tmp= G_filt;
+%     s = AA\A'*G_filt_tmp(:);
+% end
+% a=sqrt(s(1,:).^2 + s(2,:).^2);
 
 end

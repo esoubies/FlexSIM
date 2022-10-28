@@ -1,6 +1,6 @@
-function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stack)
+function [k_final, phase] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stack)
 %--------------------------------------------------------------------------
-% Function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stack)
+% Function [k_final, phase] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stack)
 %
 % Estimate the parameters of 2D sinusoidal patterns of the form 
 %    w(x) = 1 + a cos(<k,x> + phase),
@@ -34,7 +34,6 @@ function [k_final, phase, a] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_s
 %
 % Outputs : k_final -> array with the estimated wavevectors (if method=0, of size nbOr*nbPh. Otherwise, of size nbOr)
 %           phase   -> array with the estimated phases (if method=0,1, of size nbOr*nbPh. Otherwise, of size nbOr)
-%           a       -> Same size as phase, contains the amplitude of the SIM patterns
 %
 % [1] FlexSIM: ADD REF TO PAPER
 %
@@ -162,7 +161,7 @@ for idx = imgIdxs
     end
     
     DispMsg(1,'   - Computing phases and amplitutes...'); 
-    [phase(OrientCount, :),a(OrientCount, :)]=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
+    phase(OrientCount, :)=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
     
     OrientCount=OrientCount+1;
 end

@@ -69,7 +69,7 @@ end
 %% FlexSIM pipeline
 % -- Pattern Estimation
 disp('<strong>=== Patterns estimation</strong> ...');
-[k, phase, a] = EstimatePatterns(params, PosRoiPatt, y, 0, wf);
+[k, phase] = EstimatePatterns(params, PosRoiPatt, y, 0, wf);
 if params.estiPattLowFreq
     Lf = EstimateLowFreqPatterns(params,y,wf,5);
 else
@@ -77,15 +77,14 @@ else
 end
 
 % Generate Patterns for reconstruction
-a=a./a; % TODO: Hardcode to 1 for now (to be as in previous version)
-patterns = GenerateReconstructionPatterns(params,PosRoiPatt,k,phase,a,sz,Lf);
+patterns = GenerateReconstructionPatterns(params,PosRoiPatt,k,phase,params.pattAmp,sz,Lf);
 
 % Displays
 if params.displ > 0
     % - Display of estimated patterns
     DisplayStack(patterns,'Estimated Patterns',-1);
     % - Displays related to estimated parameters
-    DisplayPattParams(y,params,k,phase,a,-1,0);
+    DisplayPattParams(y,params,k,phase,-1,0);
 end
         
 % -- Reconstruction
