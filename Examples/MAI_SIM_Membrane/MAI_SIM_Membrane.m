@@ -28,13 +28,13 @@ params.SzRoiBack=51;        % Size (odd number or empty) of the ROI for backgrou
 params.StackOrder= 'pa';    % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
 params.nbOr = 3;            % Number of orientations
 params.nbPh = 3;            % Number of phases 
-params.pattAmp=1;         % Amplitude of the patterns in [0,1]
+params.pattAmp=0.8;         % Amplitude of the patterns in [0,1]
 
 % -- OTF Approximation
 params.lamb = 530;     % Emission wavelength
 params.res = 64;       % Pixel size (nm)
 params.Na = 1.2;       % Objective numerica aperture
-params.damp = 0.8;     % damping parameter (in [0,1], 1= no damping) to attenuate middle freq in the approx OTF
+params.damp = 0.3;     % damping parameter (in [0,1], 1= no damping) to attenuate middle freq in the approx OTF
 
 %% Parameters for patterns estimation
 params.SzRoiPatt = 257;           % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
@@ -53,6 +53,10 @@ params.estiPattLowFreq=1;         % If true, estimate the low-freq component of 
 params.szPatch=0;                 % If >0, FlexSIM will perform the reconstruction by patches of size 'szPatch'
 params.overlapPatch=0;            % Overlap between patches if szPatch>0
 params.parallelProcess=0;         % If 1, paralellizes the loop over patches
+
+% -- OTF Attenuation
+params.OTFAttStr=0.99;            % Strenght of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.
+params.OTFAttwdth=0.1;            % Width of the OTF attenuation (>0). If 0 no OTF attenuation.
 
 % -- Operators and Costs
 params.sepOrr = 0;                % Boolean if true treat each orientation separately

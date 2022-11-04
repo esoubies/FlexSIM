@@ -161,6 +161,17 @@ if params.parallelProcess % Check is parallel tolbox is available
   assert(params.verbose==0,"prefix + parameter verbose should be set to 0 when parallelProcess is activated.");
 end
 
+% -- OTF Attenuation
+prefix="[OTF Attenuation] ";
+% OTFAttStr
+msg="Should be a real in [0,1].";
+assert(isfield(params, "OTFAttStr"),prefix + missg + "`OTFAttStr`. " + msg);
+assert(params.OTFAttStr>= 0 && params.OTFAttStr <=1 ,prefix + invld + "`OTFAttStr`. " + msg);
+% OTFAttwdth
+msg="Should be a nonnegative real.";
+assert(isfield(params, "OTFAttwdth"),prefix + missg + "`OTFAttwdth`. " + msg);
+assert(params.OTFAttwdth>=0,prefix + invld + "`OTFAttwdth`. " + msg);
+
 % -- Operators, costs, and optim
 prefix="[Image Reconstruction] ";
 % mu, stepTol

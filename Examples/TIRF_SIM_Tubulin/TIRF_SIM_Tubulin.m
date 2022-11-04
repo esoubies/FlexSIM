@@ -54,6 +54,10 @@ params.szPatch=0;                 % If >0, FlexSIM will perform the reconstructi
 params.overlapPatch=0;            % Overlap between patches if szPatch>0
 params.parallelProcess=0;         % If 1, paralellizes the loop over patches
 
+% -- OTF Attenuation
+params.OTFAttStr=0.999;           % Strenght of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.
+params.OTFAttwdth=0.5;            % Width of the OTF attenuation (>0). If 0 no OTF attenuation.
+
 % -- Operators and Costs
 params.sepOrr = 0;                % Boolean if true treat each orientation separately
 params.padSz=50;                  % Padding size for the optimization variable (to account for boundaries effects)

@@ -44,13 +44,19 @@ otf = GenerateOTF(params.Na,params.lamb,min([256,256],sz(1:2)),params.res/2,para
 psf = fftshift(real(ifft2(otf)));
 % -- Normalization
 maxy=max(y(:));y=y/maxy;
-sig=max(max(y(:,:,1)))/10;
+
 
 %% Operators and Regul
 % -- Data term
 H=LinOpConv('PSF', psf,1,[1,2],'Centered','Pad',szUp+params.padSz,0);
 P=LinOpSelectorPatch(szUp+params.padSz,[1 1],szUp);
 S=LinOpDownsample(szUp,downFact);
+if params.OTFAttStr && params.OTFAttwdth
+    OTFatt = GenerateOTFAttMask(params.Na,params.lamb,min([256,256],sz(1:2)),params.res,params.OTFAttStr,params.OTFAttwdth);
+    Hatt=LinOpConv('PSF', fftshift(real(ifft2(OTFatt))),1,[1,2],'Centered','Pad',sz(1:2),0);
+else
+    Hatt=LinOpIdentity(sz(1:2));
+end
 
 % -- Regularization
 G=LinOpGrad(P.sizeout,[1 2]); 
@@ -75,19 +81,20 @@ for id1=0:n1-1
     % -- Patterns normalization
     pp=pp/(mean(pp(:))*size(pp,3));
     % -- Data term
+    sig=max(max(y(:,:,1)))/10;
     wght=LinOpDiag([],1./(yy(:,:,1)+sig));
     if params.padSz==0
-        F=CostL2([],yy(:,:,1),wght)*(S*H*LinOpDiag(P.sizeout,pp(:,:,1)));
+        F=CostL2([],yy(:,:,1),wght*Hatt)*(S*H*LinOpDiag(P.sizeout,pp(:,:,1)));
     else
-        F=CostL2([],yy(:,:,1),wght)*(S*P*H*P'*LinOpDiag(P.sizeout,pp(:,:,1)));
+        F=CostL2([],yy(:,:,1),wght*Hatt)*(S*P*H*P'*LinOpDiag(P.sizeout,pp(:,:,1)));
     end
     for id2=2:n2
         sig=max(max(yy(:,:,id2)))/10;
         wght=LinOpDiag([],1./(yy(:,:,id2)+sig));
         if params.padSz==0
-            F=F+CostL2([],yy(:,:,id2),wght)*(S*H*LinOpDiag(P.sizeout,pp(:,:,id2)));
+            F=F+CostL2([],yy(:,:,id2),wght*Hatt)*(S*H*LinOpDiag(P.sizeout,pp(:,:,id2)));
         else
-            F=F+CostL2([],yy(:,:,id2),wght)*(S*P*H*P'*LinOpDiag(P.sizeout,pp(:,:,id2)));
+            F=F+CostL2([],yy(:,:,id2),wght*Hatt)*(S*P*H*P'*LinOpDiag(P.sizeout,pp(:,:,id2)));
         end
     end
     

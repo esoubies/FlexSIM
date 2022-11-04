@@ -30,7 +30,7 @@ params.SzRoiBack=151;       % Size (odd number or empty) of the ROI for backgrou
 params.StackOrder= 'pa';    % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
 params.nbOr = 3;            % Number of orientations
 params.nbPh = 3;            % Number of phases 
-params.pattAmp=0.8;         % Amplitude of the patterns in [0,1]
+params.pattAmp=0.6;         % Amplitude of the patterns in [0,1]
 
 % -- OTF Approximation
 params.lamb = 530;     % Emission wavelength
@@ -56,15 +56,19 @@ params.szPatch=0;                 % If >0, FlexSIM will perform the reconstructi
 params.overlapPatch=0;            % Overlap between patches if szPatch>0
 params.parallelProcess=0;         % If 1, paralellizes the loop over patches
 
+% -- OTF Attenuation
+params.OTFAttStr=0.99;               % Strenght of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.
+params.OTFAttwdth=0.1;              % Width of the OTF attenuation (>0). If 0 no OTF attenuation.
+
 % -- Operators and Costs
-params.sepOrr = 1;                % Boolean if true treat each orientation separately
+params.sepOrr = 0;                % Boolean if true treat each orientation separately
 params.padSz=20;                  % Padding size for the optimization variable (to account for boundaries effects)
-params.mu =  5e-4;                % Regularization parameter
+params.mu =  5e-5;                % Regularization parameter
 params.regType=1;                 % Choice regul: 1 for Tikhonov (i.e., Wiener), 2 for Total Variation, 3 for Good roughness
 
 % -- Optim
 params.maxIt = 100;               % Maximum number of iterations (stopping criteria)
-params.stepTol = 1e-3;            % Relative error tolerance between two iterates (stopping criteria)
+params.stepTol = 5e-4;            % Relative error tolerance between two iterates (stopping criteria)
 
 %% Run FlexSIM
 run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m')) % Take care of paths & GlobalBioIm
