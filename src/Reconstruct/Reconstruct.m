@@ -49,7 +49,11 @@ maxy=max(y(:));y=y/maxy;
 %% Operators and Regul
 % -- Data term
 H=LinOpConv('PSF', psf,1,[1,2],'Centered','Pad',szUp+params.padSz,0);
-P=LinOpSelectorPatch(szUp+params.padSz,[1 1],szUp);
+if params.padSz==0
+    P=LinOpIdentity(szUp);
+else
+    P=LinOpSelectorPatch(szUp+params.padSz,[1 1],szUp);
+end
 S=LinOpDownsample(szUp,downFact);
 if params.OTFAttStr && params.OTFAttwdth
     OTFatt = GenerateOTFAttMask(params.Na,params.lamb,min([256,256],sz(1:2)),params.res,params.OTFAttStr,params.OTFAttwdth);
@@ -83,19 +87,11 @@ for id1=0:n1-1
     % -- Data term
     sig=max(max(y(:,:,1)))/10;
     wght=LinOpDiag([],1./(yy(:,:,1)+sig));
-    if params.padSz==0
-        F=CostL2([],yy(:,:,1),wght*Hatt)*(S*H*LinOpDiag(P.sizeout,pp(:,:,1)));
-    else
-        F=CostL2([],yy(:,:,1),wght*Hatt)*(S*P*H*P'*LinOpDiag(P.sizeout,pp(:,:,1)));
-    end
+    F=CostL2([],yy(:,:,1),wght*Hatt)*(S*P*H*P'*LinOpDiag(P.sizeout,pp(:,:,1)));
     for id2=2:n2
         sig=max(max(yy(:,:,id2)))/10;
         wght=LinOpDiag([],1./(yy(:,:,id2)+sig));
-        if params.padSz==0
-            F=F+CostL2([],yy(:,:,id2),wght*Hatt)*(S*H*LinOpDiag(P.sizeout,pp(:,:,id2)));
-        else
-            F=F+CostL2([],yy(:,:,id2),wght*Hatt)*(S*P*H*P'*LinOpDiag(P.sizeout,pp(:,:,id2)));
-        end
+        F=F+CostL2([],yy(:,:,id2),wght*Hatt)*(S*P*H*P'*LinOpDiag(P.sizeout,pp(:,:,id2)));
     end
     
     % -- Build cost and optimize. Try the faster VMLMB for Linux devices, or FBS for Windows devices 
