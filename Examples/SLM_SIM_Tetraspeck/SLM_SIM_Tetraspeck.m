@@ -62,7 +62,7 @@ params.OTFAttwdth=0;              % Width of the OTF attenuation (>0). If 0 no O
 % -- Operators and Costs
 params.sepOrr = 0;                % Boolean if true treat each orientation separately
 params.padSz=20;                  % Padding size for the optimization variable (to account for boundaries effects)
-params.mu =  1e-5;                % Regularization parameter
+params.mu =  5e-5;                % Regularization parameter
 params.regType=1;                 % Choice regul: 1 for Tikhonov (i.e., Wiener), 2 for Total Variation, 3 for Good roughness
 
 % -- Optim

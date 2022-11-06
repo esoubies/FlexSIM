@@ -77,7 +77,10 @@ else
 end
 
 % Generate Patterns for reconstruction
-patterns = GenerateReconstructionPatterns(params,PosRoiPatt,k,phase,params.pattAmp,sz,Lf);
+if params.estiPattLowFreq && params.padSz>0
+   Lf= padarray(Lf,[1,1]*params.padSz,'replicate','post');
+end
+patterns = GenerateReconstructionPatterns(params,PosRoiPatt,k,phase,params.pattAmp,sz+params.padSz/2,Lf);
 
 % Displays
 if params.displ > 0

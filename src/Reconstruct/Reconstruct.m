@@ -63,7 +63,7 @@ else
 end
 
 % -- Regularization
-G=LinOpGrad(P.sizeout,[1 2]); 
+G=LinOpGrad(P.sizein,[1 2]); 
 if params.regType==1      % Thikonov
     R=CostL2(G.sizeout)*G;
 elseif params.regType==2  % TV
@@ -87,11 +87,11 @@ for id1=0:n1-1
     % -- Data term
     sig=max(max(y(:,:,1)))/10;
     wght=LinOpDiag([],1./(yy(:,:,1)+sig));
-    F=CostL2([],yy(:,:,1),wght*Hatt)*(S*P*H*P'*LinOpDiag(P.sizeout,pp(:,:,1)));
+    F=CostL2([],yy(:,:,1),wght*Hatt)*(S*P*H*LinOpDiag(P.sizein,pp(:,:,1)));
     for id2=2:n2
         sig=max(max(yy(:,:,id2)))/10;
         wght=LinOpDiag([],1./(yy(:,:,id2)+sig));
-        F=F+CostL2([],yy(:,:,id2),wght*Hatt)*(S*P*H*P'*LinOpDiag(P.sizeout,pp(:,:,id2)));
+        F=F+CostL2([],yy(:,:,id2),wght*Hatt)*(S*P*H*LinOpDiag(P.sizein,pp(:,:,id2)));
     end
     
     % -- Build cost and optimize. Try the faster VMLMB for Linux devices, or FBS for Windows devices 
@@ -110,8 +110,8 @@ for id1=0:n1-1
     Opt.CvOp=TestCvgStepRelative(params.stepTol);    % Test convergence criterion
     Opt.ItUpOut=round(params.maxIt/10);              % Call OutputOpti update every ItUpOut iterations
     Opt.maxiter=params.maxIt;                        % Max number of iterations
-    Opt.run(zeros(P.sizeout));                       % Run the algorithm zeros(H.sizein)
-    rec=rec+Opt.xopt*maxy;
+    Opt.run(zeros(P.sizein));                       % Run the algorithm zeros(H.sizein)
+    rec=rec+P*Opt.xopt*maxy;
 end
 rec=rec/n1;
 end
