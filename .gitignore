@@ -5,13 +5,15 @@
 # Eclipse meta data
 *.metadata
 
-# Matlab & SIM files
+# Matlab, SIM & fairSIM files
 *.asv
 *.mat
 GlobalBioIm/*
 GlobalBioIm
 *esults.m
 *COS_C3*
+fairSIM/*
+fairSIM
 
 # Python distribution / packaging
 .Python
