@@ -184,10 +184,8 @@ assert( params.stepTol > 0,prefix + invld + "`stepTol`. " + msg);
 msg="Should be a non-negative integer.";
 assert(isfield(params, "maxIt"),prefix + missg + "`maxIt`. " + msg);
 assert(params.maxIt>= 0,prefix + invld + "`maxIt`. " + msg);
-% padSZ, maxIt
-msg="Should be a non-negative even integer.";
 assert(isfield(params, "padSz"),prefix + missg + "`padSz`. " + msg);
-assert(params.padSz>= 0 && mod(params.padSz,2)==0,prefix + invld + "`padSz`. " + msg);
+assert(params.padSz>= 0,prefix + invld + "`padSz`. " + msg);
 % sepOrr
 msg="Should be a boolean.";
 assert(isfield(params, "sepOrr"),prefix + missg + "`sepOrr`. " + msg);
