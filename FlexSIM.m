@@ -31,7 +31,7 @@ end
 sz=size(y);
 tmp = fft_best_dim(sz(1)*2+params.padSz) - sz(1)*2; 
 if tmp~=params.padSz
-    disp(['Note: pasSZ has been increased from ',num2str(params.padSz),' to ',num2str(tmp),' for faster FFTs (multiple of powers of 2, 3 and/or 5)']);
+    disp(['Note: padSz has been increased from ',num2str(params.padSz),' to ',num2str(tmp),' for faster FFTs (multiple of powers of 2, 3 and/or 5)']);
     params.padSz=tmp;
 end
 
