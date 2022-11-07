@@ -61,13 +61,20 @@ if params.method==0
     end
 elseif params.method==1
     patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase);       % Initialize the data
-    Col_name={' Kx[px]',' Ky[px]',' Ph #1',' Ph #2',' Ph #3'};
+    Col_name={' Kx[px]',' Ky[px]'};
+    for ii=1:params.nbPh
+        Col_name{end+1}=[' Ph #',num2str(ii)];
+    end
     for ii=1:params.nbOr
         Row_name{ii}=['Or #',num2str(ii)];
     end
 elseif params.method==2
-    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase,mod(phase + pi/3,pi),mod(phase + 2*pi/3,pi));       % Initialize the data
-    Col_name={' Kx[px]',' Ky[px]',' Ph #1',' Ph #2',' Ph #3'};
+    patternParams=k.*sz_y(2:-1:1) * params.res / pi;
+    Col_name={' Kx[px]',' Ky[px]'};
+    for ii=1:params.nbPh
+        patternParams = horzcat(patternParams,mod(phase + (ii-1)*pi/params.nbPh,pi));
+        Col_name{end+1}=[' Ph #',num2str(ii)];
+    end
     for ii=1:params.nbOr
         Row_name{ii}=['Or #',num2str(ii)];
     end
