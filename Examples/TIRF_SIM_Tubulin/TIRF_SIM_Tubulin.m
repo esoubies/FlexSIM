@@ -2,6 +2,10 @@
 % FlexSIM reconstruction script of the TIRF-SIM Tubulin data provided at
 % https://github.com/fairSIM/test-datasets/blob/master/TIRF-SIM-Georgia.md
 %
+% Reference paper for the dataset:
+% Open-source image reconstruction of super-resolution structured illumination microscopy data in ImageJ. 
+% Nature communications, 7(1), 1-6. Müller, M., Mönkemöller, V., Hennig, S., Hübner, W., & Huser, T. (2016).
+%
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
@@ -16,7 +20,7 @@ if ~exist(params.DataPath, 'file')
 end
 % -- Display, saving and GPU acceleration
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
-params.verbose=1;                       % 0: minimal text displays / 1: detailled text displays
+params.verbose=2;                       % 0: minimal text displays / 1: detailled text displays / 2: more details
 params.sav = 1;                         % Boolean if true save the result
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 

@@ -2,6 +2,10 @@
 % FlexSIM reconstruction script of the SIM Microtubules data provided at
 % https://github.com/LanMai/OpenSIM/raw/master/SIMexpt/sim01z4.tif
 %
+% Reference paper for the dataset:
+% Structured illumination microscopy image reconstruction algorithm. 
+% IEEE Journal of Selected Topics in Quantum Electronics, 22(4), 50-63. Lal, A., Shan, C., & Xi, P. (2016). 
+%
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
@@ -19,7 +23,7 @@ if ~exist(params.DataPath, 'file')
 end
 % -- Display, saving and GPU acceleration
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
-params.verbose=1;                       % 0: minimal text displays / 1: detailled text displays
+params.verbose=2;                       % 0: minimal text displays / 1: detailled text displays / 2: more details
 params.sav = 1;                         % Boolean if true save the result
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 

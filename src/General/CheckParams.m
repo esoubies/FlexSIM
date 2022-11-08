@@ -32,9 +32,9 @@ msg="Should be an integer within {0, 1, 2, 3}.";
 assert(isfield(params, "displ"),prefix + missg + "`displ`. " + msg);
 assert(mod(params.displ, 1) == 0 && params.displ > -1 && params.displ < 4,prefix + invld + "`displ`. " + msg);
 % verbose
-msg="Should be an integer within {0, 1}";
+msg="Should be an integer within {0, 1, 2}";
 assert(isfield(params, "verbose"),prefix + missg + "`verbose`. " + msg);
-assert(params.verbose==0 || params.verbose==1, prefix + invld + "`verbose'. " + msg);  
+assert(params.verbose==0 || params.verbose==1 || params.verbose==2, prefix + invld + "`verbose'. " + msg);  
 % sav
 msg="Should be a boolean.";
 assert(isfield(params, "sav"),prefix + missg + "`sav`. " + msg);

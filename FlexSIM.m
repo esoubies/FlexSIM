@@ -102,7 +102,7 @@ if params.szPatch==0
     patches_patt={patterns};
 elseif params.szPatch>0
     patches=Image2Patches(y,params.szPatch,params.overlapPatch);
-    patches_patt=Image2Patches(patterns,params.szPatch*2,params.overlapPatch*2);
+    patches_patt=Image2Patches(patterns,params.szPatch*2+params.padSz,params.overlapPatch*2+params.padSz);
 end
 
 % Initializations
@@ -114,7 +114,9 @@ if nbPatches==1 || ~params.parallelProcess
     % No parallelization over patches
     disp(['<strong>===  Reconstruction</strong> ...']);
     for id_patch = 1:nbPatches
-        if params.szPatch>0, disp(['<strong>- [Patch #',num2str(id_patch),'/',num2str(nbPatches),'] </strong>']); end      
+        if params.szPatch>0, fprintf('<strong>- [Process patch #%i/%i]</strong> ...',id_patch,nbPatches); end      
+        if params.verbose==2 && nbPatches>1, fprintf('\n'); end
+        
         rec{id_patch} = Reconstruct(gather(patches{id_patch}),gather(patches_patt{id_patch}),params);
         
         % Displays

@@ -2,6 +2,10 @@
 % FlexSIM reconstruction script of the SIM Microtubules data provided at
 % https://www.nature.com/articles/s41377-021-00513-w#Sec15
 %
+% Reference paper for the dataset:
+% High-fidelity structured illumination microscopy by point-spread-function engineering. 
+% Light: Science & Applications, 10(1), 1-12. Wen, G., Li, S., Wang, L., Chen, X., Sun, Z., Liang, Y., ... & Li, H. (2021). 
+%
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
@@ -23,7 +27,7 @@ end
 
 % -- Display, saving and GPU acceleration
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
-params.verbose=1;                       % 0: minimal text displays / 1: detailled text displays
+params.verbose=2;                       % 0: minimal text displays / 1: detailled text displays / 2: more details
 params.sav = 1;                         % Boolean if true save the result
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 

@@ -2,6 +2,10 @@
 % FlexSIM reconstruction script of the MIA SIM Membrane data provided at
 % https://github.com/charlesnchr/ML-SIM/raw/master/Test_data/AtheiSIM%2014-52_488.tif
 %
+% Reference paper for the dataset:
+% ML-SIM: universal reconstruction of structured illumination microscopy images using transfer learning. 
+% Biomedical optics express, 12(5), 2720-2733. Christensen, C. N., Ward, E. N., Lu, M., Lio, P., & Kaminski, C. F. (2021).
+%
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
@@ -16,7 +20,7 @@ if ~exist(params.DataPath, 'file')
 end
 % -- Display, saving and GPU acceleration
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
-params.verbose=1;                       % 0: minimal text displays / 1: detailled text displays
+params.verbose=2;                       % 0: minimal text displays / 1: detailled text displays / 2: more details
 params.sav = 1;                         % Boolean if true save the result
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 
