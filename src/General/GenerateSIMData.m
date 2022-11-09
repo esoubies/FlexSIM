@@ -24,15 +24,19 @@ function GenerateSIMData(imgType, params)
 % (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 % Generate OTF, Ground Truth
-switch imgType
+switch imgType    
     case 0
-        N = min(params.sz) - 1 * mod(min(params.sz), 2);             % GT Generation
-        x = StarLikeSample(2,N,2,1,1,0); 
+        x = double(loadtiff(fullfile(toolboxdir('images'), 'imdata', 'cameraman.tif')));
     case 1
-        x = loadtiff('phantom.tif');
-        x = imresize(x, 0.5);
-        params.sz = size(x);
+        x = double(loadtiff(fullfile(toolboxdir('images'), 'imdata', 'mri.tif')));
+        x = x(:,:,1);
+    case 2
+        x = double(loadtiff(fullfile(toolboxdir('images'), 'imdata', 'rice.png')));
+    case 3 
+        x = double(loadtiff('phantom.tif'));
 end
+params.sz = size(x);
+
 OTF = GenerateOTF(params.Na, params.lamb, params.sz, params.res, 1); % OTF Computation
 % Pattern initialization according to convention
 [X,Y]=meshgrid(0:params.sz(2)-1,0:params.sz(1)-1); X=X*params.res; Y=Y*params.res;
