@@ -33,11 +33,9 @@ corrtmp=fftshift(ifft2((fft2(ifftshift(fftwf))).*conj(fft2(ifftshift(fftG)))));
 if params.method==2
     wght=reshape(exp(-2*1i*[0:params.nbPh-1]*pi/params.nbPh),[1,1,params.nbPh]);
     tt=mean(corrtmp.*wght,3);tt2=conj(tt)./abs(tt);
-    corr = real(mean(corrtmp.*wght,3).*tt2); 
     corr=MaskFT(real(mean(corrtmp.*wght,3).*tt2),FCut,params.limits);
 else
     tt=conj(corrtmp)./abs(corrtmp); 
-    corr = real(mean(corrtmp.*tt,3)); 
     corr=MaskFT(real(mean(corrtmp.*tt,3)),FCut,params.limits);
 end
 
