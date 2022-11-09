@@ -55,8 +55,9 @@ for MEP = [10000, 10000, 10000]
         params.a = a;
         
         params.DataPath = fullfile(pwd,sprintf('SIM_Simu_%d_%d.tif', imgType, params.MEP));    % Path to the SIM stack        
-        params.ph = [0 pi/3 2*pi/3] + rand*pi/4 + 0.1 ; % Phases used for acquisition simulation
-        params.or = [0 pi/3 2*pi/3] + rand*pi/3 + 0.1 ; % Orientationsused for acquisition simulation
+        params.ph = [0 pi/3 2*pi/3] + rand*pi/3; % Phases used for acquisition simulation
+%         params.ph = [0 pi/3 2*pi/3];
+        params.or = [0 pi/3 2*pi/3] + rand*pi/3; % Orientationsused for acquisition simulation
         for or = 1:3
             params.k(or, :) = 2*pi*params.ns/params.lamb*[cos(params.or(or)), sin(params.or(or))]*params.Na/params.nl;
         end
@@ -123,7 +124,8 @@ for MEP = [10000, 10000, 10000]
         OrientCount = 1; 
         for idx = imgIdxs
             % Preprocessing Remove WF and Mask
-            wf = wf_stack(:,:,min(size(wf_stack,3),3));
+%             wf = wf_stack(:,:,min(size(wf_stack,3),3));
+            wf = wf_stack(:,:,OrientCount);
             [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
             
             % CC eq-ph - Extract wavevector and phase with standard method - done in this script to avoid repetition 
@@ -150,15 +152,15 @@ for MEP = [10000, 10000, 10000]
         
             % Refine wo filters
             kCCEqPhRef(OrientCount,:) = IterRefNoFilt(kCCEqPh(OrientCount, :),wf,G,grids,OTF,sz,params);
-            phaseCCEqPhRef(OrientCount, :) =GetPhaseNoFilt(kCCEqPhRef(OrientCount, :)',wf,G,grids,OTF,sz,params);
+            phaseCCEqPhRef(OrientCount, :) =GetPhaseNoFilt(kCCEqPhRef(OrientCount, :),wf,G,grids,OTF,sz,params);
             
             % Refine (from init) with filters (Use standard function)
             kCCEqPhFilt(OrientCount,:) = IterRefinementWavevec(kCCEqPh(OrientCount, :)',wf,G,grids,OTF,sz,params);
             phaseCCEqPhFilt(OrientCount, :)=GetPhaseAndAmp(kCCEqPhFilt(OrientCount, :)',wf,G,grids,OTF,sz,params);
 
-            if kCCEqPhFilt(OrientCount, 1) >  1
-                kCCEqPhRef(OrientCount,:) = IterRefNoFilt(kCCEqPh(OrientCount, :),wf,G,grids,OTF,sz,params);
-            end
+%             if kCCEqPhFilt(OrientCount, 1) >  1
+%                 kCCEqPhRef(OrientCount,:) = IterRefNoFilt(kCCEqPh(OrientCount, :),wf,G,grids,OTF,sz,params);
+%             end
 
 
             % CC (generalization) - Extract wavevector and phase with standard method
@@ -180,12 +182,12 @@ for MEP = [10000, 10000, 10000]
 %             phaseCC(OrientCount, :)=GetPhaseAndAmp(kCC(OrientCount, :)',wf,G,grids,OTF,sz,params);
         
             % Refine wo filters
-            kCCRef(OrientCount,:) = IterRefNoFilt(kCC(OrientCount, :),wf,G,grids,OTF,sz,params)
-            phaseCCRef(OrientCount, :)=GetPhaseNoFilt(kCCRef(OrientCount, :)',wf,G,grids,OTF,sz,params)           
+            kCCRef(OrientCount,:) = IterRefNoFilt(kCC(OrientCount, :),wf,G,grids,OTF,sz,params);
+            phaseCCRef(OrientCount, :)=GetPhaseNoFilt(kCCRef(OrientCount, :)',wf,G,grids,OTF,sz,params);           
             
             % Refine (from init) with filters (Use standard function)
-            kCCFilt(OrientCount,:) = IterRefinementWavevec(kCC(OrientCount, :)',wf,G,grids,OTF,sz,params)
-            phaseCCFilt(OrientCount, :)=GetPhaseAndAmp(kCCFilt(OrientCount, :)',wf,G,grids,OTF,sz,params)                           
+            kCCFilt(OrientCount,:) = IterRefinementWavevec(kCC(OrientCount, :)',wf,G,grids,OTF,sz,params);
+            phaseCCFilt(OrientCount, :)=GetPhaseAndAmp(kCCFilt(OrientCount, :)',wf,G,grids,OTF,sz,params);                          
         
             % Estiamte phases from the refined (with filters) wavevector estimation
     %         phArg(OrientCount) = mod((angle(...)),2*pi)/2;   % Simple arg{wavevecto} issue: FT doesn't have enough resolution
