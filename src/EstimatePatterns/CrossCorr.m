@@ -42,6 +42,6 @@ end
 
 % Generate grid and get radius
 lv = ((1:sz(1)) - floor(sz(1)/2)-1)*pi/params.res/sz(1);
-lh = ((1:sz(2)) - floor(sz(1)/2)-1)*pi/params.res/sz(2);
+lh = ((1:sz(2)) - floor(sz(2)/2)-1)*pi/params.res/sz(2);
 [K1, K2] = meshgrid(lh, lv);
 end

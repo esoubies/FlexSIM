@@ -23,21 +23,8 @@ if nargin <6
     shift=[0,0];
 end
 
-% Generate grid and get radius
-if mod(sz(1),2)==0
-    ll_v=linspace(-0.5,0,sz(1)/2+1);
-    lr_v=linspace(0,0.5,sz(1)/2);
-    lv=[ll_v,lr_v(2:end)];
-else
-    lv=linspace(-0.5,0.5,sz(1));
-end
-if mod(sz(2),2)==0
-    ll_h=linspace(-0.5,0,sz(2)/2+1);
-    lr_h=linspace(0,0.5,sz(2)/2);
-    lh=[ll_h,lr_h(2:end)];
-else
-    lh=linspace(-0.5,0.5,sz(2));
-end
+lv = ((1:sz(1)) - floor(sz(1)/2)-1)/sz(1);
+lh = ((1:sz(1)) - floor(sz(1)/2)-1)/sz(1);
 [X,Y]=meshgrid(lh,lv);
 X=X-shift(1);Y=Y-shift(2);
 [~,rho]=cart2pol(X,Y);
