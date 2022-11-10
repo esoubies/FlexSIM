@@ -81,7 +81,7 @@ g = [repmat({"K PattErr"}, length(T{:, "K PattErr"}), 1);
 figure; boxplot(x, g); title("Boxplot of Wavevector Error", 'Interpreter','latex', 'FontSize', 12, 'FontName','TimesNewRoman');
 ylabel('$\|\mathbf{k}_0 - \mathbf{k}_{est}\|_2$', 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman');
 grid on
-ylim([0 10e-5])
+
 % Extract Children to plot median graphs
 % hold on
 % a = get(get(gca,'children'),'children'); t = get(a,'tag'); idx=strcmpi(t,'median');

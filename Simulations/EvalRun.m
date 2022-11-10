@@ -70,7 +70,7 @@ for or = 1:prm.nbOr                           % Iterate orientations (each will 
         prm.phPatt(jj)=mod(sg*(angle(fftpattMask(id))),2*pi)/2;               % Simple arg{wavevecto}
         [~, idx_tmp] = min([abs(prm.phPatt(jj)-prm.ph(jj, or)),abs(prm.phPatt(jj)+pi-prm.ph(jj, or)),abs(prm.phPatt(jj)-prm.ph(jj, or)-pi)]);
         if prm.ph(jj) - 2.947571751685997 < 0.0001
-            prm.ph(jj)
+            prm.ph(jj);
         end
         switch idx_tmp
             case 1
