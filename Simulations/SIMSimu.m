@@ -5,192 +5,113 @@
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 clear; close all; clc;
+if exist('Results.mat', 'file'), delete('Results.mat'); end % Delete Results.mat if exists
+%% Parameters
+% -- General parameters
+params.pathToFlexSIM = '../';     % Path to the root of GitHub FlexSIM repo
+params.GPU = 0;                   % Boolean on whether to use GPU or not
+params.displ = 0;                 % Display option
+imgType = 0;                      % Select 0 for synthethic, 1 for cameraman, 2 for   
 
-%% General parameters
-params.pathToFlexSIM = '../';                      % Path to the root of GitHub FlexSIM repo
-
-% -- Display, saving and GPU acceleration
-params.GPU = 0;                         % Boolean on whether to use GPU or not
-params.displ = 0;
-rng(0);
-%% Data related parameters
 % -- Properties of the SIM data stack
-params.StackOrder= 'pa';               % Phase (p) and angle (a) convention. Choose one of ('paz', 'pza' or 'zap')
-params.SzRoiBack=[];                   % Size (odd number or empty) of the ROI for background estimation (position automatically detected so as to minimize the intensity within the ROI)
-params.nbOr = 3;                       % Number of orientations
-params.nbPh = 3;                       % Number of phases 
+params.StackOrder= 'pa';          % Phase (p) and angle (a) convention. Choose one of ('paz', 'pza' or 'zap')
+params.nbOr = 3;                  % Number of orientations
+params.nbPh = 3;                  % Number of phases 
 
-% -- OTF Approximation, Acquisition parameters & Precomputations
-params.lamb = 530;                     % Emission wavelength
-params.res = 64;                       % Pixel size (nm)
-params.Na = 1.2;                       % Objective numerica aperture
-params.damp = 1;
-params.nl=1.51;                        % Refractive index of the objective medium (glass/oil)
-params.ns=1.333;                       % Refractive index of the sample medium (water)
-FCut = 2*params.Na/params.lamb*params.res;            % Cut-off frequency
-
-%% FlexSIM parameters
-% -- Patch-based processing
-params.szPatch=0;                 % If >0, FlexSIM will perform pattern estimation and reconstruction by patches of size 'szPatch'
-params.overlapPatch=0;            % Overlap between patches if szPatch>0
-params.parallelProcess=0;         % If 1, paralellizes the loop over patches
+% -- OTF Approximation
+params.lamb = 530;                % Emission wavelength
+params.res = 64;                  % Pixel size (nm)
+params.Na = 1.2;                  % Objective numerica aperture
+params.damp = 1;                  % Damping factor for the OTF
+params.nl=1.51;                   % Refractive index of the objective medium (glass/oil)
+params.ns=1.333;                  % Refractive index of the sample medium (water)
 
 % -- Parameters for patterns estimation
-params.SzRoiPatt = [];            % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
 params.limits = [0.8, 1.05];      % Ring over which the J function is evaluated for initializing (fc = 1)
 params.ringMaskLim = [0, 1.1];    % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
-params.nMinima = 1;               % Number of starting points for the refinement steps
-params.nPoints = 0;             % Number of points in the J evaluation grid. If set to 0, initialization is done via peak detection
 params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
-params.method = 2;                % Method : 0 - treat all images independently
-                                  %          1 - use all images with same orientation to estimate a unique wavevector
-                                  %          2 - 1 + assume equally spaced phases
-params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns
 
-% -- Path and files
-imgType = 0;                       % Select 0 for synthethic, 1 for cameraman, 2 for        
-for MEP = [10000, 10000, 10000]
-    for a = [1 1 1]
-        params.MEP = MEP; 
+%% Main Loop
+run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m')) % Take care of paths & GlobalBioIm
+for MEP = [1000, 1000, 1000]
+    params.MEP = MEP; 
+    for a = [1 1 1]      
         params.a = a;
-        
+        disp(['<strong>## MEP = ',num2str(MEP),' a = ',num2str(a),'</strong>']);
+        % -- Generate random orientations and phases
         params.DataPath = fullfile(pwd,sprintf('SIM_Simu_%d_%d.tif', imgType, params.MEP));    % Path to the SIM stack        
         params.ph = [0 pi/3 2*pi/3] + rand*pi/4 + 0.1 ; % Phases used for acquisition simulation
         params.or = [0 pi/3 2*pi/3] + rand*pi/3 + 0.1 ; % Orientationsused for acquisition simulation
         for or = 1:3
             params.k(or, :) = 2*pi*params.ns/params.lamb*[cos(params.or(or)), sin(params.or(or))]*params.Na/params.nl;
         end
-        params.k
-        params.ph
-        %% Generate data & load data
-        run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m')) % Take care of paths & GlobalBioIm
-        GenerateSIMData(imgType, params);
-        
+
+        % -- Generate data & load data
+        GenerateSIMData(imgType, params);        
         y = double(loadtiff(params.DataPath));
         if params.GPU
             y = gpuArray(x);
         end
         params.sz=size(y);
-        %% Pre-processing
-        % - Remove background
-        if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)
-            PosRoiBack=DetectPatch(sum(gather(y),3),params.SzRoiBack,-1);  % Detect the ROI for background
-            y = RemoveBackground(y,PosRoiBack,params.SzRoiBack);           % Remove constant background and normalize in [0,1]
-        else
-            PosRoiBack=[1,1];
-        end
-        % - Detect ROI for pattern estimation
-        if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)
-            PosRoiPatt=DetectPatch(sum(gather(y),3),params.SzRoiPatt,1);
-        else
-            PosRoiPatt=[1,1];
-        end
+        [y, wf_stack] = OrderY(y, params); % Compute wiefield images                                   
+
+        % -- Common quantities of interest
+        [grids.I, grids.J] = meshgrid(0:params.sz(2)-1,0:params.sz(1)-1);              % Numerical mesh - multipurpose
+        grids.X = grids.I*params.res; grids.Y=grids.J*params.res;                      % Scaled (by resolution) mesh 
+        OTF = GenerateOTF(params.Na, params.lamb, params.sz, params.res, params.damp); % Computation of the OTF
         
-        % - Reorder stack with FlexSIM conventions
-        [y, wf] = OrderY(y, params);                                    % Reorder and extract data if necessary
-        wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
-        
-        
-        wf_stack = wf; 
-        %%  Pattern Estimation
-        if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)   % Detect ROI and Crop to ROI
-            y = y(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
-            wf_stack = wf_stack(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
-        end
-        sz = size(y);                                      % Calculate size of ROI
-        y = (y - min(y(:))) / (max(y(:)) - min(y(:)));     % Normalize stack images
-        wf_stack= (wf_stack-min(wf_stack(:))) / (max(wf_stack(:)) - min(wf_stack(:)));
-         
-        % Select the images of the same orientation 
+        % Loop over batch of images (1 batch = 1 orr + x phases)
         imgIdxs = 1:params.nbPh*params.nbOr;    % Select the indexes to use (through imgIdxs)...
-        if params.method                        % according to the selected phase,z angle convention
-            imgIdxs = reshape(imgIdxs, [params.nbPh, params.nbOr]);  
-        end 
-        
-        % Common quantities of interest
-        [grids.I, grids.J] = meshgrid(0:sz(2)-1,0:sz(1)-1);           % Numerical mesh - multipurpose
-        grids.X = grids.I*params.res; grids.Y=grids.J*params.res;     % Scaled (by resolution) mesh 
-        OTF = GenerateOTF(params.Na, params.lamb, sz, params.res, 1); % Computation of the OTF
-        if params.GPU
-            OTF = gpuArray(OTF); 
-            grids.I = gpuArray(grids.I);
-            grids.J = gpuArray(grids.J);
-            grids.X = gpuArray(grids.X);
-            grids.Y = gpuArray(grids.Y); 
-        end
-        
-        %% Loop over batch of images (1 batch = 1 orr + x phases)
+        imgIdxs = reshape(imgIdxs, [params.nbPh, params.nbOr]);
         OrientCount = 1; 
+        FCut = 2*params.Na/params.lamb*params.res;            % Cut-off frequency
         for idx = imgIdxs
-            % Preprocessing Remove WF and Mask
+            disp(['- Orrientation #',num2str(OrientCount)]);
+            % - Preprocessing Remove WF, Mask, and compute cross-corr
             wf = wf_stack(:,:,min(size(wf_stack,3),3));
             [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
-            
-            % CC eq-ph - Extract wavevector and phase with standard method - done in this script to avoid repetition 
-            params.method = 2;
-            fac=4; fftwf=fft2(padarray(wf,sz(1:2)*fac,'post')); fftG=fft2(padarray(G,sz(1:2)*fac,'post'));
+            fac=4; fftwf=fft2(padarray(wf,params.sz(1:2)*fac,'post')); fftG=fft2(padarray(G,params.sz(1:2)*fac,'post'));
             corrtmp=fftshift(ifft2((fft2(ifftshift(fftwf))).*conj(fft2(ifftshift(fftG)))));
+            
+            % - Eq-ph assumption
+            params.method = 2;
+            % Extract initial wavevector and phase (on grid using cross-coor) - done in this script to avoid repetition            
             wght=reshape(exp(-2*1i*[0:params.nbPh-1]*pi/params.nbPh),[1,1,params.nbPh]);
             tt=mean(corrtmp.*wght,3);tt2=conj(tt)./abs(tt);
             map=MaskFT(real(mean(corrtmp.*wght,3).*tt2),FCut,params.limits);
-            [~,id]=max(abs(map(:)));[i,j]=ind2sub(size(map),id);
-            kCCEqPh(OrientCount, :) = -([j,i]-floor(size(map)/2)-1)*pi/params.res./size(map);
-            kCCEqPh(OrientCount, :) = sign(kCCEqPh(OrientCount, 1))*kCCEqPh(OrientCount, :)
-            phaseCCEqPh(OrientCount, :) = mod(-angle(tt2(id)),2*pi)/2
-
-            % Using the function CrossCorr (no phase extraction)
-%             [map,K1,K2] = CrossCorr(G,wf, params);
-%             map=-map; % As map corresponds here to cross-correl that we want to maximize (hence minimize the opposite)                    
-%             kCCEqPh(OrientCount, :) = ExtractLocMin(params,map,K1,K2);            
-%             fftGtmp = fft2(G(:,:,1)); phaseCCEqPh(OrientCount, :) = mod(angle(fftGtmp(id)),2*pi)/2;
-
-%             if all(sign([j,i]-size(fftpattMask)/2)==sign(k)), sg=1; else sg=-1; end
-%             phaseCCEqPh(OrientCount, :) = mod(sg*(angle(fftpattMask(id))),2*pi)/2;
-%             phaseCCEqPh(OrientCount, :)=GetPhaseAndAmp(kInit(OrientCount, :)',wf,G,grids,OTF,sz,params);
-        
+            [~,id]=max(map(:));[i,j]=ind2sub(size(map),id);
+            kCCEqPh(OrientCount, :) = ([j,i]-floor(size(map)/2)-1)*pi/params.res./size(map);
+            phaseCCEqPh(OrientCount, :) = mod(-angle(tt2(id)),2*pi)/2;       
+            disp(['   [Eq-ph Assump] Error Init wavevect                  : ',num2str(norm(kCCEqPh(OrientCount, :)*sign(kCCEqPh(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
             % Refine wo filters
-            kCCEqPhRef(OrientCount,:) = IterRefNoFilt(kCCEqPh(OrientCount, :),wf,G,grids,OTF,sz,params);
-            phaseCCEqPhRef(OrientCount, :) =GetPhaseNoFilt(kCCEqPhRef(OrientCount, :)',wf,G,grids,OTF,sz,params);
+            kCCEqPhRef(OrientCount,:) = IterRefNoFilt(kCCEqPh(OrientCount, :),wf,G,grids,OTF,params.sz,params);
+            phaseCCEqPhRef(OrientCount, :) =GetPhaseNoFilt(kCCEqPhRef(OrientCount, :)',wf,G,grids,OTF,params.sz,params);        
+            disp(['   [Eq-ph Assump] Error Refined wavevect (w/o Filt)    : ',num2str(norm(kCCEqPhRef(OrientCount, :)*sign(kCCEqPhRef(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
+            % Refine with filters
+            kCCEqPhFilt(OrientCount,:) = IterRefinementWavevec(kCCEqPh(OrientCount, :)',wf,G,grids,OTF,params.sz,params);
+            phaseCCEqPhFilt(OrientCount, :)=GetPhaseAndAmp(kCCEqPhFilt(OrientCount, :)',wf,G,grids,OTF,params.sz,params);
+            disp(['   [Eq-ph Assump] Error Refined wavevect (Filt)        : ',num2str(norm(kCCEqPhFilt(OrientCount, :)*sign(kCCEqPhFilt(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
             
-            % Refine (from init) with filters (Use standard function)
-            kCCEqPhFilt(OrientCount,:) = IterRefinementWavevec(kCCEqPh(OrientCount, :)',wf,G,grids,OTF,sz,params);
-            phaseCCEqPhFilt(OrientCount, :)=GetPhaseAndAmp(kCCEqPhFilt(OrientCount, :)',wf,G,grids,OTF,sz,params);
-
-            if kCCEqPhFilt(OrientCount, 1) >  1
-                kCCEqPhRef(OrientCount,:) = IterRefNoFilt(kCCEqPh(OrientCount, :),wf,G,grids,OTF,sz,params);
-            end
-
-
-            % CC (generalization) - Extract wavevector and phase with standard method
+            % - No Eq-ph assumption 
             params.method = 1;
-            % Use initializations from CC eq-ph
+            % Extract initial wavevector and phase (on grid using cross-coor)
             tt=conj(corrtmp)./abs(corrtmp); 
             map=MaskFT(real(mean(corrtmp.*tt,3)),FCut,params.limits);
-%             [map,K1,K2] = CrossCorr(G,wf, params);
-%             map=-map; % As map corresponds here to cross-correl that we want to maximize (hence minimize the opposite)                    
-%             kCC(OrientCount, :)= ExtractLocMin(params,map,K1,K2);
-            [~,id]=max(abs(map(:)));[i,j]=ind2sub(size(map),id);
+            [~,id]=max(map(:));[i,j]=ind2sub(size(map),id);
             kCC(OrientCount, :) = ([j,i]-floor(size(map)/2)-1)*pi/params.res./size(map);
             kCC(OrientCount, :) = sign(kCC(OrientCount, 1))*kCC(OrientCount, :);
             if all(sign([j,i]-size(map)/2)==sign(kCC)), sg=1; else sg=-1; end  % to know if we detected the one with same sign as simulated k (if not need to change the sign of the arg in the next line)
-            phaseCC(OrientCount, :) = mod(-sg*angle(tt(i,j,:)),2*pi)/2;            
-%             fftGtmp = fft2(G(:,:,1)); phaseCC(OrientCount, :) = mod(angle(fftGtmp(id)),2*pi)/2;
-%             if all(sign([j,i]-size(fftpattMask)/2)==sign(k)), sg=1; else sg=-1; end
-%             phaseCC(OrientCount, :) = mod(sg*(angle(fftpattMask(id))),2*pi)/2;
-%             phaseCC(OrientCount, :)=GetPhaseAndAmp(kCC(OrientCount, :)',wf,G,grids,OTF,sz,params);
-        
+            phaseCC(OrientCount, :) = mod(-sg*angle(tt(i,j,:)),2*pi)/2; 
+            disp(['   [No Eq-ph Assump] Error Init wavevect               : ',num2str(norm(kCC(OrientCount, :)*sign(kCC(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
             % Refine wo filters
-            kCCRef(OrientCount,:) = IterRefNoFilt(kCC(OrientCount, :),wf,G,grids,OTF,sz,params)
-            phaseCCRef(OrientCount, :)=GetPhaseNoFilt(kCCRef(OrientCount, :)',wf,G,grids,OTF,sz,params)           
-            
-            % Refine (from init) with filters (Use standard function)
-            kCCFilt(OrientCount,:) = IterRefinementWavevec(kCC(OrientCount, :)',wf,G,grids,OTF,sz,params)
-            phaseCCFilt(OrientCount, :)=GetPhaseAndAmp(kCCFilt(OrientCount, :)',wf,G,grids,OTF,sz,params)                           
-        
-            % Estiamte phases from the refined (with filters) wavevector estimation
-    %         phArg(OrientCount) = mod((angle(...)),2*pi)/2;   % Simple arg{wavevecto} issue: FT doesn't have enough resolution
-%             phJ(OrientCount, :)=GetPhaseNoFilt(kFilt(OrientCount,:),wf,G,grids,OTF,sz,params);
-%             phFilt(OrientCount, :)=GetPhaseAndAmp(kFilt(OrientCount,:),wf,G,grids,OTF,sz,params);
+            kCCRef(OrientCount,:) = IterRefNoFilt(kCC(OrientCount, :),wf,G,grids,OTF,params.sz,params);
+            phaseCCRef(OrientCount, :)=GetPhaseNoFilt(kCCRef(OrientCount, :)',wf,G,grids,OTF,params.sz,params);   
+            disp(['   [No Eq-ph Assump] Error Refined wavevect (w/o Filt) : ',num2str(norm(kCCRef(OrientCount, :)*sign(kCCRef(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
+            % Refine with filters
+            kCCFilt(OrientCount,:) = IterRefinementWavevec(kCC(OrientCount, :)',wf,G,grids,OTF,params.sz,params);
+            phaseCCFilt(OrientCount, :)=GetPhaseAndAmp(kCCFilt(OrientCount, :)',wf,G,grids,OTF,params.sz,params);                           
+            disp(['   [No Eq-ph Assump] Error Refined wavevect (Filt)     : ',num2str(norm(kCCFilt(OrientCount, :)*sign(kCCFilt(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
+    
             OrientCount=OrientCount+1;
         end
         % Include estimated params in WV
@@ -206,21 +127,6 @@ for MEP = [10000, 10000, 10000]
         params = EvalRun(params);                            % Process the results
     end
 end
-
-% Compare with CrossCorr for comp wo refinement
-% Discussion points - 
-% CC (method 1) vs CCEqPh as a generalization
-% Improvement with the refinement
-% Improvement with the filter
-% Download 2 data sets from https://www.nature.com/articles/s41377-021-00513-w#Sec15
-% (Same link) Test the code from the same paper
-% (Examples/SIM-...) Add a ReadMe explaining the conditions of the image, parameters, comparisons
-% For plot, use boxplots summarizing all the MEP and contrast combinations (at the minimum, ensure the same combinations across different methods)
-
-
-% 1. k
-% 1. PH
-% 1. FrobeNorm
 
 function k = IterRefNoFilt(k_init,wf,G,grids,OTF,sz,params)
 % -- Line search by backtracking parameters

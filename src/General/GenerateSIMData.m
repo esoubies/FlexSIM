@@ -1,6 +1,6 @@
 function GenerateSIMData(imgType, params)
 %--------------------------------------------------------------------------
-% Function PeakDetect(x, MEP, params)
+% function GenerateSIMData(imgType, params)
 %
 % Generates a stack of SIM data according to the specifications of params 
 % (see below). Takes as input an image type, a noise level, and a structure
@@ -40,7 +40,7 @@ params.sz = size(x);
 OTF = GenerateOTF(params.Na, params.lamb, params.sz, params.res, 1); % OTF Computation
 % Pattern initialization according to convention
 [X,Y]=meshgrid(0:params.sz(2)-1,0:params.sz(1)-1); X=X*params.res; Y=Y*params.res;
-n = params.nbOr*params.nbPh+1*ismember('w',char(params.StackOrder));
+n = params.nbOr*params.nbPh;
 patt = ones([params.sz n]);
 for or = 1:params.nbOr                                             % Pattern generation
     k  = 2*pi*params.ns/params.lamb*[cos(params.or(or)), sin(params.or(or))]*params.Na/params.nl;
@@ -55,9 +55,9 @@ end
 y=zeros(size(patt));
 for ii=1:size(patt,3)
     y_noNoise = real(ifft2(OTF.*fft2(patt(:,:,ii).*x)));      % Simulate clean acquisitions
-    y_noNoise = im2double(y_noNoise);                         % Min/max normalization
+    %y_noNoise = im2double(y_noNoise);                         % Min/max normalization
     scaling = 1e12/params.MEP;                                % Scaling factor (see imnoise doc)
-    y(:,:,ii) = imnoise(y_noNoise/scaling,'poisson')*scaling; % Add poisson noise       
+    y(:,:,ii) = imnoise(y_noNoise/scaling,'poisson')*scaling; % Add poisson noise    
 end
 
 saveastiff(y, params.DataPath);
