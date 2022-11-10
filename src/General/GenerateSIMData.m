@@ -55,7 +55,7 @@ end
 y=zeros(size(patt));
 for ii=1:size(patt,3)
     y_noNoise = real(ifft2(OTF.*fft2(patt(:,:,ii).*x)));      % Simulate clean acquisitions
-    %y_noNoise = im2double(y_noNoise);                         % Min/max normalization
+    y_noNoise = y_noNoise/max(y_noNoise(:));                         % Min/max normalization
     scaling = 1e12/params.MEP;                                % Scaling factor (see imnoise doc)
     y(:,:,ii) = imnoise(y_noNoise/scaling,'poisson')*scaling; % Add poisson noise    
 end
