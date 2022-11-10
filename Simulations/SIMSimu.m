@@ -40,8 +40,8 @@ for MEP = [1000, 1000, 1000]
         disp(['<strong>## MEP = ',num2str(MEP),' a = ',num2str(a),'</strong>']);
         % -- Generate random orientations and phases
         params.DataPath = fullfile(pwd,sprintf('SIM_Simu_%d_%d.tif', imgType, params.MEP));    % Path to the SIM stack        
-        params.ph = [0 pi/3 2*pi/3] + rand*pi/4 + 0.1 ; % Phases used for acquisition simulation
-        params.or = [0 pi/3 2*pi/3] + rand*pi/3 + 0.1 ; % Orientationsused for acquisition simulation
+        params.ph = [0 pi/3 2*pi/3] + rand*pi/3; % Phases used for acquisition simulation
+        params.or = [0 pi/3 2*pi/3] + rand*pi/3; % Orientationsused for acquisition simulation
         for or = 1:3
             params.k(or, :) = 2*pi*params.ns/params.lamb*[cos(params.or(or)), sin(params.or(or))]*params.Na/params.nl;
         end

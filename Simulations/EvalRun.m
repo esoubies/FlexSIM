@@ -55,7 +55,7 @@ for or = 1:prm.nbOr                           % Iterate orientations (each will 
     patt = ones([prm.sz(1:2) prm.nbPh]);    
     gen_patt = @(a, k,p) 1 + a*cos(2*p)*cos(2*(k(1)*X+k(2)*Y)) - a*sin(2*p)*sin(2*(k(1)*X+k(2)*Y));
     for jj = 1:prm.nbPh                                      % Iterate orientation and phase
-        patt(:,:,jj) =   gen_patt(prm.a, k, prm.ph(jj));
+        patt(:,:,jj) =   gen_patt(prm.a, k, prm.ph(jj, or));
     end
 
     % Estimate parameters from pattern (to test resolution limit)
@@ -68,6 +68,20 @@ for or = 1:prm.nbOr                           % Iterate orientations (each will 
         if all(sign([j,i]-size(fftpattMask)/2)==sign(k)), sg=1; else sg=-1; end  % to know if we detected the one with same sign as simulated k (if not need to change the sign of the arg in the next line)
         prm.kPatt=sg*([j,i]-floor(size(fftpattMask)/2)-1)*pi/prm.res./size(fftpattMask);        
         prm.phPatt(jj)=mod(sg*(angle(fftpattMask(id))),2*pi)/2;               % Simple arg{wavevecto}
+        [~, idx_tmp] = min([abs(prm.phPatt(jj)-prm.ph(jj, or)),abs(prm.phPatt(jj)+pi-prm.ph(jj, or)),abs(prm.phPatt(jj)-prm.ph(jj, or)-pi)]);
+        if prm.ph(jj) - 2.947571751685997 < 0.0001
+            prm.ph(jj);
+        end
+        switch idx_tmp
+            case 1
+                casetmp(jj) = 1;
+            case 2
+                prm.phPatt(jj) = prm.phPatt(jj) + pi;
+                casetmp(jj) = 2;
+            case 3
+                prm.phPatt(jj) = prm.phPatt(jj) - pi;
+                casetmp(jj) = 3;
+        end
     end       
 
     % Pad with NaNs the missing phase values (we're storing up to 5)
