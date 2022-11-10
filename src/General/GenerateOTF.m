@@ -24,7 +24,7 @@ if nargin <6
 end
 
 lv = ((1:sz(1)) - floor(sz(1)/2)-1)/sz(1);
-lh = ((1:sz(1)) - floor(sz(1)/2)-1)/sz(1);
+lh = ((1:sz(2)) - floor(sz(2)/2)-1)/sz(2);
 [X,Y]=meshgrid(lh,lv);
 X=X-shift(1);Y=Y-shift(2);
 [~,rho]=cart2pol(X,Y);
