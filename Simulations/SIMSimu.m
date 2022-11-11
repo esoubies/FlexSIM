@@ -11,7 +11,14 @@ if exist('Results.mat', 'file'), delete('Results.mat'); end % Delete Results.mat
 params.pathToFlexSIM = '../';     % Path to the root of GitHub FlexSIM repo
 params.GPU = 0;                   % Boolean on whether to use GPU or not
 params.displ = 0;                 % Display option
-imgType = 0;                      % Select 0 for synthethic, 1 for cameraman, 2 for   
+
+% Simulation parameters
+imgType = 0;                      % Select 0 for synthethic, 1 for cameraman, 2 for  
+rep = 3;
+MEPLvls = [10, 100, 1000];
+ContrastLvls = [0.1, 0.4, 0.7];
+RepsPerLvl = 4;
+params.fac = 4
 
 % -- Properties of the SIM data stack
 params.StackOrder= 'pa';          % Phase (p) and angle (a) convention. Choose one of ('paz', 'pza' or 'zap')
@@ -32,11 +39,12 @@ params.ringMaskLim = [0, 1.1];    % Lower and upper limit of mask to finish hidi
 params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
 
 %% Main Loop
-run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m')) % Take care of paths & GlobalBioIm
-for MEP = [1000, 1000]
+run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m')) % Take care of function paths & GlobalBioIm
+for MEP = MEPLvls
     params.MEP = MEP; 
-    for a = [1 1]      
+    for a = ContrastLvls      
         params.a = a;
+        for rep = 1:RepsPerLvl
         disp(['<strong>## MEP = ',num2str(MEP),' a = ',num2str(a),'</strong>']);
         % -- Generate random orientations and phases
         params.DataPath = fullfile(pwd,sprintf('SIM_Simu_%d_%d.tif', imgType, params.MEP));    % Path to the SIM stack        
@@ -70,7 +78,7 @@ for MEP = [1000, 1000]
             % - Preprocessing Remove WF, Mask, and compute cross-corr
             wf = wf_stack(:,:,min(size(wf_stack,3),3));
             [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
-            fac=4; fftwf=fft2(padarray(wf,params.sz(1:2)*fac,'post')); fftG=fft2(padarray(G,params.sz(1:2)*fac,'post'));
+            fftwf=fft2(padarray(wf,params.sz(1:2)*params.fac,'post')); fftG=fft2(padarray(G,params.sz(1:2)*params.fac,'post'));
             corrtmp=fftshift(ifft2((fft2(ifftshift(fftwf))).*conj(fft2(ifftshift(fftG)))));
             
             % - Eq-ph assumption
@@ -144,6 +152,7 @@ for MEP = [1000, 1000]
         clear kCCEqPh kCCEqPhRef kCCEqPhFilt kCC kCCRef kCCFilt 
 
         params = EvalRun(params);                            % Process the results
+        end
     end
 end
 
