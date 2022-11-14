@@ -11,7 +11,14 @@ if exist('Results.mat', 'file'), delete('Results.mat'); end % Delete Results.mat
 params.pathToFlexSIM = '../';     % Path to the root of GitHub FlexSIM repo
 params.GPU = 0;                   % Boolean on whether to use GPU or not
 params.displ = 0;                 % Display option
-imgType = 0;                      % Select 0 for synthethic, 1 for cameraman, 2 for   
+
+% Simulation parameters
+imgType = 0;                      % Select 0 for synthethic, 1 for cameraman, 2 for  
+rep = 3;
+MEPLvls = [10, 100, 1000];
+ContrastLvls = [0.1, 0.4, 0.7];
+RepsPerLvl = 4;
+params.fac = 4
 
 % -- Properties of the SIM data stack
 params.StackOrder= 'pa';          % Phase (p) and angle (a) convention. Choose one of ('paz', 'pza' or 'zap')
@@ -32,11 +39,12 @@ params.ringMaskLim = [0, 1.1];    % Lower and upper limit of mask to finish hidi
 params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
 
 %% Main Loop
-run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m')) % Take care of paths & GlobalBioIm
-for MEP = [1000, 1000, 1000]
+run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m')) % Take care of function paths & GlobalBioIm
+for MEP = MEPLvls
     params.MEP = MEP; 
-    for a = [1 1 1]      
+    for a = ContrastLvls      
         params.a = a;
+        for rep = 1:RepsPerLvl
         disp(['<strong>## MEP = ',num2str(MEP),' a = ',num2str(a),'</strong>']);
         % -- Generate random orientations and phases
         params.DataPath = fullfile(pwd,sprintf('SIM_Simu_%d_%d.tif', imgType, params.MEP));    % Path to the SIM stack        
@@ -70,7 +78,7 @@ for MEP = [1000, 1000, 1000]
             % - Preprocessing Remove WF, Mask, and compute cross-corr
             wf = wf_stack(:,:,min(size(wf_stack,3),3));
             [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
-            fac=4; fftwf=fft2(padarray(wf,params.sz(1:2)*fac,'post')); fftG=fft2(padarray(G,params.sz(1:2)*fac,'post'));
+            fftwf=fft2(padarray(wf,params.sz(1:2)*params.fac,'post')); fftG=fft2(padarray(G,params.sz(1:2)*params.fac,'post'));
             corrtmp=fftshift(ifft2((fft2(ifftshift(fftwf))).*conj(fft2(ifftshift(fftG)))));
             
             % - Eq-ph assumption
@@ -81,16 +89,23 @@ for MEP = [1000, 1000, 1000]
             map=MaskFT(real(mean(corrtmp.*wght,3).*tt2),FCut,params.limits);
             [~,id]=max(map(:));[i,j]=ind2sub(size(map),id);
             kCCEqPh(OrientCount, :) = ([j,i]-floor(size(map)/2)-1)*pi/params.res./size(map);
-            phaseCCEqPh(OrientCount, :) = mod(-angle(tt2(id)),2*pi)/2;       
-            disp(['   [Eq-ph Assump] Error Init wavevect                  : ',num2str(norm(kCCEqPh(OrientCount, :)*sign(kCCEqPh(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
+            phTmp = mod(-angle(tt2(id)),2*pi)/2;       
+            phaseCCEqPh(OrientCount, :) = CorrectPhase(params.ph(1), phTmp);
+
+            disp(['   [Eq-ph Assump] Error Init wavevect                  : ',num2str(norm(kCCEqPh(OrientCount, :)*sign(kCCEqPh(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1)))), ...
+                  '   | Error in init phase offset            : ', num2str(abs(params.ph(1) - phaseCCEqPh(OrientCount, :)))]);
             % Refine wo filters
             kCCEqPhRef(OrientCount,:) = IterRefNoFilt(kCCEqPh(OrientCount, :),wf,G,grids,OTF,params.sz,params);
-            phaseCCEqPhRef(OrientCount, :) =GetPhaseNoFilt(kCCEqPhRef(OrientCount, :)',wf,G,grids,OTF,params.sz,params);        
-            disp(['   [Eq-ph Assump] Error Refined wavevect (w/o Filt)    : ',num2str(norm(kCCEqPhRef(OrientCount, :)*sign(kCCEqPhRef(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
+            phTmp=GetPhaseNoFilt(kCCEqPhRef(OrientCount, :)',wf,G,grids,OTF,params.sz,params);        
+            phaseCCEqPhRef(OrientCount, :) = CorrectPhase(params.ph(1), phTmp);
+            disp(['   [Eq-ph Assump] Error Refined wavevect (w/o Filt)    : ',num2str(norm(kCCEqPhRef(OrientCount, :)*sign(kCCEqPhRef(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1)))), ...
+                '   | Error in phase offset (w/o Filt)      : ', num2str(abs(params.ph(1) - phaseCCEqPhRef(OrientCount, :)))]);
             % Refine with filters
             kCCEqPhFilt(OrientCount,:) = IterRefinementWavevec(kCCEqPh(OrientCount, :)',wf,G,grids,OTF,params.sz,params);
-            phaseCCEqPhFilt(OrientCount, :)=GetPhaseAndAmp(kCCEqPhFilt(OrientCount, :)',wf,G,grids,OTF,params.sz,params);
-            disp(['   [Eq-ph Assump] Error Refined wavevect (Filt)        : ',num2str(norm(kCCEqPhFilt(OrientCount, :)*sign(kCCEqPhFilt(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
+            phTmp=GetPhaseAndAmp(kCCEqPhFilt(OrientCount, :)',wf,G,grids,OTF,params.sz,params);
+            phaseCCEqPhFilt(OrientCount, :) = CorrectPhase(params.ph(1), phTmp);
+            disp(['   [Eq-ph Assump] Error Refined wavevect (Filt)        : ',num2str(norm(kCCEqPhFilt(OrientCount, :)*sign(kCCEqPhFilt(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1)))), ...
+                  '   | Error in phase offset (Filt)          : ', num2str(abs(params.ph(1) - phaseCCEqPhFilt(OrientCount, :)))]);
             
             % - No Eq-ph assumption 
             params.method = 1;
@@ -101,16 +116,28 @@ for MEP = [1000, 1000, 1000]
             kCC(OrientCount, :) = ([j,i]-floor(size(map)/2)-1)*pi/params.res./size(map);
             kCC(OrientCount, :) = sign(kCC(OrientCount, 1))*kCC(OrientCount, :);
             if all(sign([j,i]-size(map)/2)==sign(kCC)), sg=1; else sg=-1; end  % to know if we detected the one with same sign as simulated k (if not need to change the sign of the arg in the next line)
-            phaseCC(OrientCount, :) = mod(-sg*angle(tt(i,j,:)),2*pi)/2; 
-            disp(['   [No Eq-ph Assump] Error Init wavevect               : ',num2str(norm(kCC(OrientCount, :)*sign(kCC(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
+            phTmp = squeeze(mod(-sg*angle(tt(i,j,:)),2*pi)/2)';
+            for jj = 1:params.nbPh
+                phaseCC(OrientCount, jj) = CorrectPhase(params.ph(jj), phTmp(jj));
+            end
+            disp(['   [No Eq-ph Assump] Error Init wavevect               : ',num2str(norm(kCC(OrientCount, :)*sign(kCC(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1)))), ...
+                '   | Mean error in init Phase              : ', num2str(mean(abs(params.ph - phaseCC(OrientCount, :))))]);
             % Refine wo filters
             kCCRef(OrientCount,:) = IterRefNoFilt(kCC(OrientCount, :),wf,G,grids,OTF,params.sz,params);
-            phaseCCRef(OrientCount, :)=GetPhaseNoFilt(kCCRef(OrientCount, :)',wf,G,grids,OTF,params.sz,params);   
-            disp(['   [No Eq-ph Assump] Error Refined wavevect (w/o Filt) : ',num2str(norm(kCCRef(OrientCount, :)*sign(kCCRef(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
+            phTmp=GetPhaseNoFilt(kCCRef(OrientCount, :)',wf,G,grids,OTF,params.sz,params);   
+            for jj = 1:params.nbPh
+                phaseCCRef(OrientCount, jj) = CorrectPhase(params.ph(jj), phTmp(jj));
+            end
+            disp(['   [No Eq-ph Assump] Error Refined wavevect (w/o Filt) : ',num2str(norm(kCCRef(OrientCount, :)*sign(kCCRef(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1)))), ...
+                '   | Mean error in refined phase (w/o Filt): ', num2str(mean(abs(params.ph - phaseCCRef(OrientCount, :))))]);
             % Refine with filters
             kCCFilt(OrientCount,:) = IterRefinementWavevec(kCC(OrientCount, :)',wf,G,grids,OTF,params.sz,params);
-            phaseCCFilt(OrientCount, :)=GetPhaseAndAmp(kCCFilt(OrientCount, :)',wf,G,grids,OTF,params.sz,params);                           
-            disp(['   [No Eq-ph Assump] Error Refined wavevect (Filt)     : ',num2str(norm(kCCFilt(OrientCount, :)*sign(kCCFilt(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1))))]);
+            phTmp=GetPhaseAndAmp(kCCFilt(OrientCount, :)',wf,G,grids,OTF,params.sz,params);                           
+            for jj = 1:params.nbPh
+                phaseCCFilt(OrientCount, jj) = CorrectPhase(params.ph(jj), phTmp(jj));
+            end
+            disp(['   [No Eq-ph Assump] Error Refined wavevect (Filt)     : ',num2str(norm(kCCFilt(OrientCount, :)*sign(kCCFilt(OrientCount,1))-params.k(OrientCount, :)*sign(params.k(OrientCount,1)))), ...
+                '   | Mean error in refined phase (Filt)    : ', num2str(mean(abs(params.ph - phaseCCFilt(OrientCount, :))))]);
     
             OrientCount=OrientCount+1;
         end
@@ -125,6 +152,7 @@ for MEP = [1000, 1000, 1000]
         clear kCCEqPh kCCEqPhRef kCCEqPhFilt kCC kCCRef kCCFilt 
 
         params = EvalRun(params);                            % Process the results
+        end
     end
 end
 
@@ -199,4 +227,16 @@ ac=s(1,:); as=s(2,:);
 tmp = atan(as./ac);           % Calculate phase, ac, and as
 tmp = tmp + pi * (ac < 0);
 ph=mod(tmp,2*pi)/2;   
+end
+
+function ph = CorrectPhase(phGt, phTest)
+[~, idx_tmp] = min([abs(phTest-phGt),abs(phTest+pi-phGt),abs(phTest-phGt-pi)]);        
+switch idx_tmp
+    case 1
+        ph = phTest;
+    case 2
+        ph = phTest + pi;
+    case 3
+        ph = phTest - pi;
+end
 end
