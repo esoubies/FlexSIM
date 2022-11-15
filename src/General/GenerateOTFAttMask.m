@@ -21,25 +21,14 @@ function OTFatt = GenerateOTFAttMask(Na,lamb,sz,res,str,width)
 % (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
-% Generate grid and get radius
-if mod(sz(1),2)==0
-    ll_v=linspace(-0.5,0,sz(1)/2+1);
-    lr_v=linspace(0,0.5,sz(1)/2);
-    lv=[ll_v,lr_v(2:end)];
-else
-    lv=linspace(-0.5,0.5,sz(1));
-end
-if mod(sz(2),2)==0
-    ll_h=linspace(-0.5,0,sz(2)/2+1);
-    lr_h=linspace(0,0.5,sz(2)/2);
-    lh=[ll_h,lr_h(2:end)];
-else
-    lh=linspace(-0.5,0.5,sz(2));
-end
+% Generate grids
+lv = ((1:sz(1)) - floor(sz(1)/2)-1)/sz(1);
+lh = ((1:sz(2)) - floor(sz(2)/2)-1)/sz(2);
 [X,Y]=meshgrid(lh,lv);
 [~,rho]=cart2pol(X,Y);
 
 % Generate a normalized OTF
 fc=2*Na/lamb*res;        % cut-off frequency
-OTFatt=ifftshift((1-str*exp(-rho.^2/(2*(width*fc)^2))).*(double(rho<fc)));
+OTFatt=ifftshift((1-str*exp(-rho.^2/(2*(width*fc)^2))));
+
 end

@@ -56,8 +56,8 @@ else
 end
 S=LinOpDownsample(szUp,downFact);
 if params.OTFAttStr && params.OTFAttwdth
-    OTFatt = GenerateOTFAttMask(params.Na,params.lamb,min([256,256],sz(1:2)),params.res,params.OTFAttStr,params.OTFAttwdth);
-    Hatt=LinOpConv('PSF', fftshift(real(ifft2(OTFatt))),1,[1,2],'Centered','Pad',sz(1:2),0);
+    OTFatt = GenerateOTFAttMask(params.Na,params.lamb,sz(1:2),params.res,params.OTFAttStr,params.OTFAttwdth);
+    Hatt=LinOpConv('MTF', OTFatt,1,[1,2]);
 else
     Hatt=LinOpIdentity(sz(1:2));
 end

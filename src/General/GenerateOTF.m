@@ -22,7 +22,7 @@ function OTF = GenerateOTF(Na,lamb,sz,res,damp,shift)
 if nargin <6
     shift=[0,0];
 end
-
+% Generate grids
 lv = ((1:sz(1)) - floor(sz(1)/2)-1)/sz(1);
 lh = ((1:sz(2)) - floor(sz(2)/2)-1)/sz(2);
 [X,Y]=meshgrid(lh,lv);
