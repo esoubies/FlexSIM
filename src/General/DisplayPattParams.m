@@ -26,7 +26,7 @@ G = RemoveWFandMask(y,mean(y,3),params);
 imagesc(log10(sum(abs(fftshift(fft2(G))),3)+1), 'Parent', ax);colormap(ax,viridis);
 axis(ax,'square','on');hold(ax,'all');axis off;
 fc = 2*params.Na/params.lamb*params.res;
-drawellipse(ax,'Center',sz_y(2:-1:1)/2,'SemiAxes',fc.*sz_y(2:-1:1),'StripeColor','w','InteractionsAllowed','none');
+drawellipse(ax,'Center',floor(sz_y(2:-1:1)/2)+1,'SemiAxes',fc.*sz_y(2:-1:1),'StripeColor','w','InteractionsAllowed','none');
 for i = 1:size(k, 1)
     tmp = k(i, :) .* sz_y(2:-1:1) * params.res / pi + sz_y(2:-1:1)/2+1;
     plot(ax,tmp(1), tmp(2), 'o', 'MarkerSize', 8, 'LineWidth', 3);
