@@ -55,7 +55,6 @@ grps = grpstats(T{:,"K PattErr"}, {T{:,"Contrast"}, T{:,"MEP"}}, "gname"); nbGrp
 figure; sgtitle("Wavevector estimation error"); spCount = 1; 
 pause('on') % For plotting purposes
 for i = 1:nbGrps
-    i
     subplot(3,3,i)
     % Extract group contrast and noise level + declare subtable 
     a = str2double(cell2mat(grps(i, 1))); MEP = str2double(cell2mat(grps(i, 2))); 
@@ -65,17 +64,21 @@ for i = 1:nbGrps
     % K boxplot
     x = [subT{:, "K PattErr"}; subT{:, "K CC eq-ph Err"}; subT{:, "K CC eq-ph Ref Err"}; subT{:, "K CC eq-ph Filt Err"}; 
         subT{:, "K CC Err"}; subT{:, "K CC Ref Err"}; subT{:, "K CC Filt Err"}];
+    x = x./pixRes(1); 
     g = [repmat({"K PattErr"}, length(subT{:, "K PattErr"}), 1); 
         repmat({"K CC eq-ph Err"}, length(subT{:, "K CC eq-ph Err"}), 1); repmat({"K CC eq-ph Ref Err"}, length(subT{:, "K CC eq-ph Ref Err"}), 1); repmat({"K CC eq-ph Filt Err"}, length(subT{:, "K CC eq-ph Filt Err"}), 1);...
         repmat({"K CC Err"}, length(subT{:, "K CC Err"}), 1); repmat({"K CC Ref Err"}, length(subT{:, "K CC Ref Err"}), 1); repmat({"K CC Filt Err"}, length(subT{:, "K CC Filt Err"}), 1);];
     boxplot(x, g); 
     title(sprintf("MEP: %d, Contrast: %g",  MEP, a), 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman');
     if i < 7; set(gca,'XTickLabel',[]); end
-    if ismember(i, [1, 4, 7]); ylabel('$\|\mathbf{k}_0 - \mathbf{k}_{est}\|_2$', 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman'); end
+%     if ismember(i, [1, 4, 7]); ylabel('$\|\mathbf{k}_0 - \mathbf{k}_{est}\|_2$', 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman'); end
+    if ismember(i, [1, 4, 7]); ylabel('$\|\mathbf{k}_0 - \mathbf{k}_{est}\|_2$ [Pixel Units]', 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman'); end
     grid on    
-    h(1) = line([0 7.5], [pi./params.res./padSz(1)/2 pi./params.res./padSz(1)/2], "LineStyle", "--", "Color", "g"); 
+    h(1) = line([0 7.5], [0.5 0.5], "LineStyle", "--", "Color", "g");
+%     h(1) = line([0 7.5], [pi./params.res./padSz(1)/2 pi./params.res./padSz(1)/2], "LineStyle", "--", "Color", "g"); 
     if padSz(1) ~= padSz(2)
-        h(2) = line([0 7.5], [pi./params.res./padSz(2)/2 pi./params.res./padSz(2)/2], "LineStyle", "--", "Color", "y"); 
+        h(2) = line([0 7.5], [0.5 0.5], "LineStyle", "--", "Color", "y");
+%         h(2) = line([0 7.5], [pi./params.res./padSz(2)/2 pi./params.res./padSz(2)/2], "LineStyle", "--", "Color", "y"); 
         legend([h(1), h(2)], "Half pixel resolution (x)", "Half pixel resolution (y)")
     else
         legend([h(1)], "Half pixel resolution")
