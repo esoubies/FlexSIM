@@ -85,7 +85,7 @@ for id1=0:n1-1
     % -- Patterns normalization
     pp=pp/(mean(pp(:))*size(pp,3));
     % -- Data term
-    sig=max(max(y(:,:,1)))/10;
+    sig=max(max(yy(:,:,1)))/10;
     wght=LinOpDiag([],1./(yy(:,:,1)+sig));
     F=CostL2([],yy(:,:,1),wght*Hatt)*(S*P*H*LinOpDiag(P.sizein,pp(:,:,1)));
     for id2=2:n2
