@@ -62,28 +62,48 @@ for i = 1:nbGrps
     
 %     figure; subplot(1, 2, 1); 
     % K boxplot
-    x = [subT{:, "K PattErr"}; subT{:, "K CC eq-ph Err"}; subT{:, "K CC eq-ph Ref Err"}; subT{:, "K CC eq-ph Filt Err"}; 
-        subT{:, "K CC Err"}; subT{:, "K CC Ref Err"}; subT{:, "K CC Filt Err"}];
+    x = [subT{:, "K CC eq-ph Err"}; subT{:, "K CC eq-ph Ref Err"}; subT{:, "K CC eq-ph Filt Err"}; 
+        subT{:, "K CC Err"}; subT{:, "K CC Ref Err"}; subT{:, "K CC Filt Err"}; subT{:, "K PattErr"}; ];
     x = x./pixRes(1); 
-    g = [repmat({"K PattErr"}, length(subT{:, "K PattErr"}), 1); 
-        repmat({"K CC eq-ph Err"}, length(subT{:, "K CC eq-ph Err"}), 1); repmat({"K CC eq-ph Ref Err"}, length(subT{:, "K CC eq-ph Ref Err"}), 1); repmat({"K CC eq-ph Filt Err"}, length(subT{:, "K CC eq-ph Filt Err"}), 1);...
-        repmat({"K CC Err"}, length(subT{:, "K CC Err"}), 1); repmat({"K CC Ref Err"}, length(subT{:, "K CC Ref Err"}), 1); repmat({"K CC Filt Err"}, length(subT{:, "K CC Filt Err"}), 1);];
-    boxplot(x, g); 
-    title(sprintf("MEP: %d, Contrast: %g",  MEP, a), 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman');
-    if i < 7; set(gca,'XTickLabel',[]); end
-%     if ismember(i, [1, 4, 7]); ylabel('$\|\mathbf{k}_0 - \mathbf{k}_{est}\|_2$', 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman'); end
-    if ismember(i, [1, 4, 7]); ylabel('$\|\mathbf{k}_0 - \mathbf{k}_{est}\|_2$ [Pixel Units]', 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman'); end
-    grid on    
+%     g = [repmat({"K PattErr"}, length(subT{:, "K PattErr"}), 1); 
+%         repmat({"K CC eq-ph Err"}, length(subT{:, "K CC eq-ph Err"}), 1); repmat({"K CC eq-ph Ref Err"}, length(subT{:, "K CC eq-ph Ref Err"}), 1); repmat({"K CC eq-ph Filt Err"}, length(subT{:, "K CC eq-ph Filt Err"}), 1);...
+%         repmat({"K CC Err"}, length(subT{:, "K CC Err"}), 1); repmat({"K CC Ref Err"}, length(subT{:, "K CC Ref Err"}), 1); repmat({"K CC Filt Err"}, length(subT{:, "K CC Filt Err"}), 1);];
+%     boxplot(x, g); 
+    g = [...
+        repmat(["K CC eq-ph Err"], length(subT{:, "K CC eq-ph Err"}), 1); repmat(["K CC eq-ph Ref Err"], length(subT{:, "K CC eq-ph Ref Err"}), 1); repmat(["K CC eq-ph Filt Err"], length(subT{:, "K CC eq-ph Filt Err"}), 1);...
+        repmat(["K CC Err"], length(subT{:, "K CC Err"}), 1); repmat(["K CC Ref Err"], length(subT{:, "K CC Ref Err"}), 1); repmat(["K CC Filt Err"], length(subT{:, "K CC Filt Err"}), 1);...
+        repmat(["K PattErr"], length(subT{:, "K PattErr"}), 1);];
+    % This vector groups data by initialization (PattErr/CC-eqPh/CC)
+%     colorDataInit = [... 
+%         repmat({"CC eq-ph"}, length(subT{:, "K CC eq-ph Err"}), 1); repmat({"CC eq-ph"}, length(subT{:, "K CC eq-ph Ref Err"}), 1); repmat({"CC eq-ph"}, length(subT{:, "K CC eq-ph Filt Err"}), 1);...
+%         repmat({"CC"}, length(subT{:, "K CC Err"}), 1); repmat({"CC"}, length(subT{:, "K CC Ref Err"}), 1); repmat({"CC"}, length(subT{:, "K CC Filt Err"}), 1);...
+%         repmat({"K PattErr"}, length(subT{:, "K PattErr"}), 1);];
+    % This vector groups data by refinement (Init / Ref / Ref w Filt)
+%     colorDataRef = [...
+%         repmat(["Init"], length(subT{:, "K CC eq-ph Err"}), 1); repmat(["Ref"], length(subT{:, "K CC eq-ph Ref Err"}), 1); repmat(["Filt"], length(subT{:, "K CC eq-ph Filt Err"}), 1);...
+%         repmat(["Init"], length(subT{:, "K CC Err"}), 1); repmat(["Ref"], length(subT{:, "K CC Ref Err"}), 1); repmat(["Filt"], length(subT{:, "K CC Filt Err"}), 1);...
+%         repmat(["Init"], length(subT{:, "K PattErr"}), 1);];
+    colorDataRef = [...
+        repmat(1, length(subT{:, "K CC eq-ph Err"}), 1); repmat(2, length(subT{:, "K CC eq-ph Ref Err"}), 1); repmat(3, length(subT{:, "K CC eq-ph Filt Err"}), 1);...
+        repmat(1, length(subT{:, "K CC Err"}), 1); repmat(2, length(subT{:, "K CC Ref Err"}), 1); repmat(3, length(subT{:, "K CC Filt Err"}), 1);...
+        repmat(1, length(subT{:, "K PattErr"}), 1);];
+    boxchart(categorical(g), x, 'GroupByColor', colorDataRef);  
     h(1) = line([0 7.5], [0.5 0.5], "LineStyle", "--", "Color", "g");
 %     h(1) = line([0 7.5], [pi./params.res./padSz(1)/2 pi./params.res./padSz(1)/2], "LineStyle", "--", "Color", "g"); 
     if padSz(1) ~= padSz(2)
         h(2) = line([0 7.5], [0.5 0.5], "LineStyle", "--", "Color", "y");
 %         h(2) = line([0 7.5], [pi./params.res./padSz(2)/2 pi./params.res./padSz(2)/2], "LineStyle", "--", "Color", "y"); 
-        legend([h(1), h(2)], "Half pixel resolution (x)", "Half pixel resolution (y)")
+        legend("Init", 'Ref', 'Filt', "Half pixel resolution (x)", "Half pixel resolution (y)")
     else
-        legend([h(1)], "Half pixel resolution")
+        legend("Init", 'Ref', 'Filt', "Half pixel resolution")
     end
-    drawnow; pause(0.1);
+    xticklabels({'', 'CC - eq-ph', '', '', 'CC', '', 'Pattern'})
+    title(sprintf("MEP: %d, Contrast: %g",  MEP, a), 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman');
+    if i < 7; set(gca,'XTickLabel',[]); end
+%     if ismember(i, [1, 4, 7]); ylabel('$\|\mathbf{k}_0 - \mathbf{k}_{est}\|_2$', 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman'); end
+    if ismember(i, [1, 4, 7]); ylabel('$\|\mathbf{k}_0 - \mathbf{k}_{est}\|_2$ [Pixel Units]', 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman'); end
+    grid on    
+    drawnow;
 end
 
 % Phase (all three) boxplot
@@ -94,21 +114,36 @@ for i = 1:nbGrps
     a = str2double(cell2mat(grps(i, 1))); MEP = str2double(cell2mat(grps(i, 2))); 
     idxGrp = T{:,"Contrast"} == a & T{:,"MEP"} == MEP; subT = T(idxGrp, :);
 
-    x = [subT{:, "Ph #1 PattErr"}; subT{:, "Ph #2 PattErr"}; subT{:, "Ph #3 PattErr"};
-        subT{:, "Ph #1 CC eq-ph Err"}; subT{:, "Ph #2 CC eq-ph Err"}; subT{:, "Ph #3 CC eq-ph Err"};
+%     x = [subT{:, "Ph #1 PattErr"}; subT{:, "Ph #2 PattErr"}; subT{:, "Ph #3 PattErr"};
+%         subT{:, "Ph #1 CC eq-ph Err"}; subT{:, "Ph #2 CC eq-ph Err"}; subT{:, "Ph #3 CC eq-ph Err"};
+%         subT{:, "Ph #1 CC eq-ph Ref Err"}; subT{:, "Ph #2 CC eq-ph Ref Err"}; subT{:, "Ph #3 CC eq-ph Ref Err"};
+%         subT{:, "Ph #1 CC eq-ph Filt Err"}; subT{:, "Ph #2 CC eq-ph Filt Err"}; subT{:, "Ph #3 CC eq-ph Filt Err"};
+%         subT{:, "Ph #1 CC Err"}; subT{:, "Ph #2 CC Err"}; subT{:, "Ph #3 CC Err"}; 
+%         subT{:, "Ph #1 CC Ref Err"}; subT{:, "Ph #2 CC Ref Err"}; subT{:, "Ph #3 CC Ref Err"}; 
+%         subT{:, "Ph #1 CC Filt Err"}; subT{:, "Ph #2 CC Filt Err"}; subT{:, "Ph #3 CC Filt Err"}];
+%     g = [repmat({"Ph PattErr"}, 3*length(subT{:, "Ph #1 PattErr"}), 1); 
+%         repmat({"Ph CC eq-ph Err"}, 3*length(subT{:, "Ph #1 CC eq-ph Err"}), 1); repmat({"Ph CC eq-ph Ref Err"}, 3*length(subT{:, "Ph #1 CC eq-ph Ref Err"}), 1); repmat({"Ph CC eq-ph Filt Err"}, 3*length(subT{:, "Ph #1 CC eq-ph Filt Err"}), 1);...
+%         repmat({"Ph CC Err"}, 3*length(subT{:, "Ph #1 CC Err"}), 1); repmat({"Ph CC Ref Err"}, 3*length(subT{:, "Ph #1 CC Ref Err"}), 1); repmat({"Ph CC Filt Err"}, 3*length(subT{:, "Ph #1 CC Filt Err"}), 1);];
+
+    x = [subT{:, "Ph #1 CC eq-ph Err"}; subT{:, "Ph #2 CC eq-ph Err"}; subT{:, "Ph #3 CC eq-ph Err"};
         subT{:, "Ph #1 CC eq-ph Ref Err"}; subT{:, "Ph #2 CC eq-ph Ref Err"}; subT{:, "Ph #3 CC eq-ph Ref Err"};
         subT{:, "Ph #1 CC eq-ph Filt Err"}; subT{:, "Ph #2 CC eq-ph Filt Err"}; subT{:, "Ph #3 CC eq-ph Filt Err"};
         subT{:, "Ph #1 CC Err"}; subT{:, "Ph #2 CC Err"}; subT{:, "Ph #3 CC Err"}; 
         subT{:, "Ph #1 CC Ref Err"}; subT{:, "Ph #2 CC Ref Err"}; subT{:, "Ph #3 CC Ref Err"}; 
-        subT{:, "Ph #1 CC Filt Err"}; subT{:, "Ph #2 CC Filt Err"}; subT{:, "Ph #3 CC Filt Err"}];
-    g = [repmat({"Ph PattErr"}, 3*length(subT{:, "Ph #1 PattErr"}), 1); 
-        repmat({"Ph CC eq-ph Err"}, 3*length(subT{:, "Ph #1 CC eq-ph Err"}), 1); repmat({"Ph CC eq-ph Ref Err"}, 3*length(subT{:, "Ph #1 CC eq-ph Ref Err"}), 1); repmat({"Ph CC eq-ph Filt Err"}, 3*length(subT{:, "Ph #1 CC eq-ph Filt Err"}), 1);...
-        repmat({"Ph CC Err"}, 3*length(subT{:, "Ph #1 CC Err"}), 1); repmat({"Ph CC Ref Err"}, 3*length(subT{:, "Ph #1 CC Ref Err"}), 1); repmat({"Ph CC Filt Err"}, 3*length(subT{:, "Ph #1 CC Filt Err"}), 1);];
-    boxplot(x, g); 
+        subT{:, "Ph #1 CC Filt Err"}; subT{:, "Ph #2 CC Filt Err"}; subT{:, "Ph #3 CC Filt Err"}; 
+        subT{:, "Ph #1 PattErr"}; subT{:, "Ph #2 PattErr"}; subT{:, "Ph #3 PattErr"};];
+    g = [repmat(["Ph CC eq-ph Err"], 3*length(subT{:, "Ph #1 CC eq-ph Err"}), 1); repmat(["Ph CC eq-ph Ref Err"], 3*length(subT{:, "Ph #1 CC eq-ph Ref Err"}), 1); repmat(["Ph CC eq-ph Filt Err"], 3*length(subT{:, "Ph #1 CC eq-ph Filt Err"}), 1);...
+        repmat(["Ph CC Err"], 3*length(subT{:, "Ph #1 CC Err"}), 1); repmat(["Ph CC Ref Err"], 3*length(subT{:, "Ph #1 CC Ref Err"}), 1); repmat(["Ph CC Filt Err"], 3*length(subT{:, "Ph #1 CC Filt Err"}), 1);
+        repmat(["Ph PattErr"], 3*length(subT{:, "Ph #1 PattErr"}), 1);];
+    colorDataRef = [...
+        repmat(["Init"], 3*length(subT{:, "K CC eq-ph Err"}), 1); repmat(["Ref"], 3*length(subT{:, "K CC eq-ph Ref Err"}), 1); repmat(["Filt"], 3*length(subT{:, "K CC eq-ph Filt Err"}), 1);...
+        repmat(["Init"], 3*length(subT{:, "K CC Err"}), 1); repmat(["Ref"], 3*length(subT{:, "K CC Ref Err"}), 1); repmat(["Filt"], 3*length(subT{:, "K CC Filt Err"}), 1);...
+        repmat(["Init"], 3*length(subT{:, "K PattErr"}), 1);];
+    boxchart(categorical(g), x, 'GroupByColor', categorical(colorDataRef));  legend; xticklabels({'', 'CC - eq-ph', '', '', 'CC', '', 'Pattern'}) 
     title(sprintf("MEP: %d, Contrast: %g",  MEP, a), 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman');
     if i < 7; set(gca,'XTickLabel',[]); end
     if ismember(i, [1, 4, 7]); ylabel('$\|\phi_0 - \phi_{est}\| [^\circ]$', 'Interpreter','latex', 'FontSize', 16, 'FontName','TimesNewRoman'); end
-    grid on; drawnow; pause(1);    
+    grid on; drawnow;    
 %     sgtitle(sprintf("Parameter Estmation Error (MEP: %d, Contrast: %g)",  MEP, a), 'FontSize', 16, 'FontName','TimesNewRoman');
 end
 pause('off') % For plotting purposes
