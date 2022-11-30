@@ -1,6 +1,7 @@
 # Image files
 *.tif
 *.tiff
+*.png
 
 # Eclipse meta data
 *.metadata
@@ -13,7 +14,7 @@ GlobalBioIm
 *esults.m
 *COS_C3*
 fairSIM/*
-fairSIM
+*fairSIM*
 
 # Python distribution / packaging
 .Python

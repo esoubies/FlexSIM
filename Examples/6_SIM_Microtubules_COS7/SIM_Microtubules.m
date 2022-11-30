@@ -13,7 +13,7 @@ clear; close all; clc;
 
 %% General parameters
 % -- Path and files
-params.DataPath = fullfile(pwd,'SIM_Microtubules.tif');    % Path to the SIM stack
+params.DataPath = fullfile(pwd,'6_SIM_Microtubules.tif');    % Path to the SIM stack
 params.pathToFlexSIM = '../../';                                % Path to the root of GitHub FlexSIM repo
 if ~exist(params.DataPath, 'file')
     websave(params.DataPath, 'https://github.com/LanMai/OpenSIM/raw/master/SIMexpt/sim01z4.tif');
