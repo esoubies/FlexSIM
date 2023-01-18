@@ -2,7 +2,7 @@ function [OTFshiftCrop, OTFCrop] = BuildFilter(k, sz, OTF, params, grids)
 %--------------------------------------------------------------------------
 % [OTFshiftCrop, OTFCrop] = BuildFilter(k, sz, OTF, params, grids)
 %
-% Builds filters that will be applied to A (`filt`) and to the WF (`attFilt`)
+% Builds filters that will be applied to A (OTFCrop) and to b (OTFshiftCrop)
 %
 % Inputs :  k       -> The wavevector to construct the filter around
 %           sz      -> The size of the filters
