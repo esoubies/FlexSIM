@@ -110,28 +110,10 @@ for idx = imgIdxs
     end
     
     if compute_k_init
-        if params.nPoints
-            DispMsg(1,'   - Grid-based evaluation of J landscape...');
-            [map,K1,K2] = GridEvalJ(params,wf,G,grids);
-            
-            if params.displ > 1                           % If requested, display J grid
-                mJp=max(map(:));
-                fg=figure; subplot(1,2,1); axis xy;hold on; view(45,45);
-                surf(K1,K2,map,'FaceColor','interp','EdgeColor','interp');
-                colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14); %axis([0 maxp -maxp maxp]);grid;
-                sgtitle(sprintf('J landscape for orientation #%d', OrientCount))
-                title('Landscape and initial local minima');
-                subplot(1,2,2); axis xy;hold on; title('Zoom');
-                surf(K1,K2,map,'FaceColor','interp','EdgeColor','interp');
-                colorbar; xlabel('k_1');ylabel('k_2'); set(gca,'fontsize',14)
-                drawnow;
-            end
-        else
-            DispMsg(1,'   - Cross-correl btw WF and data in Fourier...');
-            [map,K1,K2] = CrossCorr(G,wf, params);
-            map=-map; % As map corresponds here to cross-correl that we want to maximize (hence minimize the opposite)            
-        end
-        
+        DispMsg(1,'   - Cross-correl btw WF and data in Fourier...');
+        [map,K1,K2] = CrossCorr(G,wf, params);
+        map=-map; % As map corresponds here to cross-correl that we want to maximize (hence minimize the opposite)
+
         DispMsg(1,['   - Extracting ',num2str(params.nMinima),' candidate wave-vectors...']);
         k_init= ExtractLocMin(params,map,K1,K2);
                     

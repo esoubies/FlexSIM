@@ -113,17 +113,10 @@ assert(numel(params.ringMaskLim) == 2,prefix + invld + "`ringMaskLim`. " + msg);
 assert(all(params.ringMaskLim<= 2) && all(params.ringMaskLim>=0) ,prefix + invld + "`ringMaskLim`. " + msg);
 assert(max(params.limits(1)-0.5,0)>=params.ringMaskLim(1), prefix +"The WF masking `ringMaskLim(1)` is too large compared to the search region given in `limits`."+...
     "`ringMaskLim(1)` should not exceed " +num2str(max(params.limits(1)-0.5,0)));
-% nMinima, FilterRefinement, nPoints
+% nMinima
 msg="Should be a positive integer.";
 assert(isfield(params, "nMinima"),prefix + missg + "`nMinima`. " + msg);
 assert(mod(params.nMinima, 1) == 0 && params.nMinima> 0,prefix + invld + "`nMinima`. " + msg);
-assert(isfield(params, "nPoints"),prefix + missg + "`nPoints`. " + msg);
-assert(mod(params.nPoints, 1) == 0 && params.nPoints > -1 ,prefix + invld + "`nPoints`. " + "Should be a nonnegative integer.");
-if params.nPoints < 50 && params.nPoints > 0
-    warning(prefix + "Parameter nPoints is low. Results might be inaccurate");
-elseif params.nPoints > 300
-    warning(prefix + "Parameter nPoints is large. Computation might be slow");
-end
 % method
 msg="Should be an integer within {0, 1, 2}.";
 assert(isfield(params, "method"),prefix + missg + "`method`. " + msg);
