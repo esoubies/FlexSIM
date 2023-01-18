@@ -45,9 +45,7 @@ params.SzRoiPatt = [];            % Size (odd number or empty) of the ROI for pa
 params.limits = [0.95, 1.05];     % Ring over which the J function is evaluated for initializing (fc = 1)
 params.ringMaskLim = [0.4, 1.1];  % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
 params.nMinima = 1;               % Number of starting points for the refinement steps
-params.method = 2;                % Method : 0 - treat all images independently
-                                  %          1 - use all images with same orientation to estimate a unique wavevector
-                                  %          2 - 1 + assume equally spaced phases
+params.eqPh = 1;                  % If true, equally-spaced phases are assumed
 params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns
                                   
 %% Parameters for image Reconstruction 

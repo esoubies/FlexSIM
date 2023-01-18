@@ -117,13 +117,10 @@ assert(max(params.limits(1)-0.5,0)>=params.ringMaskLim(1), prefix +"The WF maski
 msg="Should be a positive integer.";
 assert(isfield(params, "nMinima"),prefix + missg + "`nMinima`. " + msg);
 assert(mod(params.nMinima, 1) == 0 && params.nMinima> 0,prefix + invld + "`nMinima`. " + msg);
-% method
-msg="Should be an integer within {0, 1, 2}.";
-assert(isfield(params, "method"),prefix + missg + "`method`. " + msg);
-assert(mod(params.method, 1) == 0 && params.method > -1 && params.method < 3,prefix + invld + "`method`. " + msg);
-if params.nbPh == 1              % Other check related to the choice of method
-    assert(params.method == 0, "When providing only one phase, set parameter `method` should be set to 0.");
-end
+% eqPh
+msg="Should be a boolean.";
+assert(isfield(params, "eqPh"),prefix + missg + "`eqPh`. " + msg);
+assert(params.eqPh==0 || params.eqPh==1, prefix + invld + "`eqPh`. " + msg);  
 % estiPattLowFreq
 msg="Should be a boolean.";
 assert(isfield(params, "estiPattLowFreq"),prefix + missg + "`estiPattLowFreq`. " + msg);

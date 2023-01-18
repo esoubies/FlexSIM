@@ -30,7 +30,7 @@ sz=size(fftwf);
 % Without padding for cross-corel
 corrtmp=fftshift(ifft2((fft2(ifftshift(fftwf))).*conj(fft2(ifftshift(fftG)))));
 
-if params.method==2
+if params.eqPh
     wght=reshape(exp(-2*1i*[0:params.nbPh-1]*pi/params.nbPh),[1,1,params.nbPh]);
     tt=mean(corrtmp.*wght,3);tt2=conj(tt)./abs(tt);
     corr=MaskFT(real(mean(corrtmp.*wght,3).*tt2),FCut,params.limits);

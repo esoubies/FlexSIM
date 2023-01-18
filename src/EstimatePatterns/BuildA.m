@@ -45,7 +45,7 @@ else
 end
 
 % If there is the assumption of equally spaced phases, build according system
-if params.method == 2    
+if params.eqPh
     % Preallocate A for performance
     if params.GPU
         A= zeros([params.nbPh*numel(grids.X(:)), 2],'double','gpuArray');

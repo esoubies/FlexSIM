@@ -18,9 +18,9 @@ A=BuildA(k, wf, OTFCrop, params, grids); AA = A'*A;
 % -- Build second term b
 G_filt=real(ifft2(fft2(G).*OTFshiftCrop));
 % -- Solve linear system
-if params.method == 2
+if params.eqPh 
     s = AA\A'*G_filt(:);
-elseif params.method == 1
+else
     s = zeros(2, params.nbPh);
     for phNb = 1:params.nbPh
         G_filt_tmp= G_filt(:,:,phNb);

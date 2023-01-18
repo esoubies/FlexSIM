@@ -30,7 +30,7 @@ if all(size(att_filt) == size(wf))      % If a filter was given, filter data
     G=real(ifft2(fft2(G).*att_filt));
 end
 
-if params.method==2                              % If no summation needed...
+if params.eqPh                                   % If no summation needed...
     A = BuildA(ktest, wf, filt, params, grids);  % Build system (inner function takes
     AA = A'*A;                                   % care of the size and delta ph)
     s = AA\A'*G(:);

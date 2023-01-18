@@ -41,31 +41,22 @@ if params.GPU
     Y = gpuArray(Y);
     patt = gpuArray(patt);
 end
-if params.method
-    for i = 1:params.nbOr
-        ki = k(i, :); 
-        for j = 1:params.nbPh
-            if params.method == 2
-               phoff = phase(i);
-               patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*(phoff+(j-1)*pi/params.nbPh))*cos(2*(ki(1)*X+ki(2)*Y)) ...
-                                                     - sin(2*(phoff+(j-1)*pi/params.nbPh))*sin(2*(ki(1)*X+ki(2)*Y)));
-            else
-                ph = phase(i, j);
-                patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*ph)*cos(2*(ki(1)*X+ki(2)*Y)) ...
-                                                      - sin(2*ph)*sin(2*(ki(1)*X+ki(2)*Y)));
-            end
+
+for i = 1:params.nbOr
+    ki = k(i, :);
+    for j = 1:params.nbPh
+        if params.eqPh
+            phoff = phase(i);
+            patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*(phoff+(j-1)*pi/params.nbPh))*cos(2*(ki(1)*X+ki(2)*Y)) ...
+                - sin(2*(phoff+(j-1)*pi/params.nbPh))*sin(2*(ki(1)*X+ki(2)*Y)));
+        else
+            ph = phase(i, j);
+            patt(:,:,(i-1)*params.nbPh+j) = 1 + a*(cos(2*ph)*cos(2*(ki(1)*X+ki(2)*Y)) ...
+                - sin(2*ph)*sin(2*(ki(1)*X+ki(2)*Y)));
         end
     end
-else
-    for i = 1:params.nbOr*params.nbPh
-        ki = k(i, :);        
-        phoff = phase(i);
-        ai = a(i);
-        patt(:,:,i) = 1 + ai*(cos(2*(phoff*pi/params.nbPh))*cos(2*(ki(1)*X+ki(2)*Y)) ...
-                            - sin(2*(phoff*pi/params.nbPh))*sin(2*(ki(1)*X+ki(2)*Y)));
-       
-    end
 end
+
 
 patt=patt-mean(patt,[1,2]) +Lf.*mean(patt,[1,2])./mean(Lf,[1,2]);
 patt=patt/(mean(patt(:))*size(patt,3));

@@ -61,10 +61,8 @@ end
  
 % Check the acquisition convention of the user and convert to ap(w)
 imgIdxs = 1:params.nbPh*params.nbOr;    % Select the indexes to use (through imgIdxs)...
-if params.method                        % according to the selected phase,z angle convention
-    imgIdxs = reshape(imgIdxs, [params.nbPh, params.nbOr]);  
-end 
-
+imgIdxs = reshape(imgIdxs, [params.nbPh, params.nbOr]);  
+ 
 % Common quantities of interest
 [grids.I, grids.J] = meshgrid(0:sz(2)-1,0:sz(1)-1);           % Numerical mesh - multipurpose
 grids.X = grids.I*params.res; grids.Y=grids.J*params.res;     % Scaled (by resolution) mesh 

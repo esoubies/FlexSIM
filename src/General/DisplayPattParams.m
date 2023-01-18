@@ -30,11 +30,7 @@ drawellipse(ax,'Center',floor(sz_y(2:-1:1)/2)+1,'SemiAxes',fc.*sz_y(2:-1:1),'Str
 for i = 1:size(k, 1)
     tmp = k(i, :) .* sz_y(2:-1:1) * params.res / pi + sz_y(2:-1:1)/2+1;
     plot(ax,tmp(1), tmp(2), 'o', 'MarkerSize', 8, 'LineWidth', 3);
-    if params.method==0
-        leg{i}=['Img #',num2str(i)];
-    else
-        leg{i}=['Or #',num2str(i)];
-    end
+    leg{i}=['Or #',num2str(i)];
 end
 legend(leg);
 text(sz_y(2)/2,-sz_y(1)*0.04,'\bf Pre-processed Data (FT) + OTF support + Detected wavevectors','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',12);
@@ -53,26 +49,20 @@ mono_fonts={ ...
 id_font=find(cell2mat(cellfun(@(x) sum(strcmp(x,listfonts)),mono_fonts,'UniformOutput',false)),1,'first');
 
 % - Display Table
-if params.method==0
-    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase);       % Initialize the data
-    Col_name={' Kx[px]',' Ky[px]',' Ph'};
-    for ii=1:params.nbOr*params.nbPh
-        Row_name{ii}=['Img #',num2str(ii)];
-    end
-elseif params.method==1
-    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase);       % Initialize the data
+if params.eqPh
+    patternParams=k.*sz_y(2:-1:1) * params.res / pi;
     Col_name={' Kx[px]',' Ky[px]'};
     for ii=1:params.nbPh
+        patternParams = horzcat(patternParams,mod(phase + (ii-1)*pi/params.nbPh,pi));
         Col_name{end+1}=[' Ph #',num2str(ii)];
     end
     for ii=1:params.nbOr
         Row_name{ii}=['Or #',num2str(ii)];
     end
-elseif params.method==2
-    patternParams=k.*sz_y(2:-1:1) * params.res / pi;
+else
+    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase);       % Initialize the data
     Col_name={' Kx[px]',' Ky[px]'};
     for ii=1:params.nbPh
-        patternParams = horzcat(patternParams,mod(phase + (ii-1)*pi/params.nbPh,pi));
         Col_name{end+1}=[' Ph #',num2str(ii)];
     end
     for ii=1:params.nbOr
