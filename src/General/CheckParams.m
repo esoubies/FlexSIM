@@ -117,8 +117,6 @@ assert(max(params.limits(1)-0.5,0)>=params.ringMaskLim(1), prefix +"The WF maski
 msg="Should be a positive integer.";
 assert(isfield(params, "nMinima"),prefix + missg + "`nMinima`. " + msg);
 assert(mod(params.nMinima, 1) == 0 && params.nMinima> 0,prefix + invld + "`nMinima`. " + msg);
-assert(isfield(params, "FilterRefinement"),prefix + missg + "`FilterRefinement`. " + msg);
-assert(mod(params.FilterRefinement, 1) == 0 && params.FilterRefinement> 0,prefix + invld + "`FilterRefinement`. " + msg);
 assert(isfield(params, "nPoints"),prefix + missg + "`nPoints`. " + msg);
 assert(mod(params.nPoints, 1) == 0 && params.nPoints > -1 ,prefix + invld + "`nPoints`. " + "Should be a nonnegative integer.");
 if params.nPoints < 50 && params.nPoints > 0

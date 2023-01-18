@@ -46,7 +46,6 @@ params.limits = [0.95, 1.05];     % Ring over which the J function is evaluated 
 params.ringMaskLim = [0.4, 1.1];  % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
 params.nMinima = 1;               % Number of starting points for the refinement steps
 params.nPoints = 0;               % Number of points in the J evaluation grid. If set to 0, initialization is done via cross-correlation in Fourier domain.
-params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
 params.method = 2;                % Method : 0 - treat all images independently
                                   %          1 - use all images with same orientation to estimate a unique wavevector
                                   %          2 - 1 + assume equally spaced phases
