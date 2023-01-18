@@ -29,17 +29,17 @@ count_it = 1;
 % -- Outer loop (each time we update the filters)
 for nit_filt = 1:params.FilterRefinement   % Iterate filter refinement
     % Update filters and (re)initialization of step-size
-    [att_filt, filt] = BuildFilter(k, sz, OTF, params, grids);                       
+    [OTFshiftCrop, OTFCrop] = BuildFilter(k, sz, OTF, params, grids);                       
     tau=tau_init; 
     
     % Calculate current cost
-    cf(count_it) = EvalJ(k, wf, G, params, grids, filt, att_filt, 0); %#ok<AGROW>
+    cf(count_it) = EvalJ(k, wf, G, params, grids, OTFCrop, OTFshiftCrop, 0); %#ok<AGROW>
     
     % Gradient descent w.r.t. wavevector
     for jj=1:nit_tot                      
-        [~, g] = EvalJ(k, wf, G, params, grids, filt, att_filt, 1);    % Get current gradient
+        [~, g] = EvalJ(k, wf, G, params, grids, OTFCrop, OTFshiftCrop, 1);    % Get current gradient
         ktmp = k - tau * g';                                           % Update k
-        cf_new = EvalJ(ktmp, wf, G, params, grids, filt, att_filt, 0); % Calculate new cost
+        cf_new = EvalJ(ktmp, wf, G, params, grids, OTFCrop, OTFshiftCrop, 0); % Calculate new cost
         
         % Line search by backtracking
         if cf(count_it) > cf_new
@@ -47,14 +47,14 @@ for nit_filt = 1:params.FilterRefinement   % Iterate filter refinement
                 k = ktmp;
                 tau = tau * tau_fact;
                 ktmp = k - tau * g';
-                cf_new = EvalJ(ktmp, wf, G, params, grids, filt, att_filt, 0);
+                cf_new = EvalJ(ktmp, wf, G, params, grids, OTFCrop, OTFshiftCrop, 0);
             end
             ktmp = k; tau = tau/tau_fact;
         else
             while cf(count_it)<=cf_new && (tau>tau_min)
                 tau = tau/tau_fact;
                 ktmp = k - tau * g';
-                cf_new = EvalJ(ktmp, wf, G, params, grids, filt, att_filt, 0);
+                cf_new = EvalJ(ktmp, wf, G, params, grids, OTFCrop, OTFshiftCrop, 0);
             end
             if (tau>tau_min)
                 k=ktmp;
@@ -68,7 +68,7 @@ for nit_filt = 1:params.FilterRefinement   % Iterate filter refinement
         
         % Calculate and store new cost
         count_it=count_it+1;                  
-        cf(count_it) = EvalJ(ktmp, wf, G, params, grids, filt, att_filt, 0);
+        cf(count_it) = EvalJ(ktmp, wf, G, params, grids, OTFCrop, OTFshiftCrop, 0);
         if params.displ>2
             figure(fig);
             plot(cf,'linewidth',2); xlim([0 nit_tot]);grid;

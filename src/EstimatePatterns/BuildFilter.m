@@ -22,8 +22,8 @@ function [OTFshiftCrop, OTFCrop] = BuildFilter(k, sz, OTF, params, grids)
 %--------------------------------------------------------------------------
 
 FCut = 2*params.Na/params.lamb*params.res;    % Cut-off frequency
-kPix = k .* sz(2:-1:1)' * params.res / pi;      % Get the wavevector in pixel units
-if isfield(params,'ringMaskLim')             % Get radius of the circles that will make up the filters
+kPix = k .* sz(2:-1:1)' * params.res / pi;    % Get the wavevector in pixel units
+if isfield(params,'ringMaskLim')              % Get radius of the circles that will make up the filters
     rr = min(0.5,1-params.ringMaskLim(1))* norm(kPix);
 else
     rr = 0.5 * norm(kPix);

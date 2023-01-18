@@ -25,39 +25,49 @@ function [c, g] = EvalJ(ktest, wf, G, params, grids, filt, att_filt, grad)
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
-nb_imgs = size(G,3)  ;
 
-if all(size(att_filt) == size(wf))      % If a filter was given, filter data             
+if all(size(att_filt) == size(wf))      % If a filter was given, filter data
     G=real(ifft2(fft2(G).*att_filt));
 end
 
-if ismember(params.method, [0, 2])               % If no summation needed...
-    A = BuildA(ktest, wf, filt, params, grids);  % Build system (inner function takes 
+if params.method==2                              % If no summation needed...
+    A = BuildA(ktest, wf, filt, params, grids);  % Build system (inner function takes
     AA = A'*A;                                   % care of the size and delta ph)
-    if params.method == 0
-        G = G(:,:,1);                            % If we're only using one image select it
-    end
     s = AA\A'*G(:);
     c = 0.5*norm(A*s-G(:))^2/numel(G);           % Extract cost and gradient
-    if grad                                        
-        g(1) = - (A*[s(2);-s(1)].*2.*repmat(grids.X(:), nb_imgs, 1))'*(A*s-G(:))/numel(G);
-        g(2) = - (A*[s(2);-s(1)].*2.*repmat(grids.Y(:), nb_imgs, 1))'*(A*s-G(:))/numel(G);
-    end 
+%     if grad
+%         tmp=(A*s-G(:))/numel(G);
+%         g(1) = - (A*[s(2);-s(1)].*2.*repmat(grids.X(:), params.nbPh, 1))'*tmp;
+%         g(2) = - (A*[s(2);-s(1)].*2.*repmat(grids.Y(:), params.nbPh, 1))'*tmp;
+%     end
+    if grad
+        A_noFilt = BuildA(ktest, wf, 0, params, grids);
+        tmp=real(ifft2(conj(filt).*fft2(reshape((A*s-G(:))/numel(G),size(G)))));
+        g(1) = - (A_noFilt*[s(2);-s(1)].*2.*repmat(grids.X(:), params.nbPh, 1))'*tmp(:);
+        g(2) = - (A_noFilt*[s(2);-s(1)].*2.*repmat(grids.Y(:), params.nbPh, 1))'*tmp(:);
+    end
 else
     c = 0;                               % Initialize variables and system `A`
-    g = [0; 0];   
+    g = [0; 0];
     A = BuildA(ktest, wf, filt, params, grids);
-    AA = A'*A; 
-    
-    for ith_img = 1:nb_imgs              % Iterate the images for summation        
-        G_i = G(:,:,ith_img);            % Select corresponding image               
+    AA = A'*A;
+    for phNb = 1:params.nbPh             
+        G_i = G(:,:,phNb);               % Select corresponding image
         s = AA\A'*G_i(:);                % Extract phase of current image
-        if grad                                    
-            g(1) = g(1) - (A*[s(2);-s(1)].*2.*grids.X(:))'*(A*s-G_i(:))/numel(G_i);
-            g(2) = g(2) - (A*[s(2);-s(1)].*2.*grids.Y(:))'*(A*s-G_i(:))/numel(G_i);
-            g = g';
-        end 
         c = c + 0.5*norm(A*s-G_i(:))^2/numel(G_i);
-    end    
+%         if grad
+%             tmp=(A*s-G_i(:))/numel(G_i);
+%             g(1) = g(1) - (A*[s(2);-s(1)].*2.*grids.X(:))'*tmp(:);
+%             g(2) = g(2) - (A*[s(2);-s(1)].*2.*grids.Y(:))'*tmp(:);
+%             g = g';
+%         end
+        if grad
+            A_noFilt = BuildA(ktest, wf, 0, params, grids);
+            tmp=real(ifft2(conj(filt).*fft2(reshape((A*s-G_i(:))/numel(G_i),size(G_i)))));
+            g(1) = g(1) - (A_noFilt*[s(2);-s(1)].*2.*grids.X(:))'*tmp(:);
+            g(2) = g(2) - (A_noFilt*[s(2);-s(1)].*2.*grids.Y(:))'*tmp(:);
+            g = g';
+        end
+    end
 end
 end

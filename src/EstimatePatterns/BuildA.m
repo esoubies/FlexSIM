@@ -13,7 +13,7 @@ function A = BuildA(ktest, wf, filt, params, grids)
 % Inputs :  ktest   -> The wavevector to test 
 %           wf      -> The corresponding wf information
 %           filt    -> The filter (in FT domain) to apply to A. If set to 0,
-%                      no filter is applied%           
+%                      no filter is applied           
 %           params  -> Structure containing the input parameters of the system
 %           grids   -> Structure that stores all necessary grids
 %
@@ -22,8 +22,8 @@ function A = BuildA(ktest, wf, filt, params, grids)
 %
 % [1] FlexSIM: ADD REF TO PAPER
 % 
-% Copyright (2022) A. Nogueron (anogueron.1996@gmail.com) , E. Soubies 
-% (emmanuel.soubies@irit.fr) 
+% Copyright (2022) A. Nogueron (anogueron.1996@gmail.com), 
+%                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 % Calculate necessary sins and cos first we get the grids corresponding to the test wavevector
 k1x = 2*ktest(1)*grids.X; k2y = 2*ktest(2)*grids.Y;
@@ -56,8 +56,7 @@ if params.method == 2
     A(1:numel(grids.X(:)), :) = [a1(:),a2(:)];
     for i = 2:params.nbPh
         deltaph = (i - 1)*pi/params.nbPh;         % Calculate deltaPhi
-        c3 = cos(2*deltaph); s3 = sin(2*deltaph); % Calculate additional sines and cos
-        
+        c3 = cos(2*deltaph); s3 = sin(2*deltaph); % Calculate additional sines and cos        
         if all(size(filt) == size(wf))            % Calculate additional FFTs and build
             a1=real(ifft2( filt.*(c1c2_ft*c3 - s1s2_ft*c3 - s1c2_ft*s3 - c1s2_ft*s3)));
             a2=real(ifft2(-filt.*(s1c2_ft*c3 + c1s2_ft*c3 + c1c2_ft*s3 - s1s2_ft*s3)));

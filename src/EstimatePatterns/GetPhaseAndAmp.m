@@ -26,9 +26,6 @@ elseif params.method == 1
         G_filt_tmp= G_filt(:,:,phNb);
         s(:,phNb) = AA\A'*G_filt_tmp(:);
     end
-else
-    G_filt_tmp= G_filt;
-    s = AA\A'*G_filt_tmp(:);
 end
 % -- Extract cos and sin components
 ac=s(1,:); as=s(2,:);
