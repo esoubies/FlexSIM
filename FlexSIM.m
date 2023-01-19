@@ -31,7 +31,7 @@ end
 sz=size(y);
 tmp = fft_best_dim(sz(1)*2+params.padSz) - sz(1)*2; 
 if tmp~=params.padSz
-    disp(['Note: padSz has been increased from ',num2str(params.padSz),' to ',num2str(tmp),' for faster FFTs (multiple of powers of 2, 3 and/or 5)']);
+    DispMsg(params.verbose,['Note: padSz has been increased from ',num2str(params.padSz),' to ',num2str(tmp),' for faster FFTs (multiple of powers of 2, 3 and/or 5)']);
     params.padSz=tmp;
 end
 
@@ -73,7 +73,7 @@ end
 
 %% FlexSIM pipeline
 % -- Pattern Estimation
-disp('<strong>=== Patterns estimation</strong> ...');
+DispMsg(params.verbose,'<strong>=== Patterns estimation</strong> ...');
 [k, phase] = EstimatePatterns(params, PosRoiPatt, y, 0, wf);
 if params.estiPattLowFreq
     Lf = EstimateLowFreqPatterns(params,y,wf,5);
@@ -112,7 +112,7 @@ rec=CellZeros(patches,[2,2],[1,2]);
 % Loop over patches
 if nbPatches==1 || ~params.parallelProcess
     % No parallelization over patches
-    disp(['<strong>===  Reconstruction</strong> ...']);
+    DispMsg(params.verbose,'<strong>===  Reconstruction</strong> ...');
     for id_patch = 1:nbPatches
         if params.szPatch>0, fprintf('<strong>- [Process patch #%i/%i]</strong> ...',id_patch,nbPatches); end      
         if params.verbose==2 && nbPatches>1, fprintf('\n'); end
@@ -132,14 +132,14 @@ if nbPatches==1 || ~params.parallelProcess
     end
 else
     % Parallelization over patches
-    disp('<strong>=== Reconstruction in parallel patch-based mode ... </strong>');
+    DispMsg(params.verbose,'<strong>=== Reconstruction in parallel patch-based mode ... </strong>');
     if ~isempty(gcp('nocreate')), delete(gcp('nocreate')); end
     nbcores=feature('numcores');
     parpool('local',nbcores);
     parfevalOnAll(@warning,0,'off','all');
     parfor (id_patch = 1:nbPatches,nbcores)
         t = getCurrentTask(); 
-        disp(['-- [Worker #',num2str(t.ID),'] Process patch #',num2str(id_patch),'/',num2str(nbPatches)]);
+        DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process patch #',num2str(id_patch),'/',num2str(nbPatches)]);
         rec{id_patch} = Reconstruct(gather(patches{id_patch}),gather(patches_patt{id_patch}),params);
     end
     delete(gcp('nocreate'));
@@ -159,6 +159,6 @@ res.k = k; res.phase = phase;
 res.rec=Patches2Image(rec,params.overlapPatch*2);
 res.patt=patterns;
 
-disp(['<strong>=== FlexSIM END. Elapsed time (s): ',num2str(toc(time0)),' </strong>']);
+DispMsg(params.verbose,['<strong>=== FlexSIM END. Elapsed time (s): ',num2str(toc(time0)),' </strong>']);
 end
 
