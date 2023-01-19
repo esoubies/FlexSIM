@@ -8,22 +8,15 @@ function [k_final, phase] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stac
 %
 % Inputs  : params  -> Structures with fields:
 %                         - StackOrder: order of the SIM stack. Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
-%                         - roi: region on interest on which the parameters will be estimated
 %                         - lamb: Emission wavelength
 %                         - Na: Objective numerical aperture
 %                         - res: resolution of the SIM data stac
 %                         - nbOr: number of orientations
 %                         - nbPh: number of phases
 %                         - SzRoiPatt: Size of the ROI used for patterns estimation
-%                         - method: method used to estimate the parameters, 3 choices
-%                                    0 - treat all images independently
-%                                    1 - use all images with same orientation to estimate a unique wavevector
-%                                    2 - 1 + assume equally spaced phases
+%                         - eqPh: Boolean, if true equally-spaced phases are assumed
 %                         - ringMaskLim: 1x2 array (eg. [0.3, 1.1]) defining the ring used to mask the WF component and the high-freq of the data, givien as factor of fc=1
-%                         - limits: 1x2 array (eg. [0.9, 1.1]) defining  the ring over which the J function is evaluated for initializing, givien as factor of fc=1
 %                         - nMinima: Number of starting points for the refinement steps
-%                         - nPoints: Number of points in the J evaluation grid
-%                         - FilterRefinement: Number of times that the filter is upgraded (gradient descent cycles)
 %                         - displ: if >1, displays intermediate results
 %           PosRoiPatt -> Top-left corner of the ROI used for patterns estimation
 %           y          -> SIM data stack

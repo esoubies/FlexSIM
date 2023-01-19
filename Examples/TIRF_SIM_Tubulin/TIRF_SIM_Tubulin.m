@@ -30,7 +30,7 @@ params.GPU = 0;                         % Boolean on whether to use GPU or not
 params.SzRoiBack=31;        % Size (odd number or empty) of the ROI for background estimation (position automatically detected so as to minimize the intensity within the ROI)
 
 % -- Patterns
-params.StackOrder = 'pa';   % Phase (p) and angle (a)convention. Choose one of ('pa', 'pa' or 'ap')
+params.StackOrder = 'pa';   % SIM stack order ('ap','pa','apw','paw','wap','wpa') with a=angles, p=phases, w=widefield. For 'ap' and 'pa' a widefield per orientation is computed as the summing along phases. 
 params.nbOr = 3;            % Number of orientations
 params.nbPh = 3;            % Number of phases 
 
