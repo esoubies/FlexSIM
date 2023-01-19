@@ -10,7 +10,7 @@ function maskedFT = MaskFT(ft, fc, radii,shift)
 %          fc        -> Cutoff frequency, normalized by resolution ([0, 0.5])
 %          limits    -> 1x2 matrix. Limits of the ring as factors of the
 %                      maximum cutoff frequency. 
-%          shift     -> optional parameter to shift the center (0,0) of the OTF
+%          shift     -> optional parameter to shift the center (0,0) of the mask
 % Outputs : maskedFT -> Self-explanatory 
 %
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com) , E. Soubies 

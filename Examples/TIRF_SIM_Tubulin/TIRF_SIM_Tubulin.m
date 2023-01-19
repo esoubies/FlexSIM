@@ -42,8 +42,7 @@ params.damp = 0.3;        % damping parameter (in [0,1], 1= no damping) to atten
 
 %% Parameters for patterns estimation
 params.SzRoiPatt = [];            % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
-params.limits = [0.95, 1.05];     % Ring over which the J function is evaluated for initializing (fc = 1)
-params.ringMaskLim = [0.4, 1.1];  % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
+params.ringMaskLim = [0.4, 1.1];  % Lower and upper limits of Fourier ring mask, givien as factor of the cutoff freq
 params.nMinima = 1;               % Number of starting points for the refinement steps
 params.eqPh = 1;                  % If true, equally-spaced phases are assumed
 params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns

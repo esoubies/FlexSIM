@@ -102,17 +102,12 @@ prefix="[Patterns Estimation] ";
 msg="Should be either empty or an odd number.";
 assert(isfield(params, "SzRoiPatt"),prefix + missg + "`SzRoiPatt`. " + msg);
 assert(isempty(params.SzRoiPatt) || mod(params.SzRoiPatt,2)==1,prefix + invld + "`SzRoiPatt`. " + msg);
-% limits
-msg="Should be a vector of length 2 with values within [0,2].";
-assert(isfield(params, "limits"),prefix + missg + "`limits`. " + msg);
-assert(numel(params.limits) == 2,prefix + invld + "`limits`. " + msg);
-assert(all(params.limits<= 2) && all(params.limits>=0) ,prefix + invld + "`limits`. " + msg);
 % ringMaskLim
 assert(isfield(params, "ringMaskLim"),prefix + missg + "`ringMaskLim`. " + msg);
 assert(numel(params.ringMaskLim) == 2,prefix + invld + "`ringMaskLim`. " + msg);
 assert(all(params.ringMaskLim<= 2) && all(params.ringMaskLim>=0) ,prefix + invld + "`ringMaskLim`. " + msg);
-assert(max(params.limits(1)-0.5,0)>=params.ringMaskLim(1), prefix +"The WF masking `ringMaskLim(1)` is too large compared to the search region given in `limits`."+...
-    "`ringMaskLim(1)` should not exceed " +num2str(max(params.limits(1)-0.5,0)));
+%assert(max(params.limits(1)-0.5,0)>=params.ringMaskLim(1), prefix +"The WF masking `ringMaskLim(1)` is too large compared to the search region given in `limits`."+...
+ %   "`ringMaskLim(1)` should not exceed " +num2str(max(params.limits(1)-0.5,0)));
 % nMinima
 msg="Should be a positive integer.";
 assert(isfield(params, "nMinima"),prefix + missg + "`nMinima`. " + msg);

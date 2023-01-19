@@ -23,11 +23,7 @@ function [OTFshiftCrop, OTFCrop] = BuildFilter(k, sz, OTF, params, grids)
 
 FCut = 2*params.Na/params.lamb*params.res;    % Cut-off frequency
 kPix = k .* sz(2:-1:1)' * params.res / pi;    % Get the wavevector in pixel units
-if isfield(params,'ringMaskLim')              % Get radius of the circles that will make up the filters
-    rr = min(0.5,1-params.ringMaskLim(1))* norm(kPix);
-else
-    rr = 0.5 * norm(kPix);
-end
+rr = max(0.5,min(params.ringMaskLim(1)+0.3,1))*norm(kPix);  % Get radius of the circles that will make up the filters (at least a band of 0.3 should remains)
 I = grids.I+1; J = grids.J+1;
 % Build the filter corresponding to the shifted and cropped OTF (for b)
 OTF0=double(OTF.*ifftshift((sqrt((I-kPix(1)-floor(sz(2)/2)-1).^2+(J-kPix(2)-floor(sz(1)/2)-1).^2)<rr)+(sqrt((I+kPix(1)-floor(sz(2)/2)-1).^2+(J+kPix(2)-floor(sz(1)/2)-1).^2)<rr))>0);
