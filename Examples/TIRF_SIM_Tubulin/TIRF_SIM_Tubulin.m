@@ -14,25 +14,25 @@ clear; close all; clc;
 %% General parameters
 % -- Path and files
 params.DataPath = fullfile(pwd,'TIRF_SIM_Tubulin.tif');   % Path to the SIM stack 
-params.pathToFlexSIM = '../../';                             % Path to the root of GitHub FlexSIM repo
+params.pathToFlexSIM = '../../';                          % Path to FlexSIM root folder
 if ~exist(params.DataPath, 'file')
     websave(params.DataPath, 'https://github.com/fairSIM/test-datasets/releases/download/TIRF-SIM-Georgia/TIRF_Tubulin_525nm.tif');
 end
+
 % -- Display, saving and GPU acceleration
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
 params.verbose=2;                       % 0: minimal text displays / 1: detailled text displays / 2: more details
 params.sav = 1;                         % Boolean if true save the result
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 
-%% Data related parameters
+%% Physical parameters and pre-processing
 % -- Background estimation
 params.SzRoiBack=31;        % Size (odd number or empty) of the ROI for background estimation (position automatically detected so as to minimize the intensity within the ROI)
 
 % -- Patterns
-params.StackOrder = 'pa';   % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+params.StackOrder = 'pa';   % Phase (p) and angle (a)convention. Choose one of ('pa', 'pa' or 'ap')
 params.nbOr = 3;            % Number of orientations
 params.nbPh = 3;            % Number of phases 
-params.pattAmp=1;           % Amplitude of the patterns in [0,1]
 
 % -- OTF Approximation
 params.lamb = 525;        % Emission wavelength
@@ -42,11 +42,12 @@ params.damp = 0.3;        % damping parameter (in [0,1], 1= no damping) to atten
 
 %% Parameters for patterns estimation
 params.SzRoiPatt = [];            % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
-params.ringMaskLim = [0.4, 1.1];  % Lower and upper limits of Fourier ring mask, givien as factor of the cutoff freq
-params.nMinima = 1;               % Number of starting points for the refinement steps
-params.eqPh = 1;                  % If true, equally-spaced phases are assumed
+params.ringMaskLim = [0.4, 1.1];  % Lower and upper limits of Fourier ring mask (given as factor of the cutoff freq)
+params.eqPh = 1;                  % Boolean, if true equally-spaced phases are assumed
+params.nMinima = 1;               % Number of initial wavevectors extracted from cross-correlation maps
 params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns
-                                  
+params.pattAmp=1;                 % Amplitude of the patterns in [0,1]
+        
 %% Parameters for image Reconstruction 
 % -- Patch-based processing
 params.szPatch=0;                 % If >0, FlexSIM will perform the reconstruction by patches of size 'szPatch'

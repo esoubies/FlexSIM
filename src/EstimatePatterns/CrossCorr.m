@@ -25,11 +25,9 @@ sz=size(wf);fac=4;
 fftwf=fft2(padarray(wf,sz(1:2)*fac,'post'));
 fftG=fft2(padarray(G,sz(1:2)*fac,'post'));
 sz=size(fftwf);
+
 % -- Perform cross-correlation btw the fft of wf and the fft of processed data G
-
-% Without padding for cross-corel
 corrtmp=fftshift(ifft2((fft2(ifftshift(fftwf))).*conj(fft2(ifftshift(fftG)))));
-
 if params.eqPh
     wght=reshape(exp(-2*1i*[0:params.nbPh-1]*pi/params.nbPh),[1,1,params.nbPh]);
     tt=mean(corrtmp.*wght,3);tt2=conj(tt)./abs(tt);
@@ -38,7 +36,6 @@ else
     tt=conj(corrtmp)./abs(corrtmp); 
     corr=MaskFT(real(mean(corrtmp.*tt,3)),FCut,params.ringMaskLim);
 end
-
 
 % Generate grid and get radius
 lv = ((1:sz(1)) - floor(sz(1)/2)-1)*pi/params.res/sz(1);
