@@ -1,6 +1,6 @@
-function [k_final, phase] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stack)
+function [k_final, ph_final, k_init, ph_init] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stack)
 %--------------------------------------------------------------------------
-% Function [k_final, phase] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stack)
+% Function [k_final, ph_final, k_init, ph_init] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stack)
 %
 % Estimate the parameters of 2D sinusoidal patterns of the form 
 %    w(x) = 1 + a cos(<k,x> + phase),
@@ -24,8 +24,8 @@ function [k_final, phase] = EstimatePatterns(params,PosRoiPatt,y,k_init, wf_stac
 %           wf         -> Widefield image.                   
 %
 %
-% Outputs : k_final -> array with the estimated wavevectors (if method=0, of size nbOr*nbPh. Otherwise, of size nbOr)
-%           phase   -> array with the estimated phases (if method=0,1, of size nbOr*nbPh. Otherwise, of size nbOr)
+% Outputs : k_final  -> array with the estimated wavevectors 
+%           ph_final -> array with the estimated phases 
 %
 % [1] FlexSIM: ADD REF TO PAPER
 %
@@ -47,9 +47,11 @@ wf_stack= (wf_stack-min(wf_stack(:))) / (max(wf_stack(:)) - min(wf_stack(:)));
 
 if ~gather(k_init)
     compute_k_init=true;
+    k_init=zeros(1,2);
 else
     compute_k_init=false;
 end
+FCut = 2*params.Na/params.lamb*params.res;            % Cut-off frequency
  
 % Check the acquisition convention of the user and convert to ap(w)
 imgIdxs = 1:params.nbPh*params.nbOr;    % Select the indexes to use (through imgIdxs)...
@@ -77,11 +79,7 @@ for idx = imgIdxs
 
     if params.displ > 1                                 % Debug mode - display conditioned images
         f = figure; 
-        if params.method
-            sgtitle(sprintf("Conditioned data for orientation #%d", OrientCount))
-        else
-            sgtitle(sprintf("Conditioned data for image #%", OrientCount))
-        end
+        sgtitle(sprintf("Conditioned data for orientation #%d", OrientCount))
         WFPan = axes('position',[0.55,0.55,0.4,0.4], 'title','Widefield', 'Parent', f);
         WFFTPan = axes('position',[0.55,0.05,0.4,0.4], 'title','Widefield FT', 'Parent', f);
         if numel(size(G)) > 2            
@@ -102,18 +100,19 @@ for idx = imgIdxs
     if compute_k_init
         DispMsg(params.verbose,'   - Cross-correl btw WF and data in Fourier...');
         [map,K1,K2] = CrossCorr(G,wf, params);
-        map=-map; % As map corresponds here to cross-correl that we want to maximize (hence minimize the opposite)
+        Jmap=-MaskFT(mean(abs(map).^2,3),FCut,params.ringMaskLim);
 
         DispMsg(params.verbose,['   - Extracting ',num2str(params.nMinima),' candidate wave-vectors...']);
-        k_init= ExtractLocMin(params,map,K1,K2);
+        k_tmp= ExtractLocMin(params,Jmap,K1,K2);
                     
         DispMsg(params.verbose,'   - Refine position of candidate wave-vectors...');
         if params.verbose, fprintf('%s','     - candidate #');end
+        k_ref=zeros(size(k_tmp));
         for ithk = 1:params.nMinima
             if mod(ithk,ceil(params.nMinima/10))==0 && params.verbose
                 if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
             end
-            k_init(ithk,:) = IterRefinementWavevec(k_init(ithk, :)',wf,G,grids,OTF,sz,params);
+            k_ref(ithk,:) = IterRefinementWavevec(k_tmp(ithk, :)',wf,G,grids,OTF,sz,params);
         end
         
         DispMsg(params.verbose,'   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
@@ -123,18 +122,25 @@ for idx = imgIdxs
             Jp=zeros(1,params.nMinima);
         end
         for iii = 1:params.nMinima
-            Jp(iii) = EvalJ(k_init(iii,:), wf, G, params, grids, 0, 0, 0);
+            Jp(iii) = EvalJ(k_ref(iii,:), wf, G, params, grids, 0, 0, 0);
         end
         [~,optIdx] = min(Jp);
-        k_final(OrientCount, :) = k_init(optIdx, :);
+        k_final(OrientCount, :) = k_ref(optIdx, :);
+        k_init(OrientCount, :) = k_tmp(optIdx, :);
+        
+        if nargout==4  % To output the initial phase estimate if required
+            id=intersect(find(k_init(OrientCount,1)==K1(:)),find(k_init(OrientCount,2)==K2(:)));
+            [ii,jj]=ind2sub(size(K1),id);
+            ph_init(OrientCount, :)=mod(angle(map(ii,jj,:)),2*pi)/2;
+        end
     else
         DispMsg(params.verbose,'   - Refine position of wavevector...');
         k_final(OrientCount, :) = IterRefinementWavevec(k_init(OrientCount, :)',wf,G,grids,OTF,sz,params);
     end
     
     DispMsg(params.verbose,'   - Computing phases and amplitutes...'); 
-    phase(OrientCount, :)=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
-    
+    ph_final(OrientCount, :)=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
+
     OrientCount=OrientCount+1;
 end
 end
