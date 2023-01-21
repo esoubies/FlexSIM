@@ -54,16 +54,16 @@ else
     for phNb = 1:params.nbPh             
         G_i = G(:,:,phNb);               % Select corresponding image
         s = AA\A'*G_i(:);                % Extract phase of current image
-        c = c + 0.5*norm(A*s-G_i(:))^2/numel(G_i);
+        c = c + 0.5*norm(A*s-G_i(:))^2/numel(G);
 %         if grad
-%             tmp=(A*s-G_i(:))/numel(G_i);
+%             tmp=(A*s-G_i(:))/numel(G);
 %             g(1) = g(1) - (A*[s(2);-s(1)].*2.*grids.X(:))'*tmp(:);
 %             g(2) = g(2) - (A*[s(2);-s(1)].*2.*grids.Y(:))'*tmp(:);
 %             g = g';
 %         end
         if grad
             A_noFilt = BuildA(ktest, wf, 0, params, grids);
-            tmp=real(ifft2(conj(filt).*fft2(reshape((A*s-G_i(:))/numel(G_i),size(G_i)))));
+            tmp=real(ifft2(conj(filt).*fft2(reshape((A*s-G_i(:))/numel(G),size(G_i)))));
             g(1) = g(1) - (A_noFilt*[s(2);-s(1)].*2.*grids.X(:))'*tmp(:);
             g(2) = g(2) - (A_noFilt*[s(2);-s(1)].*2.*grids.Y(:))'*tmp(:);
             g = g';
