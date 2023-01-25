@@ -21,10 +21,16 @@ function [map,K1,K2] = CrossCorr(G,wf,params)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
+if isfield(params,'overFac')
+    fac=params.overFac;
+else
+    fac=2;
+end
+
 % -- Pre-computations
 fftshift_ = @(x) fftshift(fftshift(x,1),2);
 ifftshift_ = @(x) ifftshift(ifftshift(x,1),2);
-sz=size(wf);fac=2;
+sz=size(wf);
 fftwf=fft2(padarray(wf,sz(1:2)*fac,'post'));
 fftG=fft2(padarray(G,sz(1:2)*fac,'post'));
 sz=size(fftwf);

@@ -26,8 +26,10 @@ function [c, g] = EvalJ(ktest, wf, G, params, grids, filt, att_filt, grad)
 %                  E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
-if all(size(att_filt) == size(wf))      % If a filter was given, filter data
+if all(size(att_filt) == size(wf)) && (~isfield(params,'useFilter') || params.useFilter)   % If a filter was given, filter data
     G=real(ifft2(fft2(G).*att_filt));
+else
+    G=real(ifft2(fft2(G).*double(att_filt>0)));
 end
 
 if params.eqPh                                   % If no summation needed...

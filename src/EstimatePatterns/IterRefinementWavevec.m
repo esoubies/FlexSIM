@@ -16,7 +16,7 @@ function k = IterRefinementWavevec(k_init,wf,G,grids,OTF,sz,params)
 tau_fact=1.5;        % Factor to update the descent step-size during line search
 tau_min=1e-10;       % Minimal value of step-size
 nit_tot=100;         % Max number of iterations
-cf_tolerance = 1e-10; % Tolerance on the relative difference of the cost function btw 2 iterates
+cf_tolerance = 1e-6; % Tolerance on the relative difference of the cost function btw 2 iterates
 tau_init=1e-1;       % Initial descent step-size
 
 % -- Initializations
@@ -79,5 +79,4 @@ for jj=1:nit_tot
     if abs(cf(count_it)-cf(count_it-1))/abs(cf(count_it-1))<cf_tolerance
         break;
     end
-
 end
