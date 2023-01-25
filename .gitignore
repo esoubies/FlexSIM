@@ -15,6 +15,7 @@ GlobalBioIm
 *COS_C3*
 fairSIM/*
 *fairSIM*
+*.fig
 
 # Python distribution / packaging
 .Python
