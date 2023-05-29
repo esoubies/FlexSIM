@@ -1,4 +1,4 @@
-# TIRF-SIM Tubulin (Fair-SIM)
+# TIRF-SIM Tubulin (FairSIM)
 
 This dataset was presented first in [2] and used as an example in the fairSIM original publication [1]. 
 It was acquired with TIRF illumination. 

@@ -2,7 +2,10 @@
 % FlexSIM reconstruction script of the TIRF-SIM Tubulin data provided at
 % https://github.com/fairSIM/test-datasets/blob/master/TIRF-SIM-Georgia.md
 %
-% Reference paper for the dataset:
+% Reference papers for the dataset:
+% Super-resolution video microscopy of live cells by structured illumination.
+% Nature Methods, 6(5). P. Kner, B.B. Chhun, E.R. Griffis, L. Winoto, and M.G.L. Gustafsson, (2009).
+%
 % Open-source image reconstruction of super-resolution structured illumination microscopy data in ImageJ. 
 % Nature communications, 7(1), 1-6. Müller, M., Mönkemöller, V., Hennig, S., Hübner, W., & Huser, T. (2016).
 %
