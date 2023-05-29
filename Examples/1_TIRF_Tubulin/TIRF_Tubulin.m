@@ -22,7 +22,7 @@ end
 % -- Display, saving and GPU acceleration
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
 params.verbose=2;                       % 0: minimal text displays / 1: detailled text displays / 2: more details
-params.sav = 1;                         % Boolean if true save the result
+params.sav = 1;                         % Boolean on whether to save or not the reconstructed image and estimated patterns
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 
 %% Physical parameters and pre-processing
@@ -35,9 +35,9 @@ params.nbOr = 3;            % Number of orientations
 params.nbPh = 3;            % Number of phases 
 
 % -- OTF Approximation
-params.lamb = 525;        % Emission wavelength
+params.lamb = 525;        % Emission wavelength (nm)
 params.res = 63;          % Pixel size (nm)
-params.Na = 1.49;         % Objective numerica aperture
+params.Na = 1.49;         % Objective numerical aperture
 params.damp = 0.3;        % damping parameter (in [0,1], 1= no damping) to attenuate middle freq in the approx OTF
 
 %% Parameters for patterns estimation
@@ -50,22 +50,22 @@ params.pattAmp=1;                 % Amplitude of the patterns in [0,1]
         
 %% Parameters for image Reconstruction 
 % -- Patch-based processing
-params.szPatch=0;                 % If >0, FlexSIM will perform the reconstruction by patches of size 'szPatch'
-params.overlapPatch=0;            % Overlap between patches if szPatch>0
-params.parallelProcess=0;         % If 1, paralellizes the loop over patches
+params.szPatch=0;                 % Size (px) of patches (if 0, no patch-based processing)
+params.overlapPatch=0;            % Overlap between patches
+params.parallelProcess=0;         % Boolean on whether to parallelize the loop over patches
 
 % -- OTF Attenuation
-params.OTFAttStr=0.999;           % Strenght of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.
+params.OTFAttStr=0.999;           % Strength of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.
 params.OTFAttwdth=0.3;            % Width of the OTF attenuation (>0). If 0 no OTF attenuation.
 
-% -- Operators and Costs
-params.sepOrr = 0;                % Boolean if true treat each orientation separately
-params.padSz=50;                  % Padding size for the optimization variable (to account for boundaries effects)
-params.mu =  5e-5;                % Regularization parameter
-params.regType=1;                 % Choice regul: 1 for Tikhonov (i.e., Wiener), 2 for Total Variation, 3 for Good roughness
+% -- Cost function
+params.sepOrr = 0;                % Boolean on whether to treat each orientation separately
+params.padSz=20;                  % Padding size (px) used in the forward operator
+params.mu =  5e-6;                % Regularization parameter
+params.regType=1;                 % Regularization function: 1 for 1st-order Tikhonov, 2 for Total Variation, 3 for Good roughness.
 
 % -- Optim
-params.maxIt = 100;               % Maximum number of iterations (stopping criteria)
+params.maxIt = 40;                % Maximum number of iterations (stopping criteria)
 params.stepTol = 5e-4;            % Relative error tolerance between two iterates (stopping criteria)
 
 %% Run FlexSIM
