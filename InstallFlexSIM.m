@@ -8,7 +8,8 @@ function InstallFlexSIM()
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com) , E. Soubies 
 % (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
-addpath(genpath(pwd))               % Add source files to path
+addpath(pwd);
+addpath(genpath([pwd,'/src']));      % Add source files to path
 global syst_type                    % Keep track of system type
 if ispc
     syst_type = 'W'; 
