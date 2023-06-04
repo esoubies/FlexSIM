@@ -1,4 +1,4 @@
-function rec = Reconstruct(y,patt,params)
+function rec = Reconstruct_Loop_F(y,patt,params)
 %--------------------------------------------------------------------------
 % function rec = Reconstruct(y,patt,params)
 %
@@ -44,7 +44,16 @@ otf = GenerateOTF(params.Na,params.lamb,min([256,256],sz(1:2)),params.res/2,para
 psf = fftshift(real(ifft2(otf)));
 % -- Normalization
 maxy=max(y(:));y=y/maxy;
-
+% -- OTF Attenuation
+if params.OTFAttStr && params.OTFAttwdth
+    OTFatt = GenerateOTFAttMask(params.Na,params.lamb,sz(1:2),params.res,params.OTFAttStr,params.OTFAttwdth);
+    Hatt=LinOpConv('MTF', OTFatt,1,[1,2]);
+else
+    Hatt=LinOpIdentity(sz(1:2));
+end
+% -- Apodisation function
+[X,Y]=meshgrid(linspace(-1,1,sz(1)),linspace(-1,1,sz(2)));
+Apo=1./(1+exp(100*(abs(X)-0.97)))./(1+exp(100*(abs(Y)-0.97)));
 
 %% Operators and Regul
 % -- Data term
@@ -55,21 +64,15 @@ else
     P=LinOpSelectorPatch(szUp+params.padSz,[1 1],szUp);
 end
 S=LinOpDownsample(szUp,downFact);
-if params.OTFAttStr && params.OTFAttwdth
-    OTFatt = GenerateOTFAttMask(params.Na,params.lamb,sz(1:2),params.res,params.OTFAttStr,params.OTFAttwdth);
-    Hatt=LinOpConv('MTF', OTFatt,1,[1,2]);
-else
-    Hatt=LinOpIdentity(sz(1:2));
-end
 
 % -- Regularization
 G=LinOpGrad(P.sizein,[1 2]); 
 if params.regType==1      % Thikonov
-    R=CostL2(G.sizeout)*G;
+    R=1/prod(G.sizein)*CostL2(G.sizeout)*G;
 elseif params.regType==2  % TV
-    R=CostHyperBolic(G.sizeout,1e-4,length(G.sizeout))*G;
+    R=1/prod(G.sizein)*CostHyperBolic(G.sizeout,1e-4,length(G.sizeout))*G;
 elseif params.regType==3   % GR
-    R=CostGoodRoughness(G,1e-1);
+    R=1/prod(G.sizein)*CostGoodRoughness(G,1e-1);
 end
 
 %% Cost and Optim
@@ -85,21 +88,19 @@ for id1=0:n1-1
     % -- Patterns normalization
     pp=pp/(mean(pp(:))*size(pp,3));
     % -- Data term
-    sig=max(max(yy(:,:,1)))/10;
-    wght=LinOpDiag([],1./(yy(:,:,1)+sig));
+    sig=max(max(yy,[],1),[],2)/10;
+    wght=LinOpDiag([],Apo./(yy(:,:,1)+sig(1)));
     F=CostL2([],yy(:,:,1),wght*Hatt)*(S*P*H*LinOpDiag(P.sizein,pp(:,:,1)));
     for id2=2:n2
-        sig=max(max(yy(:,:,id2)))/10;
-        wght=LinOpDiag([],1./(yy(:,:,id2)+sig));
+        wght=LinOpDiag([],Apo./(yy(:,:,id2)+sig(id2)));
         F=F+CostL2([],yy(:,:,id2),wght*Hatt)*(S*P*H*LinOpDiag(P.sizein,pp(:,:,id2)));
     end
     
     % -- Build cost and optimize. Try the faster VMLMB for Linux devices, or FBS for Windows devices 
     try        
-        Opt=OptiVMLMB((1/numel(yy))*F+(params.mu/prod(P.sizeout))*R,0.,[]);            % Algorithm instanciation
+        Opt=OptiVMLMB((1/numel(yy))*F+params.mu*R,0.,[]);            % Algorithm instanciation
     catch
-        disp(['Reconstructing with Projected Gradient Descent...']);
-        Opt=OptiFBS((1/numel(yy))*F+(params.mu/prod(P.sizeout))*R, CostNonNeg(R.sizein));
+        Opt=OptiFBS((1/numel(yy))*F+params.mu*R, CostNonNeg(R.sizein));
         Opt.fista=1;
         Opt.gam=numel(yy);
         Opt.updateGam='backtracking';
@@ -110,11 +111,15 @@ for id1=0:n1-1
     Opt.CvOp=TestCvgStepRelative(params.stepTol);    % Test convergence criterion
     Opt.ItUpOut=round(params.maxIt/10);              % Call OutputOpti update every ItUpOut iterations
     Opt.maxiter=params.maxIt;                        % Max number of iterations
-    Opt.run(zeros(P.sizein));                       % Run the algorithm zeros(H.sizein)
+    Opt.run(zeros(P.sizein));                        % Run the algorithm zeros(H.sizein)
     rec=rec+P*Opt.xopt*maxy;
     if params.verbose==1
         fprintf(' done (%i Iters, %0.2e sec) \n',Opt.niter,Opt.time);
     end
 end
 rec=rec/n1;
+% Apodize result (as apotization is used in the cost)
+[X,Y]=meshgrid(linspace(-1,1,szUp(1)),linspace(-1,1,szUp(2)));
+Apo=1./(1+exp(100*(abs(X)-0.97)))./(1+exp(100*(abs(Y)-0.97)));
+rec=rec.*Apo;
 end
