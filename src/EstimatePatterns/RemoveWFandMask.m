@@ -2,7 +2,7 @@ function [G,wf] = RemoveWFandMask(y,wf,params)
 %--------------------------------------------------------------------------
 % function [G,wf] = RemoveWFandMask(y,wf,params)
 %
-% From a stack of SIM images emove the scaled WF + filter freq within a ring of interest
+% From a stack of SIM images remove the scaled WF + filter freq within a ring of interest
 %
 % Inputs  : y       -> SIM data stack
 %           wf      -> widefield image
@@ -26,7 +26,7 @@ sz=size(y);                                   % Size of the input stack
 if length(sz) == 2; sz(3) = 1; end
 [I,J]=meshgrid(1:sz(2),1:sz(1));              % Create a LP filter in Fourier domain to remove WF
 FCut = 2*params.Na/params.lamb*params.res;    % Cut-off frequency
-p = ([sz(2), sz(1)]+1)/2; r = sz(1)/8;               % Build mask
+p = ([sz(2), sz(1)]+1)/2; r = FCut*sz(1)/8;               % Build mask
 mask=double(((I-p(1)).^2+(J-p(2)).^2) < r^2); 
 
 % -- Initializations
