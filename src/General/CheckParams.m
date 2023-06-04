@@ -169,10 +169,12 @@ assert(isfield(params, "maxIt"),prefix + missg + "`maxIt`. " + msg);
 assert(params.maxIt>= 0,prefix + invld + "`maxIt`. " + msg);
 assert(isfield(params, "padSz"),prefix + missg + "`padSz`. " + msg);
 assert(params.padSz>= 0,prefix + invld + "`padSz`. " + msg);
-% sepOrr
+% sepOrr apodize
 msg="Should be a boolean.";
 assert(isfield(params, "sepOrr"),prefix + missg + "`sepOrr`. " + msg);
 assert(params.sepOrr==0 || params.sepOrr==1, prefix + invld + "`sepOrr'. " + msg);  
+assert(isfield(params, "apodize"),prefix + missg + " apodize. " + msg);
+assert(params.apodize==0 || params.apodize==1, prefix + invld + "`apodize'. " + msg);  
 % regType
 msg="Should be an integer within {1, 2, 3}.";
 assert(isfield(params, "regType"),prefix + missg + "`regType`. " + msg);

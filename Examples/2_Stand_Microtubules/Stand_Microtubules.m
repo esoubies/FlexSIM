@@ -70,6 +70,7 @@ params.OTFAttStr=0.9995;          % Strenght of the OTF attenuation (in [0,1]). 
 params.OTFAttwdth=0.5;            % Width of the OTF attenuation (>0). If 0 no OTF attenuation.
 
 % -- Operators and Costs
+params.apodize = 1;               % Boolean on whether to use apodization on boundaries
 params.sepOrr = 0;                % Boolean on whether to treat each orientation separately
 params.padSz=50;                  % Padding size (px) used in the forward operator
 params.mu =  3e-5;                % Regularization parameter

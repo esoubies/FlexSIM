@@ -52,8 +52,12 @@ else
     Hatt=LinOpIdentity(sz(1:2));
 end
 % -- Apodisation function
-[X,Y]=meshgrid(linspace(-1,1,sz(1)),linspace(-1,1,sz(2)));
-Apo=1./(1+exp(100*(abs(X)-0.97)))./(1+exp(100*(abs(Y)-0.97)));
+if params.apodize
+    [X,Y]=meshgrid(linspace(-1,1,sz(1)),linspace(-1,1,sz(2)));
+    Apo=1./(1+exp(100*(abs(X)-0.97)))./(1+exp(100*(abs(Y)-0.97)));
+else
+    Apo=1;
+end
 
 %% Operators and Regul
 % -- Data term
@@ -119,7 +123,9 @@ for id1=0:n1-1
 end
 rec=rec/n1;
 % Apodize result (as apotization is used in the cost)
-[X,Y]=meshgrid(linspace(-1,1,szUp(1)),linspace(-1,1,szUp(2)));
-Apo=1./(1+exp(100*(abs(X)-0.97)))./(1+exp(100*(abs(Y)-0.97)));
-rec=rec.*Apo;
+if params.apodize
+    [X,Y]=meshgrid(linspace(-1,1,szUp(1)),linspace(-1,1,szUp(2)));
+    Apo=1./(1+exp(100*(abs(X)-0.97)))./(1+exp(100*(abs(Y)-0.97)));
+    rec=rec.*Apo;
+end
 end
