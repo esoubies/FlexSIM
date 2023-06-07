@@ -1,4 +1,4 @@
-function rec = Reconstruct_Loop_F(y,patt,params)
+function rec = Reconstruct(y,patt,params)
 %--------------------------------------------------------------------------
 % function rec = Reconstruct(y,patt,params)
 %
