@@ -13,7 +13,7 @@ clear; close all; clc;
 
 %% General parameters
 % -- Path and files
-params.DataPath = fullfile(pwd,'3_SLM_Microtubules_COS7.tif');    % Path to the SIM stack
+params.DataPath = fullfile(pwd,'3_SLM_Microtubules.tif');    % Path to the SIM stack
 params.pathToFlexSIM = '../../';                           % Path to the root of GitHub FlexSIM repo
 if ~exist(params.DataPath, 'file')
     websave(params.DataPath,'https://files.codeocean.com/files/verified/052eb33f-ffcb-4817-9ac0-7b1562ea02e1_v1.0/code/0-testdata/COS7_Microtubulin_520nm_NA1.49_Mag90x_Frame1.tif');
@@ -21,8 +21,8 @@ end
 
 % -- Display, saving and GPU acceleration
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
-params.verbose=1;                       % 0: minimal text displays / 1: detailled text displays / 2: more details
-params.sav = 1;                         % Boolean if true save the result
+params.verbose=2;                       % 0: minimal text displays / 1: detailled text displays / 2: more details
+params.sav = 1;                         % Boolean on whether to save or not the reconstructed image and estimated patterns
 params.GPU = 0;                         % Boolean on whether to use GPU or not
 
 %% Data related parameters
@@ -30,43 +30,39 @@ params.GPU = 0;                         % Boolean on whether to use GPU or not
 params.SzRoiBack=51;        % Size (odd number or empty) of the ROI for background estimation (position automatically detected so as to minimize the intensity within the ROI)
 
 % -- Patterns
-params.StackOrder= 'pa';    % Phase (p), angle (a) and time (z) convention. Choose one of ('paz', 'pza' or 'zap')
+params.StackOrder = 'pa';   % SIM stack order ('ap','pa','apw','paw','wap','wpa') with a=angles, p=phases, w=widefield. For 'ap' and 'pa' a widefield per orientation is computed as the summing along phases. 
 params.nbOr = 3;            % Number of orientations
 params.nbPh = 3;            % Number of phases 
-params.pattAmp=1;           % Amplitude of the patterns in [0,1]
 
 % -- OTF Approximation
-params.lamb = 510;     % Emission wavelength
+params.lamb = 520;     % Emission wavelength (nm)
 params.res = 72.2;     % Pixel size (nm)
 params.Na = 1.49;      % Objective numerica aperture
 params.damp = 1;       % damping parameter (in [0,1], 1= no damping) to attenuate middle freq in the approx OTF
 
 %% Parameters for patterns estimation
 params.SzRoiPatt = [];            % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
-params.limits = [0.5, 0.9];       % Ring over which the J function is evaluated for initializing (fc = 1)
-params.ringMaskLim = [0, 1.1];    % Lower and upper limit of mask to finish hiding WF component, givien as factor of fc
+params.ringMaskLim = [0.2, 1];    % Lower and upper limits of Fourier ring mask (given as factor of the cutoff freq)
+params.eqPh = 1;                  % Boolean, if true equally-spaced phases are assumed
 params.nMinima = 1;               % Number of starting points for the refinement steps
-params.nPoints = 0;               % Number of points in the J evaluation grid. If set to 0, initialization is done via cross-correlation in Fourier domain.
-params.FilterRefinement = 1;      % Number of times that the filter is upgraded (gradient descent cycles)
-params.method = 2;                % Method : 0 - treat all images independently
-                                  %          1 - use all images with same orientation to estimate a unique wavevector
-                                  %          2 - 1 + assume equally spaced phases
 params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns
+params.pattAmp=1;                 % Amplitude of the patterns in [0,1]
                                   
 %% Parameters for image Reconstruction 
 % -- Patch-based processing
-params.szPatch=128;               % If >0, FlexSIM will perform the reconstruction by patches of size 'szPatch'
-params.overlapPatch=32;           % Overlap between patches if szPatch>0
-params.parallelProcess=0;         % If 1, paralellizes the loop over patches
+params.szPatch=0;                 % Size (px) of patches (if 0, no patch-based processing)
+params.overlapPatch=0;            % Overlap between patches
+params.parallelProcess=0;         % Boolean on whether to parallelize the loop over patches
 
 % -- OTF Attenuation
-params.OTFAttStr=0.9999;          % Strenght of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.
-params.OTFAttwdth=0.5;            % Width of the OTF attenuation (>0). If 0 no OTF attenuation.
+params.OTFAttStr=0.9995;          % Strenght of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.
+params.OTFAttwdth=0.3;            % Width of the OTF attenuation (>0). If 0 no OTF attenuation.
 
 % -- Operators and Costs
-params.sepOrr = 0;                % Boolean if true treat each orientation separately
-params.padSz=10;                  % Padding size for the optimization variable (to account for boundaries effects)
-params.mu =  3e-4;                % Regularization parameter
+params.apodize = 1;               % Boolean on whether to use apodization on boundaries
+params.sepOrr = 0;                % Boolean on whether to treat each orientation separately
+params.padSz=10;                  % Padding size (px) used in the forward operator
+params.mu =  5e-5;                % Regularization parameter
 params.regType=1;                 % Choice regul: 1 for Tikhonov (i.e., Wiener), 2 for Total Variation, 3 for Good roughness
 
 % -- Optim
