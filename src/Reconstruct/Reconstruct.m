@@ -53,7 +53,7 @@ else
 end
 % -- Apodisation function
 if params.apodize
-    [X,Y]=meshgrid(linspace(-1,1,sz(1)),linspace(-1,1,sz(2)));
+    [X,Y]=meshgrid(linspace(-1,1,sz(2)),linspace(-1,1,sz(1)));
     Apo=1./(1+exp(100*(abs(X)-0.97)))./(1+exp(100*(abs(Y)-0.97)));
 else
     Apo=1;
@@ -124,7 +124,7 @@ end
 rec=rec/n1;
 % Apodize result (as apotization is used in the cost)
 if params.apodize
-    [X,Y]=meshgrid(linspace(-1,1,szUp(1)),linspace(-1,1,szUp(2)));
+    [X,Y]=meshgrid(linspace(-1,1,szUp(2)),linspace(-1,1,szUp(1)));
     Apo=1./(1+exp(100*(abs(X)-0.97)))./(1+exp(100*(abs(Y)-0.97)));
     rec=rec.*Apo;
 end
