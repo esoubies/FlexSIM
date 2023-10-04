@@ -100,7 +100,7 @@ for idx = imgIdxs
     if compute_k_init
         DispMsg(params.verbose,'   - Cross-correl btw WF and data in Fourier...');
         [map,K1,K2] = CrossCorr(G,wf, params);
-        Jmap=-MaskFT(mean(abs(map).^2,3),FCut,params.ringMaskLim);
+        Jmap=-MaskFT(mean(abs(map).^2,3),FCut,max(params.ringMaskLim,[0.3,1])); % By default hide the 0.2*Fcut central disk
 
         DispMsg(params.verbose,['   - Extracting ',num2str(params.nMinima),' candidate wave-vectors...']);
         k_tmp= ExtractLocMin(params,Jmap,K1,K2);
