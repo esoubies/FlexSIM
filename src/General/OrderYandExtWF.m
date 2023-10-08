@@ -22,10 +22,10 @@ sz=size(y);
 % Check the acquisition convention of the user and convert to ap(w)
 switch string(params.StackOrder)
     case "pa" 
-        wf=0;
+        wf=[];
         % Do nothing
     case "ap" 
-        wf=0;
+        wf=[];
         % Reorder stack in angle-phase mode - reshape(reshape(1:9, [3, 3])', 1, [])
         newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
         y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder); 
@@ -46,7 +46,7 @@ switch string(params.StackOrder)
         newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []);
         y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder);
 end
-if wf==0 && params.nbPh > 1
+if isempty(wf) && params.nbPh > 1
     wf=zeros([sz(1:2),params.nbOr]);
     if params.GPU
         wf = gpuArray(wf);
