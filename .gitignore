@@ -16,6 +16,10 @@ GlobalBioIm
 fairSIM/*
 *fairSIM*
 *.fig
+*FigPaper/
+Examples/Local_Data/
+Examples/Other_data_paper/
+Other_Softwares/
 
 # Python distribution / packaging
 .Python
