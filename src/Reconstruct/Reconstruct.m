@@ -95,10 +95,11 @@ for id1=0:n1-1
     sig=max(max(yy,[],1),[],2)/10;
     wght=LinOpDiag([],Apo./(yy(:,:,1)+sig(1)));
     F=CostL2([],yy(:,:,1),wght*Hatt)*(S*P*H*LinOpDiag(P.sizein,pp(:,:,1)));
-    for id2=2:n2
+    for id2=2:size(yy,3)
         wght=LinOpDiag([],Apo./(yy(:,:,id2)+sig(id2)));
         F=F+CostL2([],yy(:,:,id2),wght*Hatt)*(S*P*H*LinOpDiag(P.sizein,pp(:,:,id2)));
     end
+
     
     % -- Build cost and optimize. Try the faster VMLMB for Linux devices, or FBS for Windows devices 
     try        

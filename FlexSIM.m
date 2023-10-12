@@ -51,7 +51,7 @@ else
 end
 
 % - Reorder stack with FlexSIM conventions
-[y, wf] = OrderY(y, params);                                    % Reorder and extract data if necessary
+[y, wf] = OrderYandExtWF(y, params);                                    % Reorder and extract data if necessary
 wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
 
 % -- Displays
