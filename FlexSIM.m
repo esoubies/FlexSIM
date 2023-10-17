@@ -109,40 +109,30 @@ end
 nbPatches=length(patches(:));
 rec=CellZeros(patches,[2,2],[1,2]);
 
+
 % Loop over patches
-if nbPatches==1 || ~params.parallelProcess
-    % No parallelization over patches
-    DispMsg(params.verbose,'<strong>===  Reconstruction</strong> ...');
-    for id_patch = 1:nbPatches
-        if params.szPatch>0, fprintf('<strong>- [Process patch #%i/%i]</strong> ...',id_patch,nbPatches); end      
-        if params.verbose==2 && nbPatches>1, fprintf('\n'); end
-        
-        rec{id_patch} = Reconstruct(gather(patches{id_patch}),gather(patches_patt{id_patch}),params);
-        
-        % Displays
-        if params.displ > 0
-            fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wfUp,fig_rec);
-        end
-        
-        % Save reconstruction 
-        if params.sav
-            prefix=params.DataPath(1:end-4);
-            saveastiff(single(Patches2Image(rec,params.overlapPatch*2)),strcat(prefix,'_Rec.tif'));
-        end
-    end
-else
-    % Parallelization over patches
-    DispMsg(params.verbose,'<strong>=== Reconstruction in parallel patch-based mode ... </strong>');
-    if ~isempty(gcp('nocreate')), delete(gcp('nocreate')); end
+if params.parallelProcess && (params.szPatch>0)
     nbcores=feature('numcores');
-    parpool('local',nbcores);
     parfevalOnAll(@warning,0,'off','all');
-    parfor (id_patch = 1:nbPatches,nbcores)
-        t = getCurrentTask(); 
+else
+    nbcores=0;
+end
+DispMsg(params.verbose,'<strong>===  Reconstruction</strong> ...');
+parfor (id_patch = 1:nbPatches,nbcores)
+    if nbcores>0
+        t = getCurrentTask();
         DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process patch #',num2str(id_patch),'/',num2str(nbPatches)]);
-        rec{id_patch} = Reconstruct(gather(patches{id_patch}),gather(patches_patt{id_patch}),params);
+    else
+        if params.szPatch>0, fprintf('<strong>- [Process patch #%i/%i]</strong> ...',id_patch,nbPatches); end
+        if params.verbose==2 && nbPatches>1, fprintf('\n'); end
     end
-    delete(gcp('nocreate'));
+
+    rec{id_patch} = Reconstruct(gather(patches{id_patch}),gather(patches_patt{id_patch}),params);
+end
+
+% Displays
+if params.displ > 0
+    fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wfUp,fig_rec);
 end
 
 %% Save

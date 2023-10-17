@@ -24,6 +24,7 @@ params.displ = 1;                       % Displaying choice, from 0 to 2 with in
 params.verbose=2;                       % 0: minimal text displays / 1: detailled text displays / 2: more details
 params.sav = 1;                         % Boolean on whether to save or not the reconstructed image and estimated patterns
 params.GPU = 0;                         % Boolean on whether to use GPU or not
+params.parallelProcess=0;               % Boolean on whether to parallelize over patches (if szPatch>0) or over orientation (if sepOrr=1). Requires the parallel computing toolbox. 
 
 %% Data related parameters
 % -- Background noise
@@ -52,7 +53,6 @@ params.pattAmp=1;                 % Amplitude of the patterns in [0,1]
 % -- Patch-based processing
 params.szPatch=0;                 % Size (px) of patches (if 0, no patch-based processing)
 params.overlapPatch=0;            % Overlap between patches
-params.parallelProcess=0;         % Boolean on whether to parallelize the loop over patches
 
 % -- OTF Attenuation
 params.OTFAttStr=0;               % Strenght of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.

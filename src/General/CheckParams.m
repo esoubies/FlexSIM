@@ -48,6 +48,15 @@ if params.GPU
     assert(logical(license('test','Distrib_Computing_Toolbox')),prefix  + "Parallel Computing Toolbox not installed. Set parameter GPU to 0.")
     assert(logical(gpuDeviceCount), prefix + "No GPU was found. Set parameter GPU to `0`.");
 end
+% parallelProcess
+prefix="[Parallel]";
+msg="Should be a boolean.";
+assert(isfield(params, "parallelProcess"),prefix + missg + "`parallelProcess`. " + msg);
+assert(ismember(params.parallelProcess, [0, 1]), prefix + invld + "`parallelProcess'. " + msg);  
+if params.parallelProcess % Check is parallel tolbox is available 
+  assert(logical(license('test','Distrib_Computing_Toolbox')),prefix + "Parallel Computing Toolbox not installed. Set parameter parallelProcess to 0.")
+  %assert(params.verbose==0,"prefix + parameter verbose should be set to 0 when parallelProcess is activated.");
+end
 
 
 %% Data related parameters
@@ -135,14 +144,7 @@ if params.szPatch>0 % Check the two other parameters only if patch-based process
 assert(isfield(params, "overlapPatch"),prefix + missg + "`overlapPatch`. " + msg);
 assert(params.overlapPatch>= 0,prefix + invld + "`overlapPatch`. " + msg);
 end
-% parallelProcess
-msg="Should be a boolean.";
-assert(isfield(params, "parallelProcess"),prefix + missg + "`parallelProcess`. " + msg);
-assert(params.parallelProcess==0 || params.parallelProcess==1, prefix + invld + "`parallelProcess'. " + msg);  
-if params.parallelProcess % Check is parallel tolbox is available 
-  assert(logical(license('test','Distrib_Computing_Toolbox')),prefix + "Parallel Computing Toolbox not installed. Set parameter parallelProcess to 0.")
-  assert(params.verbose==0,"prefix + parameter verbose should be set to 0 when parallelProcess is activated.");
-end
+
 
 % -- OTF Attenuation
 prefix="[OTF Attenuation] ";

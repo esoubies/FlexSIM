@@ -70,7 +70,7 @@ end
 S=LinOpDownsample(szUp,downFact);
 
 % -- Regularization
-G=LinOpGrad(P.sizein,[1 2]); 
+G=LinOpGrad(P.sizein,[1 2]);
 if params.regType==1      % Thikonov
     R=1/prod(G.sizein)*CostL2(G.sizeout)*G;
 elseif params.regType==2  % TV
@@ -80,8 +80,19 @@ elseif params.regType==3   % GR
 end
 
 %% Cost and Optim
-rec=zeros(szUp);
-for id1=0:n1-1
+rec=zeros([szUp(1:2),n1]);
+x=zeros(P.sizein);
+if params.parallelProcess && (params.szPatch==0) && (n1>1)
+    nbcores=feature('numcores');
+    parfevalOnAll(@warning,0,'off','all');
+else
+    nbcores=0;
+end
+parfor (id1 = 0:n1-1,nbcores)
+    if nbcores>0
+        t = getCurrentTask();
+        DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process orientation  #',num2str(id1+1),'/',num2str(params.nbOr),' ...']);
+    end
     if params.sepOrr
         yy=y(:,:,id1*params.nbPh+1:(id1+1)*params.nbPh);
         pp=patt(:,:,id1*params.nbPh+1:(id1+1)*params.nbPh);
@@ -89,6 +100,7 @@ for id1=0:n1-1
         yy=y;
         pp=patt;
     end
+
     % -- Patterns normalization
     pp=pp/(mean(pp(:))*size(pp,3));
     % -- Data term
@@ -100,29 +112,20 @@ for id1=0:n1-1
         F=F+CostL2([],yy(:,:,id2),wght*Hatt)*(S*P*H*LinOpDiag(P.sizein,pp(:,:,id2)));
     end
 
-    
-    % -- Build cost and optimize. Try the faster VMLMB for Linux devices, or FBS for Windows devices 
-    try        
-        Opt=OptiVMLMB((1/numel(yy))*F+params.mu*R,0.,[]);            % Algorithm instanciation
-    catch
-        Opt=OptiFBS((1/numel(yy))*F+params.mu*R, CostNonNeg(R.sizein));
-        Opt.fista=1;
-        Opt.gam=numel(yy);
-        Opt.updateGam='backtracking';
-        Opt.eta=1.5;
-    end
+    % -- Build cost and optimize.
+    Opt=OptiVMLMB((1/numel(yy))*F+params.mu*R,0.,[]);            % Algorithm instanciation
     Opt.OutOp=OutputOpti(1,round(params.maxIt/10));  % Verbose monitoring
-    Opt.verbose=(params.verbose==2);
+    Opt.verbose=(params.verbose==2)*(~params.parallelProcess);
     Opt.CvOp=TestCvgStepRelative(params.stepTol);    % Test convergence criterion
     Opt.ItUpOut=round(params.maxIt/10);              % Call OutputOpti update every ItUpOut iterations
     Opt.maxiter=params.maxIt;                        % Max number of iterations
-    Opt.run(zeros(P.sizein));                        % Run the algorithm zeros(H.sizein)
-    rec=rec+P*Opt.xopt*maxy;
-    if params.verbose==1
-        fprintf(' done (%i Iters, %0.2e sec) \n',Opt.niter,Opt.time);
+    Opt.run(x);                        % Run the algorithm zeros(H.sizein)
+    rec(:,:,id1+1)=P*Opt.xopt*maxy;
+    if nbcores>0
+        DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process orientation  #',num2str(id1+1),'/',num2str(params.nbOr),' done.']);
     end
 end
-rec=rec/n1;
+rec=mean(rec,3);
 % Apodize result (as apotization is used in the cost)
 if params.apodize
     [X,Y]=meshgrid(linspace(-1,1,szUp(2)),linspace(-1,1,szUp(1)));
