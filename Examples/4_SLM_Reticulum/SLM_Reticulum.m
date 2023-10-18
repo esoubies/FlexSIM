@@ -15,10 +15,14 @@ clear; close all; clc;
 % -- Path and files
 params.DataPath = fullfile(pwd,'4_SLM_Reticulum.tif');    % Path to the SIM stack
 params.pathToFlexSIM = '../../';                                % Path to the root of GitHub FlexSIM repo
-if ~exist(params.DataPath, 'file')
-    websave(params.DataPath, 'https://github.com/charlesnchr/ML-SIM/raw/master/Test_data/SLM-SIM%20syrlyso640-5.tif');
-    y = double(loadtiff(params.DataPath)); 
-    saveastiff(single(y(:,:,1:9)),params.DataPath); % Remove the 3 last slides of the stack that are not SIM data
+try
+    if ~exist(params.DataPath, 'file')
+        websave(params.DataPath, 'https://github.com/charlesnchr/ML-SIM/raw/master/Test_data/SLM-SIM%20syrlyso640-5.tif');
+        y = double(loadtiff(params.DataPath));
+        saveastiff(single(y(:,:,1:9)),params.DataPath); % Remove the 3 last slides of the stack that are not SIM data
+    end
+catch
+    error('Automatic downloading and extraction of raw data failed [Script need to be adapted to your OS and installed packages]')
 end
 
 % -- Display, saving and GPU acceleration

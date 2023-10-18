@@ -18,8 +18,12 @@ clear; close all; clc;
 % -- Path and files
 params.DataPath = fullfile(pwd,'1_TIRF_Tubulin.tif');   % Path to the SIM stack 
 params.pathToFlexSIM = '../../';                             % Path to the root of GitHub FlexSIM repo
-if ~exist(params.DataPath, 'file')
-    websave(params.DataPath, 'https://github.com/fairSIM/test-datasets/releases/download/TIRF-SIM-Georgia/TIRF_Tubulin_525nm.tif');
+try
+    if ~exist(params.DataPath, 'file')
+        websave(params.DataPath, 'https://github.com/fairSIM/test-datasets/releases/download/TIRF-SIM-Georgia/TIRF_Tubulin_525nm.tif');
+    end
+catch
+    error('Automatic downloading and extraction of raw data failed [Script need to be adapted to your OS and installed packages]')
 end
 
 % -- Display, saving and GPU acceleration

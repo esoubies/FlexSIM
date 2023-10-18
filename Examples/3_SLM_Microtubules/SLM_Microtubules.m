@@ -13,10 +13,14 @@ clear; close all; clc;
 
 %% General parameters
 % -- Path and files
-params.DataPath = fullfile(pwd,'3_SLM_Microtubules.tif');    % Path to the SIM stack
+params.DataPath = fullfile(pwd,'3_SLM_Microtubules.tif');  % Path to the SIM stack
 params.pathToFlexSIM = '../../';                           % Path to the root of GitHub FlexSIM repo
-if ~exist(params.DataPath, 'file')
-    websave(params.DataPath,'https://files.codeocean.com/files/verified/052eb33f-ffcb-4817-9ac0-7b1562ea02e1_v1.0/code/0-testdata/COS7_Microtubulin_520nm_NA1.49_Mag90x_Frame1.tif');
+try
+    if ~exist(params.DataPath, 'file')
+        websave(params.DataPath,'https://files.codeocean.com/files/verified/052eb33f-ffcb-4817-9ac0-7b1562ea02e1_v1.0/code/0-testdata/COS7_Microtubulin_520nm_NA1.49_Mag90x_Frame1.tif');
+    end
+catch
+    error('Automatic downloading and extraction of raw data failed [Script need to be adapted to your OS and installed packages]')
 end
 
 % -- Display, saving and GPU acceleration

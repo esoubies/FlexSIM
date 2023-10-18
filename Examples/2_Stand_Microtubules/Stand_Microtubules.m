@@ -15,19 +15,23 @@ clear; close all; clc;
 % -- Path and files
 params.DataPath = fullfile(pwd,'2_Stand_Microtubules.tif');    % Path to the SIM stack
 params.pathToFlexSIM = '../../';                           % Path to the root of GitHub FlexSIM repo
-if ~exist(params.DataPath, 'file')
-    websave([pwd,'/tmp'],'https://static-content.springer.com/esm/art%3A10.1038%2Fs41377-021-00513-w/MediaObjects/41377_2021_513_MOESM2_ESM.rar');
-    if isunix || ismac,  ! unrar x tmp.rar
-    elseif ispc
-        if ~isfile('C:\Program Files\WinRAR\unrar.exe')
-            error('[Data loading] ERROR! Make sure that WinRAR is installed and located in the default directory `C:\Program Files\WinRAR\unrar.exe`, or manually extract the TIF `/HiFi-SIM_v1.01/TestData/2D-SIM(3 angles_3 phases)_9 frames_Group1.tif` from the downloaded `tmp.rar` file and rename to `SIM_Microtubules_U2OS.tif`.')
+try
+    if ~exist(params.DataPath, 'file')
+        websave([pwd,'/tmp'],'https://static-content.springer.com/esm/art%3A10.1038%2Fs41377-021-00513-w/MediaObjects/41377_2021_513_MOESM2_ESM.rar');
+        if isunix || ismac,  ! unrar x tmp.rar
+        elseif ispc
+            if ~isfile('C:\Program Files\WinRAR\unrar.exe')
+                error('[Data loading] ERROR! Make sure that WinRAR is installed and located in the default directory `C:\Program Files\WinRAR\unrar.exe`, or manually extract the TIF `/HiFi-SIM_v1.01/TestData/2D-SIM(3 angles_3 phases)_9 frames_Group1.tif` from the downloaded `tmp.rar` file and rename to `SIM_Microtubules_U2OS.tif`.')
+            end
+            ! "C:\Program Files\WinRAR\unrar.exe" x tmp.rar
         end
-        ! "C:\Program Files\WinRAR\unrar.exe" x tmp.rar
+        y = double(loadtiff([pwd,'/HiFi-SIM_v1.01/TestData/2D-SIM(3 angles_3 phases)_9 frames_Group1.tif']));
+        saveastiff(single(y),params.DataPath);
+        rmdir('HiFi-SIM_v1.01/','s');
+        delete tmp.rar
     end
-    y = double(loadtiff([pwd,'/HiFi-SIM_v1.01/TestData/2D-SIM(3 angles_3 phases)_9 frames_Group1.tif'])); 
-    saveastiff(single(y),params.DataPath);
-    rmdir('HiFi-SIM_v1.01/','s');
-    delete tmp.rar
+catch
+    error('Automatic downloading and extraction of raw data failed [Script need to be adapted to your OS and installed packages]')
 end
 
 % -- Display, saving and GPU acceleration

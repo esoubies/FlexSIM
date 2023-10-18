@@ -15,8 +15,12 @@ clear; close all; clc;
 % -- Path and files
 params.DataPath = fullfile(pwd,'1_SLM_Tetraspeck.tif');    % Path to the SIM stack
 params.pathToFlexSIM = '../../';                                % Path to the root of GitHub FlexSIM repo
-if ~exist(params.DataPath, 'file')
-    websave(params.DataPath, 'https://github.com/fairSIM/test-datasets/releases/download/SLM-SIM-Bielefeld/SLM-SIM_Tetraspeck200_680nm.tif');
+try
+    if ~exist(params.DataPath, 'file')
+        websave(params.DataPath, 'https://github.com/fairSIM/test-datasets/releases/download/SLM-SIM-Bielefeld/SLM-SIM_Tetraspeck200_680nm.tif');
+    end
+catch
+    error('Automatic downloading and extraction of raw data failed [Script need to be adapted to your OS and installed packages]')
 end
 
 % -- Display, saving and GPU acceleration

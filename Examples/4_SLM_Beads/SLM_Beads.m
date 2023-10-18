@@ -15,8 +15,12 @@ clear; close all; clc;
 % -- Path and files
 params.DataPath = fullfile(pwd,'4_SLM_Beads.tif');    % Path to the SIM stack
 params.pathToFlexSIM = '../../';                                % Path to the root of GitHub FlexSIM repo
-if ~exist(params.DataPath, 'file')
-    websave(params.DataPath, 'https://github.com/charlesnchr/ML-SIM/raw/master/Test_data/SLM-SIM%20beads.tif');
+try
+    if ~exist(params.DataPath, 'file')
+        websave(params.DataPath, 'https://github.com/charlesnchr/ML-SIM/raw/master/Test_data/SLM-SIM%20beads.tif');
+    end
+catch
+    error('Automatic downloading and extraction of raw data failed [Script need to be adapted to your OS and installed packages]')
 end
 
 % -- Display, saving and GPU acceleration
