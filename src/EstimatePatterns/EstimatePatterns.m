@@ -74,7 +74,7 @@ OrientCount = 1;
 for idx = imgIdxs
     DispMsg(params.verbose,[' Batch of images: ', num2str(idx')]);     % Display info to the user
     DispMsg(params.verbose,'   - Remove WF and mask...');
-    wf = wf_stack(:,:,min(size(wf_stack,3),3));
+    wf = wf_stack(:,:,min(size(wf_stack,3),OrientCount));
     [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
 
     if params.displ > 1                                 % Debug mode - display conditioned images
