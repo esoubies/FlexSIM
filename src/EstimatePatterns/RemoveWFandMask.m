@@ -41,9 +41,9 @@ for img = 1:sz(3)
     ffty=fftshift(fft2(y(:,:,img)));      % Calculate FFT
     a=real(OptWght(ffty,fft_wf, mask));   % Calculate argmin_a |a*ffty - fft_wf|^2
     % Remove the scaled WF + filter freq within a ring of interest
-    G(:,:,img) = real(ifft2(ifftshift(MaskFT((a*ffty-fft_wf), FCut, params.ringMaskLim))));
+    G(:,:,img) = real(ifft2(ifftshift(MaskFT((a*ffty-fft_wf), FCut, [params.maskWF,1.1]))));
 end
 % -- Mask widefield with the same ring as the images
-wf = real(ifft2(ifftshift(MaskFT(fft_wf, FCut, params.ringMaskLim))));
+wf = real(ifft2(ifftshift(MaskFT(fft_wf, FCut, [params.maskWF,1.1]))));
 
 end

@@ -57,7 +57,8 @@ params.damp = 0.3;     % damping parameter (in [0,1], 1= no damping) to attenuat
 
 %% Parameters for patterns estimation
 params.SzRoiPatt = [];            % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
-params.ringMaskLim = [0.3,1.1];   % Lower and upper limits of Fourier ring mask (given as factor of the cutoff freq)
+params.maskWF = 0.3;              % Radius (as a factor of the cutoff freq) of the disk used to mask central Fourier frequencies (attenuate residual WF contrib prior to cross-corr)
+params.ringRegionSearch = [0 1];  % Lower and upper limits of Fourier ring region to search peaks (given as factor of the cutoff freq)
 params.eqPh = 1;                  % Boolean, if true equally-spaced phases are assumed
 params.nMinima = 1;               % Number of starting points for the refinement steps
 params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns

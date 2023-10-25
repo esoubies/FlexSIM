@@ -111,12 +111,15 @@ prefix="[Patterns Estimation] ";
 msg="Should be either empty or an odd number.";
 assert(isfield(params, "SzRoiPatt"),prefix + missg + "`SzRoiPatt`. " + msg);
 assert(isempty(params.SzRoiPatt) || mod(params.SzRoiPatt,2)==1,prefix + invld + "`SzRoiPatt`. " + msg);
-% ringMaskLim
-assert(isfield(params, "ringMaskLim"),prefix + missg + "`ringMaskLim`. " + msg);
-assert(numel(params.ringMaskLim) == 2,prefix + invld + "`ringMaskLim`. " + msg);
-assert(all(params.ringMaskLim<= 2) && all(params.ringMaskLim>=0) ,prefix + invld + "`ringMaskLim`. " + msg);
-%assert(max(params.limits(1)-0.5,0)>=params.ringMaskLim(1), prefix +"The WF masking `ringMaskLim(1)` is too large compared to the search region given in `limits`."+...
- %   "`ringMaskLim(1)` should not exceed " +num2str(max(params.limits(1)-0.5,0)));
+% maskWF
+msg="Should be a real in [0, 0.5].";
+assert(isfield(params, "maskWF"),prefix + missg + "`maskWF`. " + msg);
+assert(params.maskWF>= 0 && params.maskWF <=0.5 ,prefix + invld + "`maskWF`. " + msg);
+% ringRegionSearch
+msg="Should be a nonnegative 2D vector.";
+assert(isfield(params, "ringRegionSearch"),prefix + missg + "`ringRegionSearch`. " + msg);
+assert(numel(params.ringRegionSearch) == 2,prefix + invld + "`ringRegionSearch`. " + msg);
+assert(all(params.ringRegionSearch>=0) ,prefix + invld + "`ringRegionSearch`. " + msg);
 % nMinima
 msg="Should be a positive integer.";
 assert(isfield(params, "nMinima"),prefix + missg + "`nMinima`. " + msg);
