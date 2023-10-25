@@ -125,7 +125,7 @@ parfor (id1 = 0:n1-1,nbcores)
         DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process orientation  #',num2str(id1+1),'/',num2str(params.nbOr),' done.']);
     end
 end
-rec=mean(rec,3);
+rec=mean(rec./mean(rec,[1,2]),3);
 % Apodize result (as apotization is used in the cost)
 if params.apodize
     [X,Y]=meshgrid(linspace(-1,1,szUp(2)),linspace(-1,1,szUp(1)));
