@@ -1,8 +1,8 @@
-function k = ExtractLocMin(params,map,K1,K2)
+function k = ExtractLocMin(n,map,K1,K2)
 %--------------------------------------------------------------------------
-% function k = ExtractLocMin(params,map,K1,K2)
+% function k = ExtractLocMin(n,map,K1,K2)
 %
-% Extract the params.nMinima smallest local minima of Jp (evaluation of the
+% Extract the n smallest local minima of Jp (evaluation of the
 % function map over the grid of wavevectors defined by K1 and K2)
 %
 % See also EstimatePatterns.m GridEvalJ.m
@@ -12,17 +12,13 @@ function k = ExtractLocMin(params,map,K1,K2)
 %--------------------------------------------------------------------------
 
 % -- Initializations
-if params.GPU
-    k = zeros(params.nMinima, 2,'double','gpuArray');   % Give user info and initialize...
-else
-    k = zeros(params.nMinima, 2);   % Give user info and initialize...
-end
+k = zeros(n, 2);   % Give user info and initialize...
 npts1=size(K1,1);
 npts2=size(K1,2);
 szroi=max(npts1,npts2);
 
 % -- Extract n local mins
-for nth = 1:params.nMinima
+for nth = 1:n
     [~,idxMin]=min(map(:));                     % Extract and store minima
     [ii,jj]=ind2sub([npts1,npts2],idxMin);
     k(nth, :) = [K1(ii,jj);K2(ii,jj)];

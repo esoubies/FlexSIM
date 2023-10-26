@@ -120,10 +120,6 @@ msg="Should be a nonnegative 2D vector.";
 assert(isfield(params, "ringRegionSearch"),prefix + missg + "`ringRegionSearch`. " + msg);
 assert(numel(params.ringRegionSearch) == 2,prefix + invld + "`ringRegionSearch`. " + msg);
 assert(all(params.ringRegionSearch>=0) ,prefix + invld + "`ringRegionSearch`. " + msg);
-% nMinima
-msg="Should be a positive integer.";
-assert(isfield(params, "nMinima"),prefix + missg + "`nMinima`. " + msg);
-assert(mod(params.nMinima, 1) == 0 && params.nMinima> 0,prefix + invld + "`nMinima`. " + msg);
 % eqPh
 msg="Should be a boolean.";
 assert(isfield(params, "eqPh"),prefix + missg + "`eqPh`. " + msg);

@@ -57,7 +57,6 @@ params.SzRoiPatt = [701];          % Size (odd number or empty) of the ROI for p
 params.maskWF = 0;                 % Radius (as a factor of the cutoff freq) of the disk used to mask central Fourier frequencies (attenuate residual WF contrib prior to cross-corr)
 params.ringRegionSearch = [0.3 1]; % Lower and upper limits of Fourier ring region to search peaks (given as factor of the cutoff freq)
 params.eqPh = 1;                   % Boolean, if true equally-spaced phases are assumed
-params.nMinima = 1;                % Number of starting points for the refinement steps
 params.estiPattLowFreq=0;          % If true, estimate the low-freq component of the patterns
 params.pattAmp=0.6;                % Amplitude of the patterns in [0,1]
                                   

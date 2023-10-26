@@ -100,45 +100,21 @@ for idx = imgIdxs
     if compute_k_init
         DispMsg(params.verbose,'   - Cross-correl btw WF and data in Fourier...');
         [map,K1,K2] = CrossCorr(G,wf, params);
-        Jmap=-MaskFT(mean(abs(map).^2,3),FCut,params.ringRegionSearch); 
+        Jmap=-MaskFT(mean(abs(map).^2,3),FCut,params.ringRegionSearch);
 
-        DispMsg(params.verbose,['   - Extracting ',num2str(params.nMinima),' candidate wave-vectors...']);
-        k_tmp= ExtractLocMin(params,Jmap,K1,K2);
-                    
-        DispMsg(params.verbose,'   - Refine position of candidate wave-vectors...');
-        if params.verbose, fprintf('%s','     - candidate #');end
-        k_ref=zeros(size(k_tmp));
-        for ithk = 1:params.nMinima
-            if mod(ithk,ceil(params.nMinima/10))==0 && params.verbose
-                if ithk==params.nMinima, fprintf('%i\n',ithk);  else, fprintf('%i, ',ithk); end
-            end
-            k_ref(ithk,:) = IterRefinementWavevec(k_tmp(ithk, :)',wf,G,grids,OTF,sz,params);
-        end
-        
-        DispMsg(params.verbose,'   - Choosing the best wavevector...');    % Choose the best wavevector in terms of value of J
-        if params.GPU
-            Jp=zeros(1,params.nMinima,'double','gpuArray');
-        else
-            Jp=zeros(1,params.nMinima);
-        end
-        for iii = 1:params.nMinima
-            Jp(iii) = EvalJ(k_ref(iii,:), wf, G, params, grids, 0, 0, 0);
-        end
-        [~,optIdx] = min(Jp);
-        k_final(OrientCount, :) = k_ref(optIdx, :);
-        k_init(OrientCount, :) = k_tmp(optIdx, :);
-        
-        if nargout==4  % To output the initial phase estimate if required
-            id=intersect(find(k_init(OrientCount,1)==K1(:)),find(k_init(OrientCount,2)==K2(:)));
-            [ii,jj]=ind2sub(size(K1),id);
-            ph_init(OrientCount, :)=mod(angle(map(ii,jj,:)),2*pi)/2;
-        end
-    else
-        DispMsg(params.verbose,'   - Refine position of wavevector...');
-        k_final(OrientCount, :) = IterRefinementWavevec(k_init(OrientCount, :)',wf,G,grids,OTF,sz,params);
+        DispMsg(params.verbose,'   - Extract initial wavevector...');
+        k_init(OrientCount, :)= ExtractLocMin(1,Jmap,K1,K2);
     end
-    
-    DispMsg(params.verbose,'   - Computing phases and amplitutes...'); 
+    DispMsg(params.verbose,'   - Refine initial  wavevector...');
+    k_final(OrientCount, :) = IterRefinementWavevec(k_init(OrientCount, :)',wf,G,grids,OTF,sz,params);
+
+    if nargout==4  && compute_k_init% To output the initial phase estimate if required
+        id=intersect(find(k_init(OrientCount,1)==K1(:)),find(k_init(OrientCount,2)==K2(:)));
+        [ii,jj]=ind2sub(size(K1),id);
+        ph_init(OrientCount, :)=mod(angle(map(ii,jj,:)),2*pi)/2;
+    end
+
+    DispMsg(params.verbose,'   - Compute phases and amplitutes...'); 
     ph_final(OrientCount, :)=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
 
     OrientCount=OrientCount+1;
