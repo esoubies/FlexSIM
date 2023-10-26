@@ -34,16 +34,13 @@ G=zeros(sz);
 if params.GPU
     G = gpuArray(G);
 end
-fft_wf = fftshift(fft2(wf));
+fft_wf = fftshift(fftshift(fft2(wf),1),2);
 
-% -- Loop over images of the stack
-for img = 1:sz(3)                       
-    ffty=fftshift(fft2(y(:,:,img)));      % Calculate FFT
-    a=real(OptWght(ffty,fft_wf, mask));   % Calculate argmin_a |a*ffty - fft_wf|^2
-    % Remove the scaled WF + filter freq within a ring of interest
-    G(:,:,img) = real(ifft2(ifftshift(MaskFT((a*ffty-fft_wf), FCut, [params.maskWF,1.1]))));
-end
-% -- Mask widefield with the same ring as the images
-wf = real(ifft2(ifftshift(MaskFT(fft_wf, FCut, [params.maskWF,1.1]))));
+% -- Mask raw SIM images
+ffty=fftshift(fftshift(fft2(y),1),2);               % Calculate FFT
+a=real(OptWght(ffty,fft_wf, mask));   % Calculate argmin_a |a*ffty - fft_wf|^2
+G = real(ifft2(ifftshift(ifftshift(MaskFT((a.*ffty-fft_wf), FCut, [params.maskWF,1.1]),1),2)));
+% -- Mask widefield with the same ring as the raw SIM images
+wf = real(ifft2(ifftshift(ifftshift(MaskFT(fft_wf, FCut, [params.maskWF,1.1]),1),2)));
 
 end

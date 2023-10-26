@@ -21,12 +21,12 @@ if nargin <4
     shift=[0,0];
 end
 
-sz = size(ft);            % Get size of the image. 
-maxp=fc*sz;          % Radius (in pxls) of the largest possible wavevector
+sz = size(ft);                         % Get size of the image. 
+maxp=fc*sz;                            % Radius (in pxls) of the largest possible wavevector
 [I, J] = meshgrid(1:sz(2),1:sz(1));    % Create grid and boolean circles
 I=I-shift(1); J=J-shift(2);
 ellips1 = sqrt(((I-floor(sz(2)/2)-1).^2)./(maxp(2).^2) + ((J-floor(sz(1)/2)-1).^2)./(maxp(1).^2)) < radii(1); 
 ellips2 = sqrt(((I-floor(sz(2)/2)-1).^2)./(maxp(2).^2) + ((J-floor(sz(1)/2)-1).^2)./(maxp(1).^2)) < radii(2); 
-mask = ellips2 - ellips1;     % Define boolean mask
-maskedFT = ft.*mask;      % Mask
+mask = ellips2 - ellips1;              % Define boolean mask
+maskedFT = ft.*mask;                   % Mask
 end

@@ -25,9 +25,7 @@ time0=tic;
 %% Routinary checks + Data loading
 CheckParams(params);                       % Check conformity of parameters
 y = double(loadtiff(params.DataPath));     % Read data
-if params.GPU
-    y = gpuArray(y);
-end
+if params.GPU, y = gpuArray(y); end
 sz=size(y);
 tmp = fft_best_dim(sz(1)*2+params.padSz) - sz(1)*2; 
 if tmp~=params.padSz
@@ -35,23 +33,34 @@ if tmp~=params.padSz
     params.padSz=tmp;
 end
 
+
 %% Pre-processing
 % - Remove background
 if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)
-    PosRoiBack=DetectPatch(sum(gather(y),3),params.SzRoiBack,-1);  % Detect the ROI for background
+    PosRoiBack=DetectPatch(mean(gather(y),[3,4]),params.SzRoiBack,-1);  % Detect the ROI for background
     y = RemoveBackground(y,PosRoiBack,params.SzRoiBack);           % Remove constant background and normalize in [0,1]
 else
     PosRoiBack=[1,1];
 end
 % - Detect ROI for pattern estimation
 if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)
-    PosRoiPatt=DetectPatch(sum(gather(y),3),params.SzRoiPatt,1);
+    if ~isfield(params,'posRoiPatt') || isempty(params.posRoiPatt)
+        PosRoiPatt=DetectPatch(mean(gather(y),[3,4]),params.SzRoiPatt,1);
+    else
+        PosRoiPatt=params.posRoiPatt;
+    end
 else
     PosRoiPatt=[1,1];
 end
 
+
 % - Reorder stack with FlexSIM conventions
-[y, wf] = OrderYandExtWF(y, params);                                    % Reorder and extract data if necessary
+[y, wf] = OrderYandExtWF(y, params);                            % Reorder and extract data if necessary
+if isfield(params,'frameRange') && ~isempty(params.frameRange)  % Keep only frames specified by user
+    y=y(:,:,:,params.frameRange);             
+    wf=wf(:,:,:,params.frameRange);
+end
+params.nframes=size(y,4);                                       % Number of time frames
 wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
 
 % -- Displays
@@ -72,83 +81,98 @@ if params.displ > 0
 end
 
 %% FlexSIM pipeline
-% -- Pattern Estimation
+% -- Estimate sinusoidal patterns components
 DispMsg(params.verbose,'<strong>=== Patterns estimation</strong> ...');
+DispMsg(params.verbose,'---> Estimate sinusoidal patterns components ...');
 [k, phase] = EstimatePatterns(params, PosRoiPatt, y, 0, wf);
-if params.estiPattLowFreq
-    Lf = EstimateLowFreqPatterns(params,y,wf,5);
-else
-    Lf=1;
+if  isfield(params,'timeAvgPattParams') && params.timeAvgPattParams
+    k=mean(k,3);phase=mean(phase,3);
 end
 
-% Generate Patterns for reconstruction
-if params.estiPattLowFreq && params.padSz>0
-   Lf= padarray(Lf,[1,1]*params.padSz,'replicate','post');
-end
-patterns = GenerateReconstructionPatterns(params,PosRoiPatt,k,phase,params.pattAmp,sz+params.padSz/2,Lf);
+% -- Loop over frames
+rec=zeros([sz(1:2)*2,params.nframes]);
+figStackPatt=-1;figDispPatt=-1;fig_rec=-1;
+for it=1:params.nframes   
+    if params.nframes>1, DispMsg(params.verbose,['<strong>=== Process temporal frame #',num2str(it),'/',num2str(params.nframes),'</strong> ...']); end
 
-% Displays
-if params.displ > 0
-    % - Display of estimated patterns
-    DisplayStack(patterns,'Estimated Patterns',-1);
-    % - Displays related to estimated parameters
-    DisplayPattParams(y,params,k,phase,-1,0);
-end
-        
-% -- Reconstruction
-% Extract patches (if required)
-if params.szPatch==0
-    patches={y};
-    patches_patt={patterns};
-elseif params.szPatch>0
-    patches=Image2Patches(y,params.szPatch,params.overlapPatch);
-    patches_patt=Image2Patches(patterns,params.szPatch*2+params.padSz,params.overlapPatch*2+params.padSz);
-end
-
-% Initializations
-nbPatches=length(patches(:));
-rec=CellZeros(patches,[2,2],[1,2]);
-
-
-% Loop over patches
-if params.parallelProcess && (params.szPatch>0)
-    nbcores=feature('numcores');
-    parfevalOnAll(@warning,0,'off','all');
-else
-    nbcores=0;
-end
-DispMsg(params.verbose,'<strong>===  Reconstruction</strong> ...');
-parfor (id_patch = 1:nbPatches,nbcores)
-    if nbcores>0
-        t = getCurrentTask();
-        DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process patch #',num2str(id_patch),'/',num2str(nbPatches)]);
+    % Estimate low frequency patterns components
+    if params.estiPattLowFreq
+        DispMsg(params.verbose,'---> Estimate low frequency patterns components ...');
+        Lf = EstimateLowFreqPatterns(params,y(:,:,:,it),wf(:,:,:,it),5);
     else
-        if params.szPatch>0, fprintf('<strong>- [Process patch #%i/%i]</strong> ...',id_patch,nbPatches); end
-        if params.verbose==2 && nbPatches>1, fprintf('\n'); end
+        Lf=1;
+    end
+    % Generate Patterns for reconstruction
+    if params.estiPattLowFreq && params.padSz>0
+        Lf= padarray(Lf,[1,1]*params.padSz,'replicate','post');
+    end
+    DispMsg(params.verbose,'---> Generate reconstruction patterns ...');
+    patterns = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,min(it,size(k,3))),phase(:,:,min(it,size(phase,3))),params.pattAmp,sz+params.padSz/2,Lf);
+
+    % Displays
+    if params.displ > 0 && it==1
+        % - Display of estimated patterns
+        figStackPatt=DisplayStack(patterns,'Estimated Patterns',figStackPatt);
+        % - Displays related to estimated parameters
+        figDispPatt=DisplayPattParams(y(:,:,:,it),params,k(:,:,min(it,size(k,3))),phase(:,:,min(it,size(phase,3))),figDispPatt,0);
     end
 
-    rec{id_patch} = Reconstruct(gather(patches{id_patch}),gather(patches_patt{id_patch}),params);
-end
+    % -- Reconstruction
+    if params.nframes==1,  DispMsg(params.verbose,'<strong>===  Reconstruction</strong> ...'); 
+    else, if params.sepOrr==0, DispMsg(params.verbose,'---> Reconstruct ...'); end; end
+    
+    if params.szPatch==0
+        rec(:,:,it) = Reconstruct(gather(y(:,:,:,it)),gather(patterns),params);
+    elseif params.szPatch>0
+        % Extract patches (if required)
+        patches=Image2Patches(y(:,:,:,it),params.szPatch,params.overlapPatch);
+        patches_patt=Image2Patches(patterns,params.szPatch*2+params.padSz,params.overlapPatch*2+params.padSz);
 
-% Displays
-if params.displ > 0
-    fig_rec=DisplayReconstruction(Patches2Image(rec,params.overlapPatch*2),wfUp,fig_rec);
-end
+        % Initializations
+        nbPatches=length(patches(:));
+        rec_tmp=CellZeros(patches,[2,2],[1,2]);
+        % Loop over patches
+        if params.parallelProcess && (params.szPatch>0)
+            nbcores=feature('numcores');
+            parfevalOnAll(@warning,0,'off','all');
+        else
+            nbcores=0;
+        end
+        parfor (id_patch = 1:nbPatches,nbcores)
+            if nbcores>0
+                t = getCurrentTask();
+                DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process patch #',num2str(id_patch),'/',num2str(nbPatches)]);
+            else
+                if params.szPatch>0, fprintf('<strong>- [Process patch #%i/%i]</strong> ...',id_patch,nbPatches); end
+                if params.verbose==2 && nbPatches>1, fprintf('\n'); end
+            end
 
-%% Save
-% - Save reconstruction / patterns / reconst. parameters / pattern parameters
-if params.sav
-    prefix=params.DataPath(1:end-4);
-    saveastiff(single(Patches2Image(rec,params.overlapPatch*2)),strcat(prefix,'_Rec.tif'));
-    saveastiff(single(patterns),strcat(prefix,'_Patt.tif'));
-    save(strcat(prefix,'_Params'),'params');
+            rec_tmp{id_patch} = Reconstruct(gather(patches{id_patch}),gather(patches_patt{id_patch}),params);
+        end
+
+        rec(:,:,it)=Patches2Image(rec_tmp,params.overlapPatch*2);
+    end
+
+    % Displays
+    if params.displ > 0
+        fig_rec=DisplayReconstruction(rec(:,:,it),wfUp(:,:,:,it),fig_rec);
+    end
+
+    %% Save
+    % - Save reconstruction / patterns / reconst. parameters / pattern parameters
+    if params.sav
+        prefix=params.DataPath(1:end-4);
+        saveastiff(rec,strcat(prefix,'_Rec.tif'));
+        saveastiff(patterns,strcat(prefix,'_Patt.tif'));
+        save(strcat(prefix,'_Params'),'params');
+    end
+    DispMsg(params.verbose,['== FlexSIM Elapsed time (s): ',num2str(toc(time0))]);
 end
 
 % - Fill output variable
 res.k = k; res.phase = phase; 
-res.rec=Patches2Image(rec,params.overlapPatch*2);
+res.rec=rec;
 res.patt=patterns;
-
 DispMsg(params.verbose,['<strong>=== FlexSIM END. Elapsed time (s): ',num2str(toc(time0)),' </strong>']);
-end
+
 

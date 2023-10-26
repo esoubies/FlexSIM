@@ -25,15 +25,17 @@ sz=size(y);
 h = fspecial('gaussian',min(min(sz(1:2)),6*filt_sz),filt_sz);
 
 % -- Loop over orientations and phases
-Lf=zeros(sz(1:2)*2);
+Lf=zeros([sz(1:2)*2,sz(3:end)]);
 if params.GPU
-    Lf = gpuArray(Lf); 
+    Lf = gpuArray(Lf);
 end
-for ii=1:params.nbOr
-    for jj=1:params.nbPh
-        id=(ii-1)*params.nbPh+jj;
-        y_filt = imfilter(y(:,:,id),h,'symmetric')./max(imfilter(wf_stack(:,:,min(ii,size(wf_stack,3))),h,'symmetric'),eps);
-        Lf(:,:,id)=imresize(y_filt,sz(1:2)*2);
+for it=1:size(y,4)
+    for ii=1:params.nbOr
+        for jj=1:params.nbPh
+            id=(ii-1)*params.nbPh+jj;
+            y_filt = imfilter(y(:,:,id,it),h,'symmetric')./max(imfilter(wf_stack(:,:,min(ii,size(wf_stack,3)),it),h,'symmetric'),eps);
+            Lf(:,:,id,it)=imresize(y_filt,sz(1:2)*2);
+        end
     end
 end
 

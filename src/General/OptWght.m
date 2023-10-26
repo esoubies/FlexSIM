@@ -15,12 +15,12 @@ function a = OptWght(x,xref,mask)
 % (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
 
+sz = size(x);
 % If no mask was provided, define one that covers the whole image
-if nargin < 3
-    sz = size(x);
-    mask = ones(sz); 
-end
+if nargin < 3, mask = ones(sz);  end
+% Solution to |a*x - xref|^2
+x=x.*mask;
+xref=xref.*mask;
+a=sum(conj(x).*xref,[1,2])./sum(abs(x).^2,[1,2]);
 
-x=x.*mask; xref=xref.*mask;         % Multiply both arrays by mask
-a=(x(:)'*xref(:))/norm(x(:))^2;     % Solve system to get parameter `a`  
 end

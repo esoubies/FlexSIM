@@ -1,7 +1,13 @@
-function DispMsg(verb,msg)
+function DispMsg(verb,msg,level)
+
+if nargin <3, level=1; end
 
 if verb>0
-    disp(msg);
+    if level
+        disp(msg);
+    else
+        fprintf('%s',msg);
+    end
 end
 
 end

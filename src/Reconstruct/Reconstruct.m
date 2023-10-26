@@ -31,10 +31,8 @@ downFact=[2,2];
 % -- Treat orientations separately or not
 if params.sepOrr
     n1=params.nbOr;
-    n2=params.nbPh;
 else
     n1=1;
-    n2=params.nbOr*params.nbPh;
 end
 % -- Generate OTF/PSF
 otf = GenerateOTF(params.Na,params.lamb,min([256,256],sz(1:2)),params.res/2,params.damp);
@@ -88,20 +86,19 @@ if params.parallelProcess && (params.szPatch==0) && (n1>1)
 else
     nbcores=0;
 end
-parfor (id1 = 0:n1-1,nbcores)
+
+if params.sepOrr
+    y=reshape(y,[size(y,[1,2]),params.nbPh,params.nbOr]);
+    patt=reshape(patt,[size(patt,[1,2]),params.nbPh,params.nbOr]);
+end
+parfor (id1 = 1:n1,nbcores)
     if nbcores>0
         t = getCurrentTask();
-        DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process orientation  #',num2str(id1+1),'/',num2str(params.nbOr),' ...']);
-    end
-    if params.sepOrr
-        yy=y(:,:,id1*params.nbPh+1:(id1+1)*params.nbPh);
-        pp=patt(:,:,id1*params.nbPh+1:(id1+1)*params.nbPh);
-    else
-        yy=y;
-        pp=patt;
+        DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Reconstruct orientation  #',num2str(id1),'/',num2str(params.nbOr),' ...']);
     end
 
     % -- Patterns normalization
+    pp=patt(:,:,:,id1);yy=y(:,:,:,id1);
     pp=pp/(mean(pp(:))*size(pp,3));
     % -- Data term
     sig=max(max(yy,[],1),[],2)/10;
@@ -120,12 +117,13 @@ parfor (id1 = 0:n1-1,nbcores)
     Opt.ItUpOut=round(params.maxIt/10);              % Call OutputOpti update every ItUpOut iterations
     Opt.maxiter=params.maxIt;                        % Max number of iterations
     Opt.run(x);                        % Run the algorithm zeros(H.sizein)
-    rec(:,:,id1+1)=P*Opt.xopt*maxy;
+    rec(:,:,id1)=P*Opt.xopt*maxy;
     if nbcores>0
-        DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process orientation  #',num2str(id1+1),'/',num2str(params.nbOr),' done.']);
+        DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Reconstruct orientation  #',num2str(id1+1),'/',num2str(params.nbOr),' done.']);
     end
 end
 rec=mean(rec./mean(rec,[1,2]),3);
+
 % Apodize result (as apotization is used in the cost)
 if params.apodize
     [X,Y]=meshgrid(linspace(-1,1,szUp(2)),linspace(-1,1,szUp(1)));

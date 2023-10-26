@@ -38,10 +38,11 @@ function [k_final, ph_final, k_init, ph_init] = EstimatePatterns(params,PosRoiPa
 %% Preprocessing of stack & initialization of useful variables
 % Crop to the ROI, keeping the original size before
 if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)   % Detect ROI and Crop to ROI
-    y = y(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
-    wf_stack = wf_stack(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:);
+    y = y(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:,:);
+    wf_stack = wf_stack(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:,:);
 end
 sz = size(y);                                      % Calculate size of ROI
+nt=size(y,4);                                      % Number of time steps
 y = (y - min(y(:))) / (max(y(:)) - min(y(:)));     % Normalize stack images
 wf_stack= (wf_stack-min(wf_stack(:))) / (max(wf_stack(:)) - min(wf_stack(:)));
 
@@ -71,51 +72,40 @@ end
 
 %% Loop over batch of images (1 batch = 1 orr + x phases)
 OrientCount = 1; 
+if params.parallelProcess && (nt>1)
+    nbcores=feature('numcores');
+    parfevalOnAll(@warning,0,'off','all');
+else
+    nbcores=0;
+end
 for idx = imgIdxs
-    DispMsg(params.verbose,[' Batch of images: ', num2str(idx')]);     % Display info to the user
-    DispMsg(params.verbose,'   - Remove WF and mask...');
-    wf = wf_stack(:,:,min(size(wf_stack,3),OrientCount));
-    [G,wf] = RemoveWFandMask(y(:,:,idx),wf,params);
-
-    if params.displ > 1                                 % Debug mode - display conditioned images
-        f = figure; 
-        sgtitle(sprintf("Conditioned data for orientation #%d", OrientCount))
-        WFPan = axes('position',[0.55,0.55,0.4,0.4], 'title','Widefield', 'Parent', f);
-        WFFTPan = axes('position',[0.55,0.05,0.4,0.4], 'title','Widefield FT', 'Parent', f);
-        if numel(size(G)) > 2            
-            ImgPan = uipanel('position',[0.05,0.55,0.4,0.4], 'title','SIM Images', 'Parent', f);
-            ImgFTPan = uipanel('position',[0.05,0.05,0.4,0.4], 'title','SIM Images FT', 'Parent', f);
-            sliceViewer(gather(G), "Colormap",viridis, "Parent",ImgPan);
-            sliceViewer(gather(log10(abs(fftshift(fft2(G))+1))), "Colormap",viridis, "Parent",ImgFTPan);                                                                  
-            imshow(gather(wf), [], 'Parent', WFPan); colormap(viridis); title('WF');
-            imshow(gather(log10(abs(fftshift(fft2(wf))+1))), [], 'Parent', WFFTPan); colormap(viridis); title('WF FT')
-        else
-            subplot(2, 2, 1); imshow(G, [], "Parent",ImgPan); colormap(viridis);
-            subplot(2, 2, 3); imshow(log10(abs(fftshift(fft2(G))+1)), [], "Parent",ImgFTPan); colormap(viridis);
-            subplot(2, 2, 2); imshow(wf, [], 'Parent', WFPan); colormap(viridis);
-            subplot(2, 2, 4); imshow(log10(abs(fftshift(fft2(G))+1)), [], 'Parent', WFFTPan); colormap(viridis);
-        end               
-    end
-    
+    DispMsg(params.verbose,['      Orientation #', num2str(OrientCount)]);     % Display info to the user
+    DispMsg(params.verbose,'        - Remove WF and mask...');
+    wf = wf_stack(:,:,min(size(wf_stack,3),OrientCount),:);
+    [G,wf] = RemoveWFandMask(y(:,:,idx,:),wf,params);
+   
     if compute_k_init
-        DispMsg(params.verbose,'   - Cross-correl btw WF and data in Fourier...');
+        DispMsg(params.verbose,'        - Cross-correl btw WF and data in Fourier...');
         [map,K1,K2] = CrossCorr(G,wf, params);
-        Jmap=-MaskFT(mean(abs(map).^2,3),FCut,params.ringRegionSearch);
+        Jmap=-MaskFT(mean(abs(map).^2,3:length(sz)),FCut,params.ringRegionSearch);
 
-        DispMsg(params.verbose,'   - Extract initial wavevector...');
+        DispMsg(params.verbose,'        - Extract initial wavevector...');
         k_init(OrientCount, :)= ExtractLocMin(1,Jmap,K1,K2);
     end
-    DispMsg(params.verbose,'   - Refine initial  wavevector...');
-    k_final(OrientCount, :) = IterRefinementWavevec(k_init(OrientCount, :)',wf,G,grids,OTF,sz,params);
+    if nt==1, DispMsg(params.verbose,'        - Refine initial wavevector and compute phases...');
+    else,  DispMsg(params.verbose,'        - Refine initial wavevector and compute phases for each time step:',0); end
+    parfor (idt = 1:nt,nbcores) 
+        if nt >1,  DispMsg(params.verbose,[' t',num2str(idt)],0); end
+        k_final(OrientCount, :,idt) = IterRefinementWavevec(k_init(OrientCount, :)',wf(:,:,:,idt),G(:,:,:,idt),grids,OTF,sz(1:3),params);
+        ph_final(OrientCount, :,idt)=GetPhaseAndAmp(k_final(OrientCount, :,idt)',wf(:,:,:,idt),G(:,:,:,idt),grids,OTF,sz(1:3),params);        
+    end
+    if nt >1 && params.verbose, fprintf('\n'); end
 
     if nargout==4  && compute_k_init% To output the initial phase estimate if required
         id=intersect(find(k_init(OrientCount,1)==K1(:)),find(k_init(OrientCount,2)==K2(:)));
         [ii,jj]=ind2sub(size(K1),id);
-        ph_init(OrientCount, :)=mod(angle(map(ii,jj,:)),2*pi)/2;
+        ph_init(OrientCount, :,:)=mod(angle(map(ii,jj,:,:)),2*pi)/2;
     end
-
-    DispMsg(params.verbose,'   - Compute phases and amplitutes...'); 
-    ph_final(OrientCount, :)=GetPhaseAndAmp(k_final(OrientCount, :)',wf,G,grids,OTF,sz,params);
 
     OrientCount=OrientCount+1;
 end
