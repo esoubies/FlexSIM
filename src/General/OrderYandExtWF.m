@@ -19,6 +19,16 @@ function [y, wf]  = OrderYandExtWF(y, params)
 %--------------------------------------------------------------------------
 
 sz=size(y);
+if isempty(strfind(params.StackOrder,"w"))
+    nimgs=params.nbOr*params.nbPh;    
+    nt=sz(3)/nimgs; 
+    assert(mod(nt,1)==0,'Number of raw images is not a multiple of nbOr*nbPh');
+else
+    nimgs=params.nbOr*params.nbPh+1;
+    nt=sz(3)/nimgs; 
+    assert(mod(nt,1)==0,'Number of raw images is not a multiple of nbOr*nbPh + 1 (the +1 comes from the fact that params.StackOrder contains w)');
+end
+y=reshape(y,[sz(1:2),nimgs,nt]);
 % Check the acquisition convention of the user and convert to ap(w)
 switch string(params.StackOrder)
     case "pa" 
@@ -27,32 +37,32 @@ switch string(params.StackOrder)
     case "ap" 
         wf=[];
         % Reorder stack in angle-phase mode - reshape(reshape(1:9, [3, 3])', 1, [])
-        newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
-        y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder); 
-    case "apw"
-        wf = y(:,:,end); 
-        y = y(:,:,1:end-1); 
-        newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
-        y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder);
-    case "paw"
-        wf = y(:,:,end);
-        y = y(:,:,1:end-1);
-    case "wpa"
-        wf = y(:,:,1);
-        y = y(:,:,2:end);
-    case "wap"
-        wf = y(:,:,1);
-        y = y(:,:,2:end);
         newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []);
-        y(:,:,1:params.nbOr*params.nbPh) = y(:,:,newOrder);
+        y(:,:,1:params.nbOr*params.nbPh,:) = y(:,:,newOrder,:);
+    case "apw"
+        wf = y(:,:,end,:); 
+        y = y(:,:,1:end-1,:); 
+        newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []); 
+        y(:,:,1:params.nbOr*params.nbPh,:) = y(:,:,newOrder,:);
+    case "paw"
+        wf = y(:,:,end,:);
+        y = y(:,:,1:end-1,:);
+    case "wpa"
+        wf = y(:,:,1,:);
+        y = y(:,:,2:end,:);
+    case "wap"
+        wf = y(:,:,1,:);
+        y = y(:,:,2:end,:);
+        newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []);
+        y(:,:,1:params.nbOr*params.nbPh,:) = y(:,:,newOrder,:);
 end
 if isempty(wf) && params.nbPh > 1
-    wf=zeros([sz(1:2),params.nbOr]);
+    wf=zeros([sz(1:2),params.nbOr,nt]);
     if params.GPU
         wf = gpuArray(wf);
     end
     for ii=1:params.nbOr
-        wf(:,:,ii)=mean(y(:,:,(ii-1)*params.nbPh+1:ii*params.nbPh),3);
+        wf(:,:,ii,:)=mean(y(:,:,(ii-1)*params.nbPh+1:ii*params.nbPh,:),3);
     end
 end
 end

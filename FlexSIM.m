@@ -57,7 +57,7 @@ wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
 % -- Displays
 if params.displ > 0
     fig_rec=-1;  % Initialize figures
-    DisplayStack(gather(y),'SIM Raw data',-1);
+    DisplayStack(gather(y(:,:,:,1)),'SIM Raw data',-1);
     leg={};
     if ~isempty(params.SzRoiBack)
         rectangle('Position',[PosRoiBack(2) PosRoiBack(1) params.SzRoiBack params.SzRoiBack],'EdgeColor','r');
