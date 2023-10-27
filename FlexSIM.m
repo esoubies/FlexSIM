@@ -99,7 +99,7 @@ end
 % Displays
 if params.displ > 0
     % - Displays related to estimated parameters
-    DisplayPattParams(y(:,:,:,1),params,k(:,:,1),phase(:,:,1),-1,0);
+    DisplayPattParams(y(:,:,:,1),params,k(:,:,1),phase(:,:,1),-1,0,'Refined patterns parameters');
 end
 
 % -- Loop over frames

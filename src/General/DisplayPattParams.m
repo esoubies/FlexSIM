@@ -1,4 +1,4 @@
-function fig_id=DisplayPattParams(y,params,k,phase,fig_id,id_patch)
+function fig_id=DisplayPattParams(y,params,k,phase,fig_id,id_patch,titl)
 %% Pre-computations
 sz_y=size(y); first=0;
 if ~isgraphics(fig_id)
@@ -6,6 +6,7 @@ if ~isgraphics(fig_id)
     fig_id.Position=[500 500 600 800];
 end
 set(0,'CurrentFigure',fig_id);
+
 %% Image with wavevectors super-imposed on the FT
 if id_patch>0
     if first || (id_patch > length(fig_id.Children.Children))
@@ -33,7 +34,7 @@ for i = 1:size(k, 1)
     leg{i}=['Or #',num2str(i)];
 end
 legend(leg);
-text(sz_y(2)/2,-sz_y(1)*0.04,'\bf Pre-processed Data (FT) + OTF support + Detected wavevectors','HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',12);
+text(sz_y(2)/2,-sz_y(1)*0.04,['\bf',titl],'HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',12);
 
 %% Table with estimated parameters
 % - Find monospaced font
@@ -52,19 +53,25 @@ id_font=find(cell2mat(cellfun(@(x) sum(strcmp(x,listfonts)),mono_fonts,'UniformO
 if params.eqPh
     patternParams=k.*sz_y(2:-1:1) * params.res / pi;
     Col_name={' Kx[px]',' Ky[px]'};
-    for ii=1:params.nbPh
-        patternParams = horzcat(patternParams,mod(phase + (ii-1)*pi/params.nbPh,pi));
-        Col_name{end+1}=[' Ph #',num2str(ii)];
+    if ~isempty(phase)
+        for ii=1:params.nbPh
+            patternParams = horzcat(patternParams,mod(phase + (ii-1)*pi/params.nbPh,pi));
+            Col_name{end+1}=[' Ph #',num2str(ii)];
+        end
     end
     for ii=1:params.nbOr
         Row_name{ii}=['Or #',num2str(ii)];
     end
 else
-    patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase);       % Initialize the data
-    Col_name={' Kx[px]',' Ky[px]'};
-    for ii=1:params.nbPh
-        Col_name{end+1}=[' Ph #',num2str(ii)];
+    if ~isempty(phase)
+        patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase);       % Initialize the data
+        for ii=1:params.nbPh
+            Col_name{end+1}=[' Ph #',num2str(ii)];
+        end
+    else
+        patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi);       % Initialize the data
     end
+    Col_name={' Kx[px]',' Ky[px]'};
     for ii=1:params.nbOr
         Row_name{ii}=['Or #',num2str(ii)];
     end

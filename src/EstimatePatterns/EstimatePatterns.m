@@ -70,37 +70,63 @@ if params.GPU
     grids.Y = gpuArray(grids.Y); 
 end
 
-%% Loop over batch of images (1 batch = 1 orr + x phases)
-OrientCount = 1; 
+%% Preprocess
+DispMsg(params.verbose,'      Preprocess: Remove WF and mask...');
+G=zeros(size(y));wf=zeros(size(wf_stack));
+OrientCount = 1;
 for idx = imgIdxs
-    DispMsg(params.verbose,['      Orientation #', num2str(OrientCount)]);     % Display info to the user
-    DispMsg(params.verbose,'        - Remove WF and mask...');
-    wf = wf_stack(:,:,min(size(wf_stack,3),OrientCount),:);
-    [G,wf] = RemoveWFandMask(y(:,:,idx,:),wf,params);
-   
-    if compute_k_init
-        DispMsg(params.verbose,'        - Cross-correl btw WF and data in Fourier...');
-        [map,K1,K2] = CrossCorr(G,wf, params);
+    idwf=min(size(wf_stack,3),OrientCount);
+    [G(:,:,idx,:),wf(:,:,idwf,:)] = RemoveWFandMask(y(:,:,idx,:),wf_stack(:,:,idwf,:),params);
+    OrientCount=OrientCount+1;
+end
+
+%% Initialization via cross-corr
+if compute_k_init
+    DispMsg(params.verbose,'      Initialization: Cross-corr btw WF and data in Fourier...');
+    OrientCount = 1;
+    for idx = imgIdxs        
+        idwf=min(size(wf_stack,3),OrientCount);
+
+        DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),': Cross-correl btw WF and data in Fourier...']);
+        [map,K1,K2] = CrossCorr(G(:,:,idx,:),wf(:,:,idwf,:), params);
         Jmap=-MaskFT(mean(abs(map).^2,3:length(sz)),FCut,params.ringRegionSearch);
 
-        DispMsg(params.verbose,'        - Extract initial wavevector...');
+        DispMsg(params.verbose,['                          Extract initial wavevector...']);
         k_init(OrientCount, :)= ExtractLocMin(1,Jmap,K1,K2);
+
+        if nargout==4  && compute_k_init % To output the initial phase estimate if required
+            id=intersect(find(k_init(OrientCount,1)==K1(:)),find(k_init(OrientCount,2)==K2(:)));
+            [ii,jj]=ind2sub(size(K1),id);
+            ph_init(OrientCount, :,:)=mod(angle(map(ii,jj,:,:)),2*pi)/2;
+        end
+
+        OrientCount=OrientCount+1;
     end
-    if nt==1, DispMsg(params.verbose,'        - Refine initial wavevector and compute phases...');
-    else,  DispMsg(params.verbose,'        - Refine initial wavevector and compute phases for each time step:',0); end
-    parfor (idt = 1:nt,params.nbcores) 
+end
+
+% Displays
+if params.displ > 0
+    % - Displays related to estimated parameters
+    fig_patt=DisplayPattParams(y(:,:,:,1),params,k_init,[],-1,0,'Initial estimated wavevectors');
+end
+
+%% Refinement
+if nt==1, DispMsg(params.verbose,'      Refine initial wavevector and compute phases...');
+else,  DispMsg(params.verbose,'      Refine initial wavevector and compute phases for each time step.'); end
+OrientCount = 1; 
+for idx = imgIdxs
+    if nt==1,  DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),' ...']);
+    else DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),', time step:'],0); end
+    idwf=min(size(wf_stack,3),OrientCount);
+    parfor (idt = 1:nt,params.nbcores)
         if nt >1,  DispMsg(params.verbose,[' t',num2str(idt)],0); end
-        k_final(OrientCount, :,idt) = IterRefinementWavevec(k_init(OrientCount, :)',wf(:,:,:,idt),G(:,:,:,idt),grids,OTF,sz(1:3),params);
-        ph_final(OrientCount, :,idt)=GetPhaseAndAmp(k_final(OrientCount, :,idt)',wf(:,:,:,idt),G(:,:,:,idt),grids,OTF,sz(1:3),params);        
+        k_final(OrientCount, :,idt) = IterRefinementWavevec(k_init(OrientCount, :)',wf(:,:,idwf,idt),G(:,:,idx,idt),grids,OTF,sz(1:3),params);
+        ph_final(OrientCount, :,idt)=GetPhaseAndAmp(k_final(OrientCount, :,idt)',wf(:,:,idwf,idt),G(:,:,idx,idt),grids,OTF,sz(1:3),params);
     end
     if nt >1 && params.verbose, fprintf('\n'); end
 
-    if nargout==4  && compute_k_init% To output the initial phase estimate if required
-        id=intersect(find(k_init(OrientCount,1)==K1(:)),find(k_init(OrientCount,2)==K2(:)));
-        [ii,jj]=ind2sub(size(K1),id);
-        ph_init(OrientCount, :,:)=mod(angle(map(ii,jj,:,:)),2*pi)/2;
-    end
-
     OrientCount=OrientCount+1;
 end
+
+close(fig_patt);
 end
