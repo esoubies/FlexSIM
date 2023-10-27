@@ -61,10 +61,6 @@ params.estiPattLowFreq=0;         % If true, estimate the low-freq component of 
 params.pattAmp=1;                 % Amplitude of the patterns in [0,1]
                                   
 %% Parameters for image Reconstruction 
-% -- Patch-based processing
-params.szPatch=0;                 % Size (px) of patches (if 0, no patch-based processing)
-params.overlapPatch=0;            % Overlap between patches
-
 % -- OTF Attenuation
 params.OTFAttStr=0.995;           % Strenght of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.
 params.OTFAttwdth=0.3;            % Width of the OTF attenuation (>0). If 0 no OTF attenuation.
@@ -82,7 +78,7 @@ params.stepTol = 5e-4;            % Relative error tolerance between two iterate
 
 %% Run FlexSIM
 run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m')) % Take care of paths & GlobalBioIm
-res = FlexSIM(params);                                 % Run FlexSIM
+FlexSIM(params);                                 % Run FlexSIM
 
 
 

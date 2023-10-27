@@ -80,19 +80,12 @@ end
 %% Cost and Optim
 rec=zeros([szUp(1:2),n1]);
 x=zeros(P.sizein);
-if params.parallelProcess && (params.szPatch==0) && (n1>1)
-    nbcores=feature('numcores');
-    parfevalOnAll(@warning,0,'off','all');
-else
-    nbcores=0;
-end
-
 if params.sepOrr
     y=reshape(y,[size(y,[1,2]),params.nbPh,params.nbOr]);
     patt=reshape(patt,[size(patt,[1,2]),params.nbPh,params.nbOr]);
 end
-parfor (id1 = 1:n1,nbcores)
-    if nbcores>0
+parfor (id1 = 1:n1,params.nbcores*params.paraLoopOrr)
+    if params.paraLoopOrr
         t = getCurrentTask();
         DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Reconstruct orientation  #',num2str(id1),'/',num2str(params.nbOr),' ...']);
     end
@@ -118,7 +111,7 @@ parfor (id1 = 1:n1,nbcores)
     Opt.maxiter=params.maxIt;                        % Max number of iterations
     Opt.run(x);                        % Run the algorithm zeros(H.sizein)
     rec(:,:,id1)=P*Opt.xopt*maxy;
-    if nbcores>0
+    if params.paraLoopOrr
         DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Reconstruct orientation  #',num2str(id1+1),'/',num2str(params.nbOr),' done.']);
     end
 end

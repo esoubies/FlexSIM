@@ -72,12 +72,6 @@ end
 
 %% Loop over batch of images (1 batch = 1 orr + x phases)
 OrientCount = 1; 
-if params.parallelProcess && (nt>1)
-    nbcores=feature('numcores');
-    parfevalOnAll(@warning,0,'off','all');
-else
-    nbcores=0;
-end
 for idx = imgIdxs
     DispMsg(params.verbose,['      Orientation #', num2str(OrientCount)]);     % Display info to the user
     DispMsg(params.verbose,'        - Remove WF and mask...');
@@ -94,7 +88,7 @@ for idx = imgIdxs
     end
     if nt==1, DispMsg(params.verbose,'        - Refine initial wavevector and compute phases...');
     else,  DispMsg(params.verbose,'        - Refine initial wavevector and compute phases for each time step:',0); end
-    parfor (idt = 1:nt,nbcores) 
+    parfor (idt = 1:nt,params.nbcores) 
         if nt >1,  DispMsg(params.verbose,[' t',num2str(idt)],0); end
         k_final(OrientCount, :,idt) = IterRefinementWavevec(k_init(OrientCount, :)',wf(:,:,:,idt),G(:,:,:,idt),grids,OTF,sz(1:3),params);
         ph_final(OrientCount, :,idt)=GetPhaseAndAmp(k_final(OrientCount, :,idt)',wf(:,:,:,idt),G(:,:,:,idt),grids,OTF,sz(1:3),params);        

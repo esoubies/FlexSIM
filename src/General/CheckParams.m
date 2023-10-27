@@ -131,20 +131,6 @@ assert(params.estiPattLowFreq==0 || params.estiPattLowFreq==1, prefix + invld + 
 
                                   
 %% Parameters for image Reconstruction 
-% -- Patch-based processing
-prefix="[Patch-based processing] ";
-% szPatch
-msg="Should be a non-negative integer.";
-assert(isfield(params, "szPatch"),prefix + missg + "`szPatch`. " + msg);
-assert(params.szPatch>= 0,prefix + invld + "`szPatch`. " + msg);
-%if ~isempty(params.SzRoiBack) && params.szPatch>0, assert(params.szPatch>=params.SzRoiBack,"Incompatible `szPatch` and `SzRoiBack` paramater. Should be set as szPatch > SzRoiBack"); end
-if params.szPatch>0 % Check the two other parameters only if patch-based process is active (szPatch>0)
-% overlapPatch
-assert(isfield(params, "overlapPatch"),prefix + missg + "`overlapPatch`. " + msg);
-assert(params.overlapPatch>= 0,prefix + invld + "`overlapPatch`. " + msg);
-end
-
-
 % -- OTF Attenuation
 prefix="[OTF Attenuation] ";
 % OTFAttStr

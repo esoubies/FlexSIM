@@ -1,6 +1,6 @@
-function res = FlexSIM(params)
+function FlexSIM(params)
 %--------------------------------------------------------------------------
-% Function res = FlexSIM(params)
+% Function  FlexSIM(params)
 % 
 % FlexSIM [1] should be called from a script defining the structure `params`,
 % which  includes all the paths and optical parameters necessary for a 
@@ -8,9 +8,6 @@ function res = FlexSIM(params)
 %
 % Inputs : params -> Structure containing all the necessary data (optical
 %                    and reconstruction parameters, paths, etc.)  
-%
-% Outputs: res    -> Structure with the final image (in the field `res`)
-%                    and other intermediate results, like patterns.  
 %
 % [1] FlexSIM: ADD REF TO PAPER
 %
@@ -63,9 +60,19 @@ end
 params.nframes=size(y,4);                                       % Number of time frames
 wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
 
+% -- Set stuff for parallel processing
+if params.parallelProcess
+    params.nbcores=feature('numcores');
+    parfevalOnAll(@warning,0,'off','all');
+    params.paraLoopOrr=((params.sepOrr) && (params.nframes==1));
+    params.paraLoopFrames=(params.nframes>1);
+else
+    params.nbcores=0;params.paraLoopOrr=0;params.paraLoopFrames=0;
+end
+
+
 % -- Displays
 if params.displ > 0
-    fig_rec=-1;  % Initialize figures
     DisplayStack(gather(y(:,:,:,1)),'SIM Raw data',-1);
     leg={};
     if ~isempty(params.SzRoiBack)
@@ -86,18 +93,30 @@ DispMsg(params.verbose,'<strong>=== Patterns estimation</strong> ...');
 DispMsg(params.verbose,'---> Estimate sinusoidal patterns components ...');
 [k, phase] = EstimatePatterns(params, PosRoiPatt, y, 0, wf);
 if  isfield(params,'timeAvgPattParams') && params.timeAvgPattParams
-    k=mean(k,3);phase=mean(phase,3);
+    k=repmat(mean(k,3),[1 1 params.nframes]);phase=repmat(mean(phase,3),[1 1 params.nframes]);
+end
+
+% Displays
+if params.displ > 0
+    % - Displays related to estimated parameters
+    DisplayPattParams(y(:,:,:,1),params,k(:,:,1),phase(:,:,1),-1,0);
 end
 
 % -- Loop over frames
 rec=zeros([sz(1:2)*2,params.nframes]);
-figStackPatt=-1;figDispPatt=-1;fig_rec=-1;
-for it=1:params.nframes   
-    if params.nframes>1, DispMsg(params.verbose,['<strong>=== Process temporal frame #',num2str(it),'/',num2str(params.nframes),'</strong> ...']); end
-
+if params.paraLoopFrames, DispMsg(params.verbose,'<strong>===  Reconstruction</strong> ...'); end
+parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
+    if params.nframes>1
+        if ~params.paraLoopFrames
+            DispMsg(params.verbose,['<strong>=== Process temporal frame #',num2str(it),'/',num2str(params.nframes),'</strong> ...']);
+        else
+            t = getCurrentTask();
+            DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process temporal frame #',num2str(it),'/',num2str(params.nframes),' ...']);
+        end
+    end
     % Estimate low frequency patterns components
     if params.estiPattLowFreq
-        DispMsg(params.verbose,'---> Estimate low frequency patterns components ...');
+        if ~params.paraLoopFrames, DispMsg(params.verbose,'---> Estimate low frequency patterns components ...'); end
         Lf = EstimateLowFreqPatterns(params,y(:,:,:,it),wf(:,:,:,it),5);
     else
         Lf=1;
@@ -106,73 +125,51 @@ for it=1:params.nframes
     if params.estiPattLowFreq && params.padSz>0
         Lf= padarray(Lf,[1,1]*params.padSz,'replicate','post');
     end
-    DispMsg(params.verbose,'---> Generate reconstruction patterns ...');
-    patterns = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,min(it,size(k,3))),phase(:,:,min(it,size(phase,3))),params.pattAmp,sz+params.padSz/2,Lf);
-
-    % Displays
-    if params.displ > 0 && it==1
-        % - Display of estimated patterns
-        figStackPatt=DisplayStack(patterns,'Estimated Patterns',figStackPatt);
-        % - Displays related to estimated parameters
-        figDispPatt=DisplayPattParams(y(:,:,:,it),params,k(:,:,min(it,size(k,3))),phase(:,:,min(it,size(phase,3))),figDispPatt,0);
-    end
+    if ~params.paraLoopFrames, DispMsg(params.verbose,'---> Generate reconstruction patterns ...'); end
+    patterns = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,it),phase(:,:,it),params.pattAmp,sz+params.padSz/2,Lf);    
 
     % -- Reconstruction
     if params.nframes==1,  DispMsg(params.verbose,'<strong>===  Reconstruction</strong> ...'); 
-    else, if params.sepOrr==0, DispMsg(params.verbose,'---> Reconstruct ...'); end; end
-    
-    if params.szPatch==0
-        rec(:,:,it) = Reconstruct(gather(y(:,:,:,it)),gather(patterns),params);
-    elseif params.szPatch>0
-        % Extract patches (if required)
-        patches=Image2Patches(y(:,:,:,it),params.szPatch,params.overlapPatch);
-        patches_patt=Image2Patches(patterns,params.szPatch*2+params.padSz,params.overlapPatch*2+params.padSz);
+    else, if params.sepOrr==0 && ~params.paraLoopFrames, DispMsg(params.verbose,'---> Reconstruct ...'); end; end
+    rec(:,:,it) = Reconstruct(gather(y(:,:,:,it)),gather(patterns),params);
 
-        % Initializations
-        nbPatches=length(patches(:));
-        rec_tmp=CellZeros(patches,[2,2],[1,2]);
-        % Loop over patches
-        if params.parallelProcess && (params.szPatch>0)
-            nbcores=feature('numcores');
-            parfevalOnAll(@warning,0,'off','all');
+    % - Save 
+    if params.sav && (params.nframes>1)
+        if params.nframes>1
+            saveastiff(rec(:,:,it),[params.DataPath(1:end-4),'_Rec_Frame_',num2str(it),'.tif']);
+            saveastiff(patterns,[params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
         else
-            nbcores=0;
+            saveastiff(patterns,[params.DataPath(1:end-4),'_Patt.tif']);
         end
-        parfor (id_patch = 1:nbPatches,nbcores)
-            if nbcores>0
-                t = getCurrentTask();
-                DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process patch #',num2str(id_patch),'/',num2str(nbPatches)]);
-            else
-                if params.szPatch>0, fprintf('<strong>- [Process patch #%i/%i]</strong> ...',id_patch,nbPatches); end
-                if params.verbose==2 && nbPatches>1, fprintf('\n'); end
-            end
-
-            rec_tmp{id_patch} = Reconstruct(gather(patches{id_patch}),gather(patches_patt{id_patch}),params);
+    end
+    if params.nframes>1
+        if ~params.paraLoopFrames
+            DispMsg(params.verbose,['== FlexSIM Elapsed time (s): ',num2str(toc(time0))]);
+        else
+            DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process temporal frame #',num2str(it),'/',num2str(params.nframes),' done. FlexSIM Elapsed time (s): ',num2str(toc(time0))]);
         end
-
-        rec(:,:,it)=Patches2Image(rec_tmp,params.overlapPatch*2);
     end
-
-    % Displays
-    if params.displ > 0
-        fig_rec=DisplayReconstruction(rec(:,:,it),wfUp(:,:,:,it),fig_rec);
-    end
-
-    %% Save
-    % - Save reconstruction / patterns / reconst. parameters / pattern parameters
-    if params.sav
-        prefix=params.DataPath(1:end-4);
-        saveastiff(rec,strcat(prefix,'_Rec.tif'));
-        saveastiff(patterns,strcat(prefix,'_Patt.tif'));
-        save(strcat(prefix,'_Params'),'params');
-    end
-    DispMsg(params.verbose,['== FlexSIM Elapsed time (s): ',num2str(toc(time0))]);
 end
 
-% - Fill output variable
-res.k = k; res.phase = phase; 
-res.rec=rec;
-res.patt=patterns;
+% Displays
+if params.displ > 0
+    DisplayReconstruction(rec(:,:,1),wfUp(:,:,:,1),-1);
+end
+
+% Save 
+if params.sav
+    save(strcat(params.DataPath(1:end-4),'_Params'),'params'); 
+    saveastiff(rec,strcat(params.DataPath(1:end-4),'_Rec.tif'));
+    if params.nframes>1
+        patt=zeros([sz(1:2)*2+params.padSz,params.nbOr*params.nbPh,params.nframes]);
+        for it=1:params.nframes
+            delete([params.DataPath(1:end-4),'_Rec_Frame_',num2str(it),'.tif']);
+            patt(:,:,:,it)=loadtiff([params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
+            delete([params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
+        end
+        saveastiff(reshape(patt,[size(patt,[1,2]),prod(size(patt,[3,4]))]),[params.DataPath(1:end-4),'_Patt.tif']);
+    end
+end
 DispMsg(params.verbose,['<strong>=== FlexSIM END. Elapsed time (s): ',num2str(toc(time0)),' </strong>']);
 
 
