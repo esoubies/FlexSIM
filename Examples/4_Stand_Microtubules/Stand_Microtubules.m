@@ -50,9 +50,9 @@ params.damp = 1;       % damping parameter (in [0,1], 1= no damping) to attenuat
 
 %% Parameters for patterns estimation
 params.SzRoiPatt = 257;           % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
-params.maskWF = 0.2;              % Radius (as a factor of the cutoff freq) of the disk used to mask central Fourier frequencies (attenuate residual WF contrib prior to cross-corr)
+params.maskWF = 0.3;              % Radius (as a factor of the cutoff freq) of the disk used to mask central Fourier frequencies (attenuate residual WF contrib prior to cross-corr)
 params.ringRegionSearch = [0 1];  % Lower and upper limits of Fourier ring region to search peaks (given as factor of the cutoff freq)
-params.eqPh = 1;                  % Boolean, if true equally-spaced phases are assumed
+params.eqPh = 0;                  % Boolean, if true equally-spaced phases are assumed
 params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns
 params.pattAmp=1;                 % Amplitude of the patterns in [0,1]
 
@@ -65,7 +65,7 @@ params.OTFAttwdth=0.3;            % Width of the OTF attenuation (>0). If 0 no O
 params.apodize = 0;               % Boolean on whether to use apodization on boundaries
 params.sepOrr = 0;                % Boolean on whether to treat each orientation separately
 params.padSz=20;                  % Padding size (px) used in the forward operator
-params.mu =  1e-4;                % Regularization parameter
+params.mu = 8e-6;                % Regularization parameter
 params.regType=1;                 % Regularization function: 1 for 1st-order Tikhonov, 2 for Total Variation, 3 for Good roughness.
 
 % -- Optim

@@ -41,7 +41,7 @@ otf = GenerateOTF(params.Na,params.lamb,min([256,256],sz(1:2)),params.res/2,para
 % end
 psf = fftshift(real(ifft2(otf)));
 % -- Normalization
-maxy=max(y(:));y=y/maxy;
+meany=mean(y(:));y=y/meany;
 % -- OTF Attenuation
 if params.OTFAttStr && params.OTFAttwdth
     OTFatt = GenerateOTFAttMask(params.Na,params.lamb,sz(1:2),params.res,params.OTFAttStr,params.OTFAttwdth);
@@ -110,7 +110,7 @@ parfor (id1 = 1:n1,params.nbcores*params.paraLoopOrr)
     Opt.ItUpOut=round(params.maxIt/10);              % Call OutputOpti update every ItUpOut iterations
     Opt.maxiter=params.maxIt;                        % Max number of iterations
     Opt.run(x);                        % Run the algorithm zeros(H.sizein)
-    rec(:,:,id1)=P*Opt.xopt*maxy;
+    rec(:,:,id1)=P*Opt.xopt*meany;
     if params.paraLoopOrr
         DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Reconstruct orientation  #',num2str(id1+1),'/',num2str(params.nbOr),' done.']);
     end

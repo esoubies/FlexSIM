@@ -73,7 +73,7 @@ params.OTFAttwdth=0.5;            % Width of the OTF attenuation (>0). If 0 no O
 params.apodize = 1;               % Boolean on whether to use apodization on boundaries
 params.sepOrr = 0;                % Boolean on whether to treat each orientation separately
 params.padSz=50;                  % Padding size (px) used in the forward operator
-params.mu =  3e-5;                % Regularization parameter
+params.mu =  3e-6;                % Regularization parameter
 params.regType=1;                 % Regularization function: 1 for 1st-order Tikhonov, 2 for Total Variation, 3 for Good roughness.
 
 % -- Optim
