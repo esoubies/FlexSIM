@@ -63,6 +63,7 @@ if params.eqPh
         Row_name{ii}=['Or #',num2str(ii)];
     end
 else
+    Col_name={' Kx[px]',' Ky[px]'};
     if ~isempty(phase)
         patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase);       % Initialize the data
         for ii=1:params.nbPh
@@ -70,8 +71,7 @@ else
         end
     else
         patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi);       % Initialize the data
-    end
-    Col_name={' Kx[px]',' Ky[px]'};
+    end    
     for ii=1:params.nbOr
         Row_name{ii}=['Or #',num2str(ii)];
     end
