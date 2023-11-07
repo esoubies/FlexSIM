@@ -118,6 +118,7 @@ parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
     if params.estiPattLowFreq
         if ~params.paraLoopFrames, DispMsg(params.verbose,'---> Estimate low frequency patterns components ...'); end
         Lf = EstimateLowFreqPatterns(params,y(:,:,:,it),wf(:,:,:,it),5);
+        saveastiff(Lf,[params.DataPath(1:end-4),'_Patt_',num2str(it),'.tif']);  
     else
         Lf=1;
     end
