@@ -36,7 +36,7 @@ fftG=fft2(padarray(G,sz(1:2)*fac,'post'));
 sz=size(fftwf);
 
 % -- Perform cross-correlation btw the fft of wf and the fft of processed data G
-tmp=fft2(ifftshift(fftwf)).*conj(fft2(ifftshift_(fftG)));
+tmp=fft2(ifftshift_(fftwf)).*conj(fft2(ifftshift_(fftG)));
 corr=fftshift_(ifft2(tmp));
 corrSymConj=fftshift_(ifft2(conj(tmp)));
 if params.eqPh
