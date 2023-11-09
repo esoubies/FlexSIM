@@ -32,10 +32,20 @@ end
 
 
 %% Pre-processing
+% - Reorder stack with FlexSIM conventions
+[y, wf] = OrderYandExtWF(y, params);                            % Reorder and extract data if necessary
+if isfield(params,'frameRange') && ~isempty(params.frameRange)  % Keep only frames specified by user
+    y=y(:,:,:,params.frameRange);             
+    wf=wf(:,:,:,params.frameRange);
+end
+params.nframes=size(y,4);                                       % Number of time frames
+wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
+
 % - Remove background
 if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)
     PosRoiBack=DetectPatch(mean(gather(y),[3,4]),params.SzRoiBack,-1);  % Detect the ROI for background
     y = RemoveBackground(y,PosRoiBack,params.SzRoiBack);           % Remove constant background and normalize in [0,1]
+    wf = RemoveBackground(wf,PosRoiBack,params.SzRoiBack);     
 else
     PosRoiBack=[1,1];
 end
@@ -49,16 +59,6 @@ if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)
 else
     PosRoiPatt=[1,1];
 end
-
-
-% - Reorder stack with FlexSIM conventions
-[y, wf] = OrderYandExtWF(y, params);                            % Reorder and extract data if necessary
-if isfield(params,'frameRange') && ~isempty(params.frameRange)  % Keep only frames specified by user
-    y=y(:,:,:,params.frameRange);             
-    wf=wf(:,:,:,params.frameRange);
-end
-params.nframes=size(y,4);                                       % Number of time frames
-wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
 
 % -- Set stuff for parallel processing
 if params.parallelProcess
