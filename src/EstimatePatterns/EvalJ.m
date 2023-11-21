@@ -18,7 +18,8 @@ function [c, g] = EvalJ(ktest, wf, G, params, grids, filt, att_filt, grad)
 % Output : c  (float)      -> Cost of the given wavevector
 %          g  (1x2 float)  -> Gradient
 %
-% [1] FlexSIM: ADD REF TO PAPER
+% [1] Handling Challenging Structured Illumination Microscopy Data with FlexSIM
+%     E. Soubies et al, Preprint, 2023
 %
 % See also EstimatePatterns.m and Reconstruct.m
 %

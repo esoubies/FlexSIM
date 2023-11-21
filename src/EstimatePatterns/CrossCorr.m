@@ -15,7 +15,8 @@ function [map,K1,K2] = CrossCorr(G,wf,params)
 % Outputs : map   -> Grid-based evaluation of the solution a e{i ph} in [1]
 %           K1, K2 -> grid on which the correl map is evaluated
 %
-% [1] FlexSIM: ADD REF TO PAPER
+% [1] Handling Challenging Structured Illumination Microscopy Data with FlexSIM
+%     E. Soubies et al, Preprint, 2023
 %
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com), 
 %                  E. Soubies (emmanuel.soubies@irit.fr) 

@@ -13,7 +13,8 @@ function [OTFshiftCrop, OTFCrop] = BuildFilter(k, sz, OTF, params, grids)
 % Outputs : OTFshiftCrop -> Filter for b (OTF shifted and then cropped around peaks)
 %           OTFCrop      -> Filter for A (OTF croped around peaks)
 %
-% [1] FlexSIM: ADD REF TO PAPER
+% [1] Handling Challenging Structured Illumination Microscopy Data with FlexSIM
+%     E. Soubies et al, Preprint, 2023
 %
 % See also FlexSIM.m and Reconstruct.m
 %

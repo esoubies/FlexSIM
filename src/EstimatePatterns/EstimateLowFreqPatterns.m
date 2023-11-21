@@ -14,6 +14,9 @@ function Lf = EstimateLowFreqPatterns(params,y,wf_stack,filt_sz)
 %
 % Output: Lf      -> Extracted low frequency component of the pattern
 %
+% [1] Handling Challenging Structured Illumination Microscopy Data with FlexSIM
+%     E. Soubies et al, Preprint, 2023
+%
 % See also GenerateReconstructionPatterns.m
 %
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com)

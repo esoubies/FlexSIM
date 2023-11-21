@@ -20,7 +20,8 @@ function A = BuildA(ktest, wf, filt, params, grids)
 % Outputs : A       -> Array of size [N, 2] (N being the # of pixels) that
 %                      contains the sin and cos components of the pattern
 %
-% [1] FlexSIM: ADD REF TO PAPER
+% [1] Handling Challenging Structured Illumination Microscopy Data with FlexSIM
+%     E. Soubies et al, Preprint, 2023
 % 
 % Copyright (2022) A. Nogueron (anogueron.1996@gmail.com), 
 %                  E. Soubies (emmanuel.soubies@irit.fr) 

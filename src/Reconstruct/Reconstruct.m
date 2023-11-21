@@ -10,7 +10,8 @@ function rec = Reconstruct(y,patt,params)
 %                     
 % Output: rec - Super-resolved reconstructed image 
 %
-% [1] FlexSIM: ADD REF TO PAPER
+% [1] Handling Challenging Structured Illumination Microscopy Data with FlexSIM
+%     E. Soubies et al, Preprint, 2023
 %
 % See also FlexSIM.m and EstimatePatterns.m
 %
@@ -112,7 +113,7 @@ parfor (id1 = 1:n1,params.nbcores*params.paraLoopOrr)
     Opt.run(x);                        % Run the algorithm zeros(H.sizein)
     rec(:,:,id1)=P*Opt.xopt*meany;
     if params.paraLoopOrr
-        DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Reconstruct orientation  #',num2str(id1+1),'/',num2str(params.nbOr),' done.']);
+        DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Reconstruct orientation  #',num2str(id1),'/',num2str(params.nbOr),' done (',num2str(Opt.niter),' Iters).']);
     end
 end
 rec=mean(rec./mean(rec,[1,2]),3);
