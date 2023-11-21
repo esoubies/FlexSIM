@@ -23,6 +23,7 @@ time0=tic;
 %% Routinary checks + Data loading
 CheckParams(params);                       % Check conformity of parameters
 y = double(loadtiff(params.DataPath));     % Read data
+params.GPU=0; % NOT YET AVAILABLE
 if params.GPU, y = gpuArray(y); end
 sz=size(y);
 tmp = fft_best_dim(sz(1)*2+params.padSz) - sz(1)*2; 
