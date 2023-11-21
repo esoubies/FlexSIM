@@ -27,7 +27,8 @@ function [k_final, ph_final, k_init, ph_init] = EstimatePatterns(params,PosRoiPa
 % Outputs : k_final  -> array with the estimated wavevectors 
 %           ph_final -> array with the estimated phases 
 %
-% [1] FlexSIM: ADD REF TO PAPER
+% [1] Handling Challenging Structured Illumination Microscopy Data with FlexSIM
+%     E. Soubies et al, Preprint, 2023
 %
 % See also FlexSIM.m and Reconstruct.m
 %
@@ -38,13 +39,18 @@ function [k_final, ph_final, k_init, ph_init] = EstimatePatterns(params,PosRoiPa
 %% Preprocessing of stack & initialization of useful variables
 % Crop to the ROI, keeping the original size before
 if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)   % Detect ROI and Crop to ROI
-    y = y(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:,:);
-    wf_stack = wf_stack(PosRoiPatt(1):PosRoiPatt(1)+params.SzRoiPatt-1,PosRoiPatt(2):PosRoiPatt(2)+params.SzRoiPatt-1,:,:);
+    tmp_y=zeros([params.SzRoiPatt,params.SzRoiPatt,size(y,[3,4])]);
+    tmp_wf=zeros([params.SzRoiPatt,params.SzRoiPatt,size(wf_stack,[3,4])]);
+    for ii=1:params.nframes
+        tmp_y(:,:,:,ii) = y(PosRoiPatt(ii,1):PosRoiPatt(ii,1)+params.SzRoiPatt-1,PosRoiPatt(ii,2):PosRoiPatt(ii,2)+params.SzRoiPatt-1,:,ii);
+        tmp_wf(:,:,:,ii) = wf_stack(PosRoiPatt(ii,1):PosRoiPatt(ii,1)+params.SzRoiPatt-1,PosRoiPatt(ii,2):PosRoiPatt(ii,2)+params.SzRoiPatt-1,:,ii);
+    end
+    y=tmp_y;wf_stack=tmp_wf;
 end
 sz = size(y);                                      % Calculate size of ROI
 nt=size(y,4);                                      % Number of time steps
-y = (y - min(y(:))) / (max(y(:)) - min(y(:)));     % Normalize stack images
-wf_stack= (wf_stack-min(wf_stack(:))) / (max(wf_stack(:)) - min(wf_stack(:)));
+y = (y - min(y,[],1:3)) ./ (max(y,[],1:3) - min(y,[],1:3));     % Normalize stack images
+wf_stack= (wf_stack-min(wf_stack,[],1:3)) ./ (max(wf_stack,[],1:3) - min(wf_stack,[],1:3));
 
 if ~gather(k_init)
     compute_k_init=true;

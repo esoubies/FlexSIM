@@ -9,7 +9,8 @@ function FlexSIM(params)
 % Inputs : params -> Structure containing all the necessary data (optical
 %                    and reconstruction parameters, paths, etc.)  
 %
-% [1] FlexSIM: ADD REF TO PAPER
+% [1] Handling Challenging Structured Illumination Microscopy Data with FlexSIM
+%     E. Soubies et al, Preprint, 2023
 %
 % See also EstimatePatterns.m and Reconstruct.m
 %
@@ -30,31 +31,40 @@ if tmp~=params.padSz
     params.padSz=tmp;
 end
 
-
 %% Pre-processing
 % - Reorder stack with FlexSIM conventions
 [y, wf] = OrderYandExtWF(y, params);                            % Reorder and extract data if necessary
 if isfield(params,'frameRange') && ~isempty(params.frameRange)  % Keep only frames specified by user
     y=y(:,:,:,params.frameRange);             
-    wf=wf(:,:,:,params.frameRange);
+    if ~isempty(wf), wf=wf(:,:,:,params.frameRange); end
 end
 params.nframes=size(y,4);                                       % Number of time frames
-wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
 
 % - Remove background
 if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)
-    PosRoiBack=DetectPatch(mean(gather(y),[3,4]),params.SzRoiBack,-1);  % Detect the ROI for background
-    y = RemoveBackground(y,PosRoiBack,params.SzRoiBack);           % Remove constant background and normalize in [0,1]
-    wf = RemoveBackground(wf,PosRoiBack,params.SzRoiBack);     
+    for ii=params.nframes:-1:1 % Inverse order so that the last PosRoiBack corresponds to the first frame for display below
+        PosRoiBack=DetectPatch(mean(gather(y(:,:,:,ii)),3),params.SzRoiBack,-1);  % Detect the ROI for background
+        y(:,:,:,ii) = RemoveBackground(y(:,:,:,ii),PosRoiBack,params.SzRoiBack);           % Remove constant background and normalize in [0,1]
+        if ~isempty(wf),  wf(:,:,:,ii) = RemoveBackground(wf(:,:,:,ii),PosRoiBack,params.SzRoiBack); end
+    end
+    if isempty(wf)
+        for ii=1:params.nbOr
+            wf(:,:,ii,:)=mean(y(:,:,(ii-1)*params.nbPh+1:ii*params.nbPh,:),3);
+        end
+    end
 else
     PosRoiBack=[1,1];
 end
+wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
 % - Detect ROI for pattern estimation
 if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)
     if ~isfield(params,'posRoiPatt') || isempty(params.posRoiPatt)
-        PosRoiPatt=DetectPatch(mean(gather(y),[3,4]),params.SzRoiPatt,1);
+        PosRoiPatt=zeros(params.nframes,2);
+        for ii=1:params.nframes
+            PosRoiPatt(ii,:)=DetectPatch(mean(gather(y(:,:,:,ii)),3),params.SzRoiPatt,1);
+        end
     else
-        PosRoiPatt=params.posRoiPatt;
+        PosRoiPatt=repmat(params.posRoiPatt,[params.nframes,1]);
     end
 else
     PosRoiPatt=[1,1];
@@ -70,17 +80,17 @@ else
     params.nbcores=0;params.paraLoopOrr=0;params.paraLoopFrames=0;
 end
 
-
 % -- Displays
 if params.displ > 0
-    DisplayStack(gather(y(:,:,:,1)),'SIM Raw data',-1);
+    id=1;
+    DisplayStack(gather(y(:,:,:,id)),'SIM Raw data',-1);
     leg={};
     if ~isempty(params.SzRoiBack)
         rectangle('Position',[PosRoiBack(2) PosRoiBack(1) params.SzRoiBack params.SzRoiBack],'EdgeColor','r');
         line(NaN,NaN,'Color','r'); leg{length(leg)+1}='ROI Background';% Hack for legend display of the rectangle
     end
     if ~isempty(params.SzRoiPatt)
-        rectangle('Position',[PosRoiPatt(2) PosRoiPatt(1) params.SzRoiPatt params.SzRoiPatt],'EdgeColor','b');
+        rectangle('Position',[PosRoiPatt(id,2) PosRoiPatt(id,1) params.SzRoiPatt params.SzRoiPatt],'EdgeColor','b');
         line(NaN,NaN,'Color','b'); leg{length(leg)+1}='ROI Patterns';% Hack for legend display of the rectangle
     end
     if ~isempty(leg), legend(leg); end
@@ -118,7 +128,6 @@ parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
     if params.estiPattLowFreq
         if ~params.paraLoopFrames, DispMsg(params.verbose,'---> Estimate low frequency patterns components ...'); end
         Lf = EstimateLowFreqPatterns(params,y(:,:,:,it),wf(:,:,:,it),5);
-        saveastiff(Lf,[params.DataPath(1:end-4),'_Patt_',num2str(it),'.tif']);  
     else
         Lf=1;
     end
@@ -127,7 +136,7 @@ parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
         Lf= padarray(Lf,[1,1]*params.padSz,'replicate','post');
     end
     if ~params.paraLoopFrames, DispMsg(params.verbose,'---> Generate reconstruction patterns ...'); end
-    patterns = GenerateReconstructionPatterns(params,PosRoiPatt,k(:,:,it),phase(:,:,it),params.pattAmp,sz+params.padSz/2,Lf);    
+    patterns = GenerateReconstructionPatterns(params,PosRoiPatt(it,:),k(:,:,it),phase(:,:,it),params.pattAmp,sz+params.padSz/2,Lf);    
 
     % -- Reconstruction
     if params.nframes==1,  DispMsg(params.verbose,'<strong>===  Reconstruction</strong> ...'); 
@@ -135,7 +144,7 @@ parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
     rec(:,:,it) = Reconstruct(gather(y(:,:,:,it)),gather(patterns),params);
 
     % - Save 
-    if params.sav && (params.nframes>1)
+    if params.sav 
         if params.nframes>1
             saveastiff(rec(:,:,it),[params.DataPath(1:end-4),'_Rec_Frame_',num2str(it),'.tif']);
             saveastiff(patterns,[params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);

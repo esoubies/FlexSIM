@@ -56,13 +56,4 @@ switch string(params.StackOrder)
         newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []);
         y(:,:,1:params.nbOr*params.nbPh,:) = y(:,:,newOrder,:);
 end
-if isempty(wf) && params.nbPh > 1
-    wf=zeros([sz(1:2),params.nbOr,nt]);
-    if params.GPU
-        wf = gpuArray(wf);
-    end
-    for ii=1:params.nbOr
-        wf(:,:,ii,:)=mean(y(:,:,(ii-1)*params.nbPh+1:ii*params.nbPh,:),3);
-    end
-end
 end
