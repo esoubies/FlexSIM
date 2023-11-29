@@ -33,6 +33,22 @@ The repository is organized as follows.
 | sav | *Boolean on whether to save the reconstructed image and estimated patterns.* |
 | parallelProcess | *Boolean on whether to use parallel computing. Requires the parallel computing toolbox.*  |
 
+### Physical parameters and pre-processing
+
+| Parameter | Description |
+|------|------|
+|  | ---- **Patterns**|
+| StackOrder | *Stack order (ap, pa, apw, paw, wap, wpa with a=angles, p=phases, w=widefield).* |
+| nbOr | *Number of orientations.* |
+| nbPh | *Number of phases.* |
+|  | ---- **OTF Approximation** | 
+| lamb | *Emission wavelength (nm).* |
+| res | *Pixel size (nm).* |
+| Na | *Objective numerical aperture.* |
+| damp | *damping parameter in [0,1] (1= no damping) to attenuate middle freq in the approx OTF.* |
+|  | ----  **Background estimation** | 
+| SzRoiBack | *Size (px) of the ROI for background estimation (position automatically detected to minimize the intensity within the ROI).* |
+
 
 
 
