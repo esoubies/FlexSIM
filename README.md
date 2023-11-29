@@ -49,9 +49,19 @@ The repository is organized as follows.
 |  | ----  **Background estimation** | 
 | SzRoiBack | *Size (px) of the ROI for background estimation (position automatically detected to minimize the intensity within the ROI).* |
 
+### Patterns estimation
+
+| Parameter | Description |
+|------|------|
+|  SzRoiPatt  |  *Size (px) of the ROI for pattern estimation (position automatically detected to maximize the intensity within the ROI).*  |
+|  maskWF |    *Radius (as a factor of the cutoff freq.) of the disk used to mask central Fourier frequencies.* |
+|  ringRegionSearch |  *Lower and upper limits of Fourier ring region to search peaks (given as factor of the cutoff freq.).*  |
+|  eqPh |  *Boolean, if true equally-spaced phases are assumed.*  |
+|  estiPattLowFreq | *Boolean, if true, estimate the low-freq. component of the patterns.*   |
+|  pattAmp | *Amplitude $a$ of the pattern (to be adjusted manually).*   | 
 
 
-
+        
 ## Examples
 
 This folder contains scripts to download and reconstruct the 20 open 2D-SIM datasets described in Table S1 of [1]. Each script is made of the following two steps
