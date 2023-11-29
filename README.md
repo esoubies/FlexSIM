@@ -22,6 +22,19 @@ The repository is organized as follows.
 
 ## FlexSIM parameters
 
+### General parameters
+
+| Parameter | Description |
+|------|------|
+| DataPath | *Path to the SIM raw stack.* |
+| pathToFlexSIM | *Path to FlexSIM root folder.* |
+| displ | *From 0 to 2 with increasing number of display.* |
+| verbose | *From 0 to 2 with increasing text displays.* |
+| sav | *Boolean on whether to save the reconstructed image and estimated patterns.* |
+| parallelProcess | *Boolean on whether to use parallel computing. Requires the parallel computing toolbox.*  |
+
+
+
 
 ## Examples
 
@@ -33,7 +46,7 @@ The 20 open 2D-SIM datasets are sourced from 7 publications including **FairSIM*
 Each subfolder of the Example folder corresponds to one dataset with the following naming convention
 * _Reference_SIM-type_Bio-structure_
 
-[2] _<a href="https://www.nature.com/articles/ncomms10980#citeas" target="_blank">FairSIM</a>_, M. Müller, V. Mönkemöller, S. Hennig, W. Hübner, and T. Huser, Open-source image reconstruction of super-resolution structured illumination microscopy data in ImageJ, Nature Communications, vol. 7, no. 1, no. 1, Mar. 2016.
+[2] _<a href="https://www.nature.com/articles/ncomms10980#citeas" target="_blank">FairSIM</a>_, M. Müller, V. Mönkemöller, S. Hennig, W. Hübner, and T. Huser, Open-source image reconstruction of super-resolution structured illumination microscopy data in ImageJ, Nat. Commun., vol. 7, no. 1, no. 1, Mar. 2016.
 
 [3] _<a href="https://ieeexplore.ieee.org/document/7400963" target="_blank">OpenSIM</a>_, A. Lal, C. Shan, and P. Xi, Structured Illumination Microscopy Image Reconstruction Algorithm, IEEE Journal of Selected Topics in Quantum Electronics, vol. 22, no. 4, Jul. 2016.
 
