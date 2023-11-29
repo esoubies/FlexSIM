@@ -60,8 +60,26 @@ The repository is organized as follows.
 |  estiPattLowFreq | *Boolean, if true, estimate the low-freq. component of the patterns.*   |
 |  pattAmp | *Amplitude $a$ of the pattern (to be adjusted manually).*   | 
 
+### Image reconstruction
 
-        
+| Parameter | Description |
+|------|------|
+|   | ---- **OTF Attenuation**  |
+| OTFAttStr  |  *Strength of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.* |
+| OTFAttwdth  | *Width of the OTF attenuation (>0). If 0 no OTF attenuation.* |
+|   | ---- **Cost function** |
+|  apodize | *Boolean on whether to use apodization on boundaries.* |
+|  sepOrr  | *Boolean on whether to treat each orientation separately.* |
+|  padSz | *Padding size (px) used in the forward operator.* |
+|  mu | *Regularization parameter.* |
+|  regType | *Regularizer: 1 - 1st-order Tikhonov, 2 - Total Variation, 3 - Good roughness.*  |
+|   | ---- **Optimization** |
+| maxIt  | *Maximum number of iterations (stopping criteria).* |
+| stepTol  | *elative error tolerance between two iterates (stopping criteria).* |
+
+
+
+
 ## Examples
 
 This folder contains scripts to download and reconstruct the 20 open 2D-SIM datasets described in Table S1 of [1]. Each script is made of the following two steps
