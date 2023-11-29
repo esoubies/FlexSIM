@@ -18,12 +18,30 @@ The repository is organized as follows.
 * File **FlexSIM.m**: Main function of FlexSIM, the one that needs to be run with parameters as input (see provided examples)
 * Folder **src**: Matlab source files of FlexSIM
 * Folder **Simulation**: Matlab scripts for patterns estimation experiments in [1]
-* Folder **Examples**:  Scripts to download and reconstruc the 20 open datasets described in [Table 1, 1]. See Section [Examples](#examples) below.
+* Folder **Examples**:  Scripts to download and reconstruct the 20 open datasets described in Table S1 of [1] (see [Examples](#examples) below).
 
 ## FlexSIM parameters
 
 
 ## Examples
+
+This folder contains scripts to download and reconstruct the 20 open datasets described in [Table S1, 1].
+
+
+
+### References 
+
+[1] _<a href="">FairSIM</a>_, M. Müller, V. Mönkemöller, S. Hennig, W. Hübner, and T. Huser, “Open-source image reconstruction of super-resolution structured illumination microscopy data in ImageJ,” Nat Commun, vol. 7, no. 1, Art. no. 1, Mar. 2016.
+
+[2] _<a href="">HiFi-SIM</a>_, G. Wen et al., “High-fidelity structured illumination microscopy by point-spread-function engineering,” Light Sci Appl, vol. 10, no. 1, Art. no. 1, Apr. 2021.
+
+[3] _<a href="">OpenSIM</a>_, A. Lal, C. Shan, and P. Xi, “Structured Illumination Microscopy Image Reconstruction Algorithm,” IEEE Journal of Selected Topics in Quantum Electronics, vol. 22, no. 4, Jul. 2016.
+
+[4] _<a href="">ML-SIM</a>_, C. N. Christensen, E. N. Ward, P. Lio, and C. F. Kaminski, “ML-SIM: A deep neural network for reconstruction of structured illumination microscopy images,” arXiv, arXiv:2003.11064, Mar. 2020. 
+
+[5] _<a href="">JSFR-SIM</a>_, Z. Wang et al., “High-speed image reconstruction for optically sectioned, super-resolution structured illumination microscopy,” AP, vol. 4, no. 2, Mar. 2022.
+
+[6] _<a href="">MAI-SIM</a>_, E. N. Ward et al., “MAI-SIM: interferometric multicolor structured illumination microscopy for everybody.” arXiv, Jun. 01, 2022.
 
 
 ## Conditions of use
