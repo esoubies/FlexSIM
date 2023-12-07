@@ -48,13 +48,13 @@ if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)
         y(:,:,:,ii) = RemoveBackground(y(:,:,:,ii),PosRoiBack,params.SzRoiBack);           % Remove constant background and normalize in [0,1]
         if ~isempty(wf),  wf(:,:,:,ii) = RemoveBackground(wf(:,:,:,ii),PosRoiBack,params.SzRoiBack); end
     end
-    if isempty(wf)
-        for ii=1:params.nbOr
-            wf(:,:,ii,:)=mean(y(:,:,(ii-1)*params.nbPh+1:ii*params.nbPh,:),3);
-        end
-    end
 else
     PosRoiBack=[1,1];
+end
+if isempty(wf)
+    for ii=1:params.nbOr
+        wf(:,:,ii,:)=mean(y(:,:,(ii-1)*params.nbPh+1:ii*params.nbPh,:),3);
+    end
 end
 wfUp=imresize(mean(wf,3),[size(wf,1),size(wf,2)]*2);            % For displays
 % - Detect ROI for pattern estimation
