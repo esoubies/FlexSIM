@@ -42,6 +42,10 @@ otf = GenerateOTF(params.Na,params.lamb,min([256,256],sz(1:2)),params.res/2,para
 % end
 psf = fftshift(real(ifft2(otf)));
 % -- Normalization
+t=sum(sum(y,1),2);inten=min(t(:));
+for ii=1:size(y,3)
+    y(:,:,ii)=y(:,:,ii)/t(ii)*inten;
+end
 meany=mean(y(:));y=y/meany;
 % -- OTF Attenuation
 if params.OTFAttStr && params.OTFAttwdth
