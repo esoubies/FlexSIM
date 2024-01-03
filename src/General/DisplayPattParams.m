@@ -27,13 +27,29 @@ G = RemoveWFandMask(y,mean(y,3),params);
 imagesc(log10(sum(abs(fftshift(fft2(G))),3)+1), 'Parent', ax);colormap(ax,viridis);
 axis(ax,'square','on');hold(ax,'all');axis off;
 fc = 2*params.Na/params.lamb*params.res;
-drawellipse(ax,'Center',floor(sz_y(2:-1:1)/2)+1,'SemiAxes',fc.*sz_y(2:-1:1),'StripeColor','w','InteractionsAllowed','none');
+
+h=[];leg={};
+cen=floor(sz_y(2:-1:1)/2)+1;
+[xp,yp]=circle(fc.*sz_y(2:-1:1));h(end+1)=plot(cen(1)+xp,cen(2)+yp,'Linewidth',1.5,'color','k');  % fc
+[xpin,ypin]=circle(params.ringRegionSearch(1)*fc.*sz_y(2:-1:1));plot(cen(1)+xpin,cen(2)+ypin,'Linewidth',2,'color',[0 0.4470 0.7410],'LineStyle','--');  % ring in
+[xpout,ypout]=circle(params.ringRegionSearch(2)*fc.*sz_y(2:-1:1));h(end+1)=plot(cen(1)+xpout,cen(2)+ypout,'Linewidth',2,'color',[0 0.4470 0.7410],'LineStyle','--');  % ring out
+fill([xpin flip(xpout)]+cen(1),[ypin flip(ypout)]+cen(2),[0 0.4470 0.7410],'FaceAlpha',0.3,'EdgeColor','none');
+[xp,yp]=circle(params.maskWF*fc.*sz_y(2:-1:1));h(end+1)=plot(cen(1)+xp,cen(2)+yp,'Linewidth',2,'color','r','LineStyle','--');  % ring mask WF
+fill([zeros(size(xp)) flip(xp)]+cen(1),[zeros(size(yp))  flip(yp)]+cen(2),'r','FaceAlpha',0.1,'EdgeColor','none');
+%drawellipse(ax,'Center',floor(sz_y(2:-1:1)/2)+1,'SemiAxes',fc.*sz_y(2:-1:1),'StripeColor','w','InteractionsAllowed','none','FaceAlpha',0,'Color','k');
+leg{end+1}='OTF cutoff';
+leg{end+1}='Ring Region Search';
+leg{end+1}='Mask WF';
+col=[0 0.4470 0.7410
+0.8500 0.3250 0.0980
+0.9290 0.6940 0.1250];
 for i = 1:size(k, 1)
     tmp = k(i, :) .* sz_y(2:-1:1) * params.res / pi + sz_y(2:-1:1)/2+1;
-    plot(ax,tmp(1), tmp(2), 'o', 'MarkerSize', 8, 'LineWidth', 3);
-    leg{i}=['Or #',num2str(i)];
+    h(end+1)=plot(ax,tmp(1), tmp(2), 'o', 'MarkerSize', 8, 'LineWidth', 3,'Color',col(i,:));
+    leg{end+1}=['Or #',num2str(i)];
 end
-legend(leg);
+
+legend(h,leg,'NumColumns',2);
 text(sz_y(2)/2,-sz_y(1)*0.04,['\bf',titl],'HorizontalAlignment' ,'center','VerticalAlignment', 'top','FontSize',12);
 
 %% Table with estimated parameters
@@ -89,4 +105,8 @@ text(.5,.95,tableChar,'VerticalAlignment','Top','HorizontalAlignment','Center','
 text(.5,1.1,'\bf Estimated parameters','VerticalAlignment','Top','HorizontalAlignment','Center');
 
 drawnow;
+end
+function [xp,yp]=circle(d)
+ang=linspace(0,2*pi,100); 
+xp=d(1)*cos(ang);yp=d(2)*sin(ang);
 end
