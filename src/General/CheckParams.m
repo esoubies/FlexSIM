@@ -76,9 +76,9 @@ assert(mod(params.nbOr, 1) == 0 && params.nbOr> 0,prefix + invld + "`nbOr`. " + 
 assert(isfield(params, "nbPh"),prefix + missg + "`nbPh`. " + msg);
 assert(mod(params.nbPh, 1) == 0 && params.nbPh > 0,prefix + invld + "`nbPh`. " + msg);
 % StackOrder
-msg="Choose one of {`ap`, `pa`, `paw`, `apw`, `wap`, `wpa`} as acquisition convention (p(hase), a(ngle) and w(idefield)).";
+msg="Choose one of {`ap`, `pa`, `paw`, `apw`, `wap`, `wpa`, `axp`, `pxa`} as acquisition convention (p(hase), a(ngle) and w(idefield)).";
 assert(isfield(params, "StackOrder"),prefix + missg + "`StackOrder`. " + msg);
-assert(ismember(params.StackOrder, ["ap", "pa", "paw", "apw", "wap", "wpa"]),prefix + invld + "`StackOrder`. " + msg);
+assert(ismember(params.StackOrder, ["ap", "pa", "paw", "apw", "wap", "wpa", "axp", "pxa"]),prefix + invld + "`StackOrder`. " + msg);
 if params.nbPh == 1       % Ensure that the widefield is there
     assert(any(ismember(char(params.StackOrder), 'w')),prefix + invld + "`StackOrder`. " + ...
         "Widefield image is necessary when providing one image per orientation. " + ...

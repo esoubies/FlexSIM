@@ -25,12 +25,6 @@ CheckParams(params);                       % Check conformity of parameters
 y = double(loadtiff(params.DataPath));     % Read data
 params.GPU=0; % NOT YET AVAILABLE
 if params.GPU, y = gpuArray(y); end
-sz=size(y);
-tmp = fft_best_dim(sz(1)*2+params.padSz) - sz(1)*2; 
-if tmp~=params.padSz
-    DispMsg(params.verbose,['Note: padSz has been increased from ',num2str(params.padSz),' to ',num2str(tmp),' for faster FFTs (multiple of powers of 2, 3 and/or 5)']);
-    params.padSz=tmp;
-end
 
 %% Pre-processing
 % - Reorder stack with FlexSIM conventions
@@ -40,6 +34,12 @@ if isfield(params,'frameRange') && ~isempty(params.frameRange)  % Keep only fram
     if ~isempty(wf), wf=wf(:,:,:,params.frameRange); end
 end
 params.nframes=size(y,4);                                       % Number of time frames
+sz=size(y);
+tmp = fft_best_dim(sz(1)*2+params.padSz) - sz(1)*2; 
+if tmp~=params.padSz
+    DispMsg(params.verbose,['Note: padSz has been increased from ',num2str(params.padSz),' to ',num2str(tmp),' for faster FFTs (multiple of powers of 2, 3 and/or 5)']);
+    params.padSz=tmp;
+end
 
 % - Remove background
 if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)
