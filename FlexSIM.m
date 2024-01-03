@@ -34,6 +34,16 @@ if isfield(params,'frameRange') && ~isempty(params.frameRange)  % Keep only fram
     if ~isempty(wf), wf=wf(:,:,:,params.frameRange); end
 end
 params.nframes=size(y,4);                                       % Number of time frames
+% - Crop if required
+if isfield(params,'SzRoi') && ~isempty(params.SzRoi)
+    if ~isfield(params,'posRoi') || isempty(params.posRoi)
+        PosRoi=DetectPatch(mean(gather(y),[3,4]),params.SzRoi,1);
+    else
+        PosRoi=params.posRoi;
+    end
+    y=y(PosRoi(1):PosRoi(1)+params.SzRoi-1,PosRoi(2):PosRoi(2)+params.SzRoi-1,:,:);
+end
+% - Get size 
 sz=size(y);
 tmp = fft_best_dim(sz(1)*2+params.padSz) - sz(1)*2; 
 if tmp~=params.padSz
@@ -121,8 +131,7 @@ parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
         if ~params.paraLoopFrames
             DispMsg(params.verbose,['<strong>=== Process temporal frame #',num2str(it),'/',num2str(params.nframes),'</strong> ...']);
         else
-            t = getCurrentTask();
-            DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process temporal frame #',num2str(it),'/',num2str(params.nframes),' ...']);
+            DispMsg(params.verbose,['-- [Worker #',num2str(getCurrentTask().ID),'] Process temporal frame #',num2str(it),'/',num2str(params.nframes),' ...']);
         end
     end
     % Estimate low frequency patterns components
@@ -157,7 +166,7 @@ parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
         if ~params.paraLoopFrames
             DispMsg(params.verbose,['== FlexSIM Elapsed time (s): ',num2str(toc(time0))]);
         else
-            DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process temporal frame #',num2str(it),'/',num2str(params.nframes),' done. FlexSIM Elapsed time (s): ',num2str(toc(time0))]);
+            DispMsg(params.verbose,['-- [Worker #',num2str(getCurrentTask().ID),'] Process temporal frame #',num2str(it),'/',num2str(params.nframes),' done. FlexSIM Elapsed time (s): ',num2str(toc(time0))]);
         end
     end
 end
