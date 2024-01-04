@@ -18,9 +18,9 @@ invld="Invalid parameter ";
 % -- Path and files
 prefix="[Paths and files] ";
 % DataPath
-msg="Should be in tif format.";
+msg="Should be in tif or nd2 format.";
 assert(isfield(params, "DataPath"),prefix + missg + "`DataPath`. " + msg);
-assert(strcmp(params.DataPath(end-3:end),'.tif'), prefix + invld + "`DataPath'. " + msg);  
+assert(strcmp(params.DataPath(end-3:end),'.tif') || strcmp(params.DataPath(end-3:end),'.nd2'), prefix + invld + "`DataPath'. " + msg);  
 % pathToFlexSIM
 assert(isfield(params, "DataPath"),prefix + missg + "`pathToFlexSIM`. ");
 

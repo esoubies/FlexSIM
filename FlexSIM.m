@@ -22,7 +22,15 @@ warning('off','all')
 time0=tic;
 %% Routinary checks + Data loading
 CheckParams(params);                       % Check conformity of parameters
-y = double(loadtiff(params.DataPath));     % Read data
+if strcmp(params.DataPath(end-3:end),'.tif')
+    y = double(loadtiff(params.DataPath));     % Read data
+elseif strcmp(params.DataPath(end-3:end),'.nd2')
+    if isfield(params,'channel') && ~isempty(params.channel)
+        y = nd2read(params.DataPath,params.channel);
+    else
+        y = nd2read(params.DataPath);
+    end
+end
 params.GPU=0; % NOT YET AVAILABLE
 if params.GPU, y = gpuArray(y); end
 
