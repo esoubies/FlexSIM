@@ -43,8 +43,7 @@ The repository is organized as follows.
 | SzRoi | *Size (px) of the ROI of the data considered for reconstruction* |
 | posRoi | *Position of the top-left corner of the ROI.* |
 |  | ---- **Patterns**|
-| StackOrder | *Stack order: ap, pa, apw, paw, wap, wpa, axp, pxa (with a=angles, p=phases, w=widefield). The last two correspond to 9x9 montage with angles (resp phases) in row axp (resp pxa).
-* |
+| StackOrder | *Stack order: ap, pa, apw, paw, wap, wpa, axp, pxa (with a=angles, p=phases, w=widefield). The last two correspond to 9x9 montage with angles (resp phases) in row axp (resp pxa).* |
 | nbOr | *Number of orientations.* |
 | nbPh | *Number of phases.* |
 |  | ---- **OTF Approximation** | 
