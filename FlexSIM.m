@@ -86,7 +86,7 @@ if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)
         PosRoiPatt=repmat(params.posRoiPatt,[params.nframes,1]);
     end
 else
-    PosRoiPatt=[1,1];
+    PosRoiPatt=ones([params.nframes,1]);
 end
 
 % -- Set stuff for parallel processing
