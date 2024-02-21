@@ -48,9 +48,14 @@ if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)   % Detect ROI and 
     y=tmp_y;wf_stack=tmp_wf;
 end
 sz = size(y);                                      % Calculate size of ROI
-nt=size(y,4);                                      % Number of time steps
 y = (y - min(y,[],1:3)) ./ (max(y,[],1:3) - min(y,[],1:3));     % Normalize stack images
 wf_stack= (wf_stack-min(wf_stack,[],1:3)) ./ (max(wf_stack,[],1:3) - min(wf_stack,[],1:3));
+
+if ~isempty(params.framePattEsti)
+    y = y(:,:,:,params.framePattEsti);
+    wf_stack = wf_stack(:,:,:,params.framePattEsti);
+end
+nt=size(y,4);                                      % Number of time steps
 
 if ~gather(k_init)
     compute_k_init=true;

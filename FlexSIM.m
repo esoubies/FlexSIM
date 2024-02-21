@@ -121,8 +121,8 @@ end
 DispMsg(params.verbose,'<strong>=== Patterns estimation</strong> ...');
 DispMsg(params.verbose,'---> Estimate sinusoidal patterns components ...');
 [k, phase] = EstimatePatterns(params, PosRoiPatt, y, 0, wf);
-if  isfield(params,'timeAvgPattParams') && params.timeAvgPattParams
-    k=repmat(mean(k,3),[1 1 params.nframes]);phase=repmat(mean(phase,3),[1 1 params.nframes]);
+if  isfield(params,'framePattEsti') && ~isempty(params.framePattEsti)
+    k=repmat(k,[1 1 params.nframes]);phase=repmat(phase,[1 1 params.nframes]);
 end
 
 % Displays
