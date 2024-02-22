@@ -51,7 +51,7 @@ sz = size(y);                                      % Calculate size of ROI
 y = (y - min(y,[],1:3)) ./ (max(y,[],1:3) - min(y,[],1:3));     % Normalize stack images
 wf_stack= (wf_stack-min(wf_stack,[],1:3)) ./ (max(wf_stack,[],1:3) - min(wf_stack,[],1:3));
 
-if ~isempty(params.framePattEsti)
+if isfield(params,'framePattEsti') && ~isempty(params.framePattEsti)
     y = y(:,:,:,params.framePattEsti);
     wf_stack = wf_stack(:,:,:,params.framePattEsti);
 end
