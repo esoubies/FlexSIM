@@ -7,6 +7,10 @@ More details can be found in the following paper:
 Preprint (2023), <br />
 E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D. Sage.
 
+## News
+
+* 22 Feb 2024: Integration of a pure Matlab version of the VMLMB optimization method in GlobalBioIm which is used in FlexSIM. As such, no need anymore to compile mex files.
+
 ## Getting started 
 
 Download or clone this repository and run the script **InstallFlexSIM.m** which will download the required <a href="https://biomedical-imaging-group.github.io/GlobalBioIm/">GlobalBioIm library</a> v1.2 (or more recent releases) and make neceesary changes in your Matlab path.
