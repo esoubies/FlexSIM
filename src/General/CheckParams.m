@@ -40,14 +40,14 @@ msg="Should be a boolean.";
 assert(isfield(params, "sav"),prefix + missg + "`sav`. " + msg);
 assert(params.sav==0 || params.sav==1, prefix + invld + "`sav'. " + msg);  
 % GPU usage
-%prefix="[GPU]";
-%msg="Should be a boolean";
-%assert(isfield(params, "GPU"),prefix + missg + "`GPU`. " + msg);
-%assert(ismember(params.GPU, [0, 1]), prefix + invld + "`GPU`. " + msg);
-%if params.GPU
-%    assert(logical(license('test','Distrib_Computing_Toolbox')),prefix  + "Parallel Computing Toolbox not installed. Set parameter GPU to 0.")
-%    assert(logical(gpuDeviceCount), prefix + "No GPU was found. Set parameter GPU to `0`.");
-%end
+prefix="[GPU]";
+msg="Should be a boolean";
+assert(isfield(params, "GPU"),prefix + missg + "`GPU`. " + msg);
+assert(ismember(params.GPU, [0, 1]), prefix + invld + "`GPU`. " + msg);
+if params.GPU
+    assert(logical(license('test','Distrib_Computing_Toolbox')),prefix  + "Parallel Computing Toolbox not installed. Set parameter GPU to 0.")
+    assert(logical(gpuDeviceCount), prefix + "No GPU was found. Set parameter GPU to `0`.");
+end
 % parallelProcess
 prefix="[Parallel]";
 msg="Should be a boolean.";
@@ -55,6 +55,7 @@ assert(isfield(params, "parallelProcess"),prefix + missg + "`parallelProcess`. "
 assert(ismember(params.parallelProcess, [0, 1]), prefix + invld + "`parallelProcess'. " + msg);  
 if params.parallelProcess % Check is parallel tolbox is available 
   assert(logical(license('test','Distrib_Computing_Toolbox')),prefix + "Parallel Computing Toolbox not installed. Set parameter parallelProcess to 0.")
+  assert(params.GPU==0,prefix + "GPU and parallelProcess option cannot be activated at the same time. One needs to be choosen.")
   %assert(params.verbose==0,"prefix + parameter verbose should be set to 0 when parallelProcess is activated.");
 end
 
@@ -128,7 +129,6 @@ assert(params.eqPh==0 || params.eqPh==1, prefix + invld + "`eqPh`. " + msg);
 msg="Should be a boolean.";
 assert(isfield(params, "estiPattLowFreq"),prefix + missg + "`estiPattLowFreq`. " + msg);
 assert(params.estiPattLowFreq==0 || params.estiPattLowFreq==1, prefix + invld + "`estiPattLowFreq'. " + msg);  
-
                                   
 %% Parameters for image Reconstruction 
 % -- OTF Attenuation

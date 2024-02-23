@@ -31,6 +31,7 @@ params.displ = 1;                       % Displaying choice, from 0 to 2 with in
 params.verbose=2;                       % 0: minimal text displays / 1: detailled text displays / 2: more details
 params.sav = 1;                         % Boolean on whether to save or not the reconstructed image and estimated patterns
 params.parallelProcess=0;               % Boolean on whether to parallelize over patches (if szPatch>0) or over orientation (if sepOrr=1). Requires the parallel computing toolbox. 
+params.GPU=0;
 
 %% Physical parameters and pre-processing
 % -- Background estimation

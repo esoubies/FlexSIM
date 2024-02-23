@@ -20,11 +20,13 @@ function rec = Reconstruct(y,patt,params)
 %--------------------------------------------------------------------------
 
 %% Initial computations
-% if params.GPU
-%     useGPU(1)
-% else
-%     useGPU(0)
-% end
+if params.GPU
+    useGPU(1)
+    y=gpuCpuConverter(y);
+    patt=gpuCpuConverter(patt);
+else
+    useGPU(0)
+end
 
 sz=size(y);
 szUp=sz*2;szUp=szUp(1:2); 
@@ -37,9 +39,7 @@ else
 end
 % -- Generate OTF/PSF
 otf = GenerateOTF(params.Na,params.lamb,min([256,256],sz(1:2)),params.res/2,params.damp);
-% if params.GPU
-%     otf = gpuArray(otf);
-% end
+otf=gpuCpuConverter(otf);
 psf = fftshift(real(ifft2(otf)));
 % -- Normalization
 t=sum(sum(y,1),2);inten=min(t(:));
@@ -50,6 +50,7 @@ meany=mean(y(:));y=y/meany;
 % -- OTF Attenuation
 if params.OTFAttStr && params.OTFAttwdth
     OTFatt = GenerateOTFAttMask(params.Na,params.lamb,sz(1:2),params.res,params.OTFAttStr,params.OTFAttwdth);
+    OTFatt=gpuCpuConverter(OTFatt);
     Hatt=LinOpConv('MTF', OTFatt,1,[1,2]);
 else
     Hatt=LinOpIdentity(sz(1:2));
@@ -58,6 +59,7 @@ end
 if params.apodize
     [X,Y]=meshgrid(linspace(-1,1,sz(2)),linspace(-1,1,sz(1)));
     Apo=1./(1+exp(100*(abs(X)-0.97)))./(1+exp(100*(abs(Y)-0.97)));
+    Apo=gpuCpuConverter(Apo);
 else
     Apo=1;
 end
@@ -129,4 +131,6 @@ if params.apodize
     Apo=1./(1+exp(100*(abs(X)-0.97)))./(1+exp(100*(abs(Y)-0.97)));
     rec=rec.*Apo;
 end
+
+rec=gather(rec);
 end

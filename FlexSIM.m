@@ -31,7 +31,7 @@ elseif strcmp(params.DataPath(end-3:end),'.nd2')
         y = nd2read(params.DataPath);
     end
 end
-params.GPU=0;
+
 
 %% Pre-processing
 % - Reorder stack with FlexSIM conventions
