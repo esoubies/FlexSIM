@@ -11,8 +11,6 @@ E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D
 
 Download or clone this repository and run the script **InstallFlexSIM.m** which will download the required <a href="https://biomedical-imaging-group.github.io/GlobalBioIm/">GlobalBioIm library</a> v1.2 (or more recent releases) and make neceesary changes in your Matlab path.
 
-**Note** The current version of FlexSIM makes use of the VMLMB algorithm in GlobalBioIm which relies on mex files to be compiled. On Linux/Max OS, this compilation should, in principle, be done automatically at the first run. On Windows, however, it should be done manually by users. 
-
 ## Repository content
 
 The repository is organized as follows.
