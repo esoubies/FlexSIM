@@ -68,28 +68,28 @@ id_font=find(cell2mat(cellfun(@(x) sum(strcmp(x,listfonts)),mono_fonts,'UniformO
 % - Display Table
 if params.eqPh
     patternParams=k.*sz_y(2:-1:1) * params.res / pi;
-    Col_name={' Kx[px]',' Ky[px]'};
+    Col_name={' Kx',' Ky'};
     if ~isempty(phase)
         for ii=1:params.nbPh
             patternParams = horzcat(patternParams,mod(phase + (ii-1)*pi/params.nbPh,pi));
-            Col_name{end+1}=[' Ph #',num2str(ii)];
+            Col_name{end+1}=['Ph',num2str(ii)];
         end
     end
     for ii=1:params.nbOr
-        Row_name{ii}=['Or #',num2str(ii)];
+        Row_name{ii}=['Or',num2str(ii)];
     end
 else
-    Col_name={' Kx[px]',' Ky[px]'};
+    Col_name={' Kx',' Ky'};
     if ~isempty(phase)
         patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi, phase);       % Initialize the data
         for ii=1:params.nbPh
-            Col_name{end+1}=[' Ph #',num2str(ii)];
+            Col_name{end+1}=['Ph',num2str(ii)];
         end
     else
         patternParams = horzcat(k.*sz_y(2:-1:1) * params.res / pi);       % Initialize the data
     end    
     for ii=1:params.nbOr
-        Row_name{ii}=['Or #',num2str(ii)];
+        Row_name{ii}=['Or',num2str(ii)];
     end
 end
 T=array2table(patternParams,'VariableName',Col_name,'Rowname',Row_name);
