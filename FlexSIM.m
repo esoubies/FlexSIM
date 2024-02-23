@@ -31,8 +31,7 @@ elseif strcmp(params.DataPath(end-3:end),'.nd2')
         y = nd2read(params.DataPath);
     end
 end
-params.GPU=0; % NOT YET AVAILABLE
-if params.GPU, y = gpuArray(y); end
+params.GPU=0;
 
 %% Pre-processing
 % - Reorder stack with FlexSIM conventions
@@ -45,7 +44,7 @@ params.nframes=size(y,4);                                       % Number of time
 % - Crop if required
 if isfield(params,'SzRoi') && ~isempty(params.SzRoi)
     if ~isfield(params,'posRoi') || isempty(params.posRoi)
-        PosRoi=DetectPatch(mean(gather(y),[3,4]),params.SzRoi,1);
+        PosRoi=DetectPatch(mean(y,[3,4]),params.SzRoi,1);
     else
         PosRoi=params.posRoi;
     end
@@ -62,7 +61,7 @@ end
 % - Remove background
 if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)
     for ii=params.nframes:-1:1 % Inverse order so that the last PosRoiBack corresponds to the first frame for display below
-        PosRoiBack=DetectPatch(mean(gather(y(:,:,:,ii)),3),params.SzRoiBack,-1);  % Detect the ROI for background
+        PosRoiBack=DetectPatch(mean(y(:,:,:,ii),3),params.SzRoiBack,-1);  % Detect the ROI for background
         y(:,:,:,ii) = RemoveBackground(y(:,:,:,ii),PosRoiBack,params.SzRoiBack);           % Remove constant background and normalize in [0,1]
         if ~isempty(wf),  wf(:,:,:,ii) = RemoveBackground(wf(:,:,:,ii),PosRoiBack,params.SzRoiBack); end
     end
@@ -80,7 +79,7 @@ if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)
     if ~isfield(params,'posRoiPatt') || isempty(params.posRoiPatt)
         PosRoiPatt=zeros(params.nframes,2);
         for ii=1:params.nframes
-            PosRoiPatt(ii,:)=DetectPatch(mean(gather(y(:,:,:,ii)),3),params.SzRoiPatt,1);
+            PosRoiPatt(ii,:)=DetectPatch(mean(y(:,:,:,ii),3),params.SzRoiPatt,1);
         end
     else
         PosRoiPatt=repmat(params.posRoiPatt,[params.nframes,1]);
@@ -102,7 +101,7 @@ end
 % -- Displays
 if params.displ > 0
     id=1;
-    DisplayStack(gather(y(:,:,:,id)),'SIM Raw data',-1);
+    DisplayStack(y(:,:,:,id),'SIM Raw data',-1);
     leg={};
     if ~isempty(params.SzRoiBack)
         rectangle('Position',[PosRoiBack(2) PosRoiBack(1) params.SzRoiBack params.SzRoiBack],'EdgeColor','r');
@@ -139,7 +138,8 @@ parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
         if ~params.paraLoopFrames
             DispMsg(params.verbose,['<strong>=== Process temporal frame #',num2str(it),'/',num2str(params.nframes),'</strong> ...']);
         else
-            DispMsg(params.verbose,['-- [Worker #',num2str(getCurrentTask().ID),'] Process temporal frame #',num2str(it),'/',num2str(params.nframes),' ...']);
+            t = getCurrentTask();
+            DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process temporal frame #',num2str(it),'/',num2str(params.nframes),' ...']);
         end
     end
     % Estimate low frequency patterns components
@@ -159,7 +159,7 @@ parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
     % -- Reconstruction
     if params.nframes==1,  DispMsg(params.verbose,'<strong>===  Reconstruction</strong> ...'); 
     else, if params.sepOrr==0 && ~params.paraLoopFrames, DispMsg(params.verbose,'---> Reconstruct ...'); end; end
-    rec(:,:,it) = Reconstruct(gather(y(:,:,:,it)),gather(patterns),params);
+    rec(:,:,it) = Reconstruct(y(:,:,:,it),patterns,params);
 
     % - Save 
     if params.sav 
@@ -174,7 +174,8 @@ parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
         if ~params.paraLoopFrames
             DispMsg(params.verbose,['== FlexSIM Elapsed time (s): ',num2str(toc(time0))]);
         else
-            DispMsg(params.verbose,['-- [Worker #',num2str(getCurrentTask().ID),'] Process temporal frame #',num2str(it),'/',num2str(params.nframes),' done. FlexSIM Elapsed time (s): ',num2str(toc(time0))]);
+            t = getCurrentTask();
+            DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Process temporal frame #',num2str(it),'/',num2str(params.nframes),' done. FlexSIM Elapsed time (s): ',num2str(toc(time0))]);
         end
     end
 end
