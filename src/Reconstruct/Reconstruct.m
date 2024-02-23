@@ -117,6 +117,7 @@ parfor (id1 = 1:n1,params.nbcores*params.paraLoopOrr)
     Opt.run(x);                        % Run the algorithm zeros(H.sizein)
     rec(:,:,id1)=P*Opt.xopt*meany;
     if params.paraLoopOrr
+        t = getCurrentTask();
         DispMsg(params.verbose,['-- [Worker #',num2str(t.ID),'] Reconstruct orientation  #',num2str(id1),'/',num2str(params.nbOr),' done (',num2str(Opt.niter),' Iters).']);
     end
 end
