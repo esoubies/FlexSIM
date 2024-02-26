@@ -31,12 +31,20 @@ elseif strcmp(params.DataPath(end-3:end),'.nd2')
         y = nd2read(params.DataPath);
     end
 end
+% Set default parameters related to the treatment of temporal stacks
+if ~isfield(params,'frameRange'), params.frameRange=[]; end
+if ~isfield(params,'cstTimePatt'), params.cstTimePatt=0; end
+if ~isfield(params,'framePattEsti'), params.framePattEsti=[]; end
+if ~isfield(params,'doRefinement'), params.doRefinement=1; end
+if ~isempty(params.framePattEsti), assert(params.cstTimePatt==1,'If framePattEsti can be non empty only when cstTimePatt is true.'); end
+if params.cstTimePatt, assert(params.eqPh==1,'Currently cstTimePatt=1 is possible only with eqPh=1.'); end
 params.GPU=0;
 
 %% Pre-processing
 % - Reorder stack with FlexSIM conventions
 [y, wf] = OrderYandExtWF(y, params);                            % Reorder and extract data if necessary
-if isfield(params,'frameRange') && ~isempty(params.frameRange)  % Keep only frames specified by user
+if ~isempty(params.frameRange)  % Keep only frames specified by user
+    assert(all((params.frameRange>=1).*(params.frameRange<=size(y,4))),'Parameter frameRange is not compatible with the size of the data.')
     y=y(:,:,:,params.frameRange);             
     if ~isempty(wf), wf=wf(:,:,:,params.frameRange); end
 end
@@ -120,8 +128,39 @@ end
 DispMsg(params.verbose,'<strong>=== Patterns estimation</strong> ...');
 DispMsg(params.verbose,'---> Estimate sinusoidal patterns components ...');
 [k, phase] = EstimatePatterns(params, PosRoiPatt, y, 0, wf);
-if  isfield(params,'framePattEsti') && ~isempty(params.framePattEsti)
-    k=repmat(k,[1 1 params.nframes]);phase=repmat(phase,[1 1 params.nframes]);
+if params.cstTimePatt
+    med=median(phase,3);tt=cat(2,abs(phase-med),abs(phase+pi -med),abs(phase-pi-med));
+    [~,id]=min(tt,[],2);
+    phase_min=phase.*(id==1)+(phase+pi).*(id==2)+(phase-pi).*(id==3);
+    phase=repmat(mean(phase_min,3),[1 1 params.nframes]);
+    if params.displ > 0
+        cmap = colororder();
+        if isempty(params.framePattEsti), tt=1:params.nframes; else tt=params.framePattEsti; end 
+        figure;
+        subplot(1,2,1); set(gca,'fontsize',14);hold all;
+        leg={};
+        for ii=1:params.nbOr
+            plot(tt,reshape(k(ii,1,:),1,length(tt))','*','linewidth',2,'markersize',10,'color',cmap(ii,:));
+            plot(tt,reshape(k(ii,2,:),1,length(tt))','o','linewidth',2,'markersize',10,'color',cmap(ii,:));
+            plot(tt,repmat(mean(k(ii,1,:),3),[length(tt), 1]),'--','linewidth',2,'color',cmap(ii,:));
+            plot(tt,repmat(mean(k(ii,2,:),3),[length(tt), 1]),'-.','linewidth',2,'color',cmap(ii,:));
+            leg{end+1}=['Or #',num2str(ii),' kx'];
+            leg{end+1}=['Or #',num2str(ii),' ky'];
+            leg{end+1}=['Or #',num2str(ii),' mean kx'];
+            leg{end+1}=['Or #',num2str(ii),' mean ky'];
+        end
+        xlabel('Frames');title('Wavevector');legend(leg(:));grid;
+        subplot(1,2,2); set(gca,'fontsize',14);hold all; title('Phases');
+        leg={};
+        for ii=1:params.nbOr
+            plot(tt,reshape(phase_min(ii,1,:),1,length(tt))','*','linewidth',2,'markersize',10,'color',cmap(ii,:));hold all;
+            plot(tt,repmat(mean(phase_min(ii,1,:),3),[length(tt), 1]),'--','linewidth',2,'color',cmap(ii,:));
+            leg{end+1}=['Or #',num2str(ii),' ph-offset'];
+            leg{end+1}=['Or #',num2str(ii),' mean'];
+        end
+        xlabel('Frames'); ylabel('Phases');legend(leg(:));grid;
+    end    
+    k=repmat(mean(k,3),[1 1 params.nframes]);
 end
 
 % Displays

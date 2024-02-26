@@ -51,7 +51,7 @@ sz = size(y);                                      % Calculate size of ROI
 y = (y - min(y,[],1:3)) ./ (max(y,[],1:3) - min(y,[],1:3));     % Normalize stack images
 wf_stack= (wf_stack-min(wf_stack,[],1:3)) ./ (max(wf_stack,[],1:3) - min(wf_stack,[],1:3));
 
-if isfield(params,'framePattEsti') && ~isempty(params.framePattEsti)
+if ~isempty(params.framePattEsti)
     y = y(:,:,:,params.framePattEsti);
     wf_stack = wf_stack(:,:,:,params.framePattEsti);
 end
@@ -93,7 +93,11 @@ end
 
 %% Initialization via cross-corr
 if compute_k_init
-    DispMsg(params.verbose,'      Initialization: Cross-corr btw WF and data in Fourier...');
+    if params.doRefinement
+        DispMsg(params.verbose,'      Initialization: Cross-corr btw WF and data in Fourier...');
+    else
+        DispMsg(params.verbose,'      Cross-corr btw WF and data in Fourier...');
+    end
     OrientCount = 1;
     for idx = imgIdxs        
         idwf=min(size(wf_stack,3),OrientCount);
@@ -102,7 +106,7 @@ if compute_k_init
         [map,K1,K2] = CrossCorr(G(:,:,idx,:),wf(:,:,idwf,:), params);
         Jmap=-MaskFT(mean(abs(map).^2,3:length(sz)),FCut,params.ringRegionSearch);
 
-        DispMsg(params.verbose,['                          Extract initial wavevector...']);
+        DispMsg(params.verbose,['                          Extract wavevector...']);
         k_init(OrientCount, :)= ExtractLocMin(1,Jmap,K1,K2);
 
         if nargout==4  && compute_k_init % To output the initial phase estimate if required
@@ -122,8 +126,13 @@ if params.displ > 0
 end
 
 %% Refinement
-if nt==1, DispMsg(params.verbose,'      Refine initial wavevector and compute phases...');
-else,  DispMsg(params.verbose,'      Refine initial wavevector and compute phases for each time step.'); end
+if params.doRefinement
+    if nt==1, DispMsg(params.verbose,'      Refine initial wavevector and compute phases...');
+    else,  DispMsg(params.verbose,'      Refine initial wavevector and compute phases for each time step.'); end
+else
+    if nt==1, DispMsg(params.verbose,'      Compute phases...');
+    else,  DispMsg(params.verbose,'      Compute phases for each time step.'); end
+end
 OrientCount = 1; 
 for idx = imgIdxs
     if nt==1,  DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),' ...']);
@@ -131,7 +140,11 @@ for idx = imgIdxs
     idwf=min(size(wf_stack,3),OrientCount);
     parfor (idt = 1:nt,params.nbcores)
         if nt >1,  DispMsg(params.verbose,[' t',num2str(idt)],0); end
-        k_final(OrientCount, :,idt) = IterRefinementWavevec(k_init(OrientCount, :)',wf(:,:,idwf,idt),G(:,:,idx,idt),grids,OTF,sz(1:3),params);
+        if params.doRefinement
+            k_final(OrientCount, :,idt) = IterRefinementWavevec(k_init(OrientCount, :)',wf(:,:,idwf,idt),G(:,:,idx,idt),grids,OTF,sz(1:3),params);
+        else
+            k_final(OrientCount, :,idt)=k_init(OrientCount, :);
+        end
         ph_final(OrientCount, :,idt)=GetPhaseAndAmp(k_final(OrientCount, :,idt)',wf(:,:,idwf,idt),G(:,:,idx,idt),grids,OTF,sz(1:3),params);
     end
     if nt >1 && params.verbose, fprintf('\n'); end
