@@ -77,16 +77,16 @@ S=LinOpDownsample(szUp,downFact);
 % -- Regularization
 G=LinOpGrad(P.sizein,[1 2]);
 if params.regType==1      % Thikonov
-    R=1/prod(G.sizein)*CostL2(G.sizeout)*G;
+    R=gather(1/prod(G.sizein))*CostL2(G.sizeout)*G;
 elseif params.regType==2  % TV
-    R=1/prod(G.sizein)*CostHyperBolic(G.sizeout,1e-4,length(G.sizeout))*G;
+    R=gather(1/prod(G.sizein))*CostHyperBolic(G.sizeout,1e-4,length(G.sizeout))*G;
 elseif params.regType==3   % GR
-    R=1/prod(G.sizein)*CostGoodRoughness(G,1e-1);
+    R=gather(1/prod(G.sizein))*CostGoodRoughness(G,1e-1);
 end
 
 %% Cost and Optim
-rec=zeros([szUp(1:2),n1]);
-x=zeros(P.sizein);
+rec=zeros_([szUp(1:2),n1]);
+x=zeros_(P.sizein);
 if params.sepOrr
     y=reshape(y,[size(y,[1,2]),params.nbPh,params.nbOr]);
     patt=reshape(patt,[size(patt,[1,2]),params.nbPh,params.nbOr]);
