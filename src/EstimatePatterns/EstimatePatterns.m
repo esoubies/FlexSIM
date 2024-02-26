@@ -39,8 +39,8 @@ function [k_final, ph_final, k_init, ph_init] = EstimatePatterns(params,PosRoiPa
 %% Preprocessing of stack & initialization of useful variables
 % Crop to the ROI, keeping the original size before
 if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)   % Detect ROI and Crop to ROI
-    tmp_y=zeros([params.SzRoiPatt,params.SzRoiPatt,size(y,[3,4])]);
-    tmp_wf=zeros([params.SzRoiPatt,params.SzRoiPatt,size(wf_stack,[3,4])]);
+    tmp_y=zeros([params.SzRoiPatt,params.SzRoiPatt,size(y,3),size(y,4)]);
+    tmp_wf=zeros([params.SzRoiPatt,params.SzRoiPatt,size(wf_stack,3),size(wf_stack,4)]);
     for ii=1:params.nframes
         tmp_y(:,:,:,ii) = y(PosRoiPatt(ii,1):PosRoiPatt(ii,1)+params.SzRoiPatt-1,PosRoiPatt(ii,2):PosRoiPatt(ii,2)+params.SzRoiPatt-1,:,ii);
         tmp_wf(:,:,:,ii) = wf_stack(PosRoiPatt(ii,1):PosRoiPatt(ii,1)+params.SzRoiPatt-1,PosRoiPatt(ii,2):PosRoiPatt(ii,2)+params.SzRoiPatt-1,:,ii);
