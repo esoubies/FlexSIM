@@ -21,11 +21,8 @@ function rec = Reconstruct(y,patt,params)
 
 %% Initial computations
 if params.GPU
-    useGPU(1)
     y=gpuCpuConverter(y);
     patt=gpuCpuConverter(patt);
-else
-    useGPU(0)
 end
 
 sz=size(y);

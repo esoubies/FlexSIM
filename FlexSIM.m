@@ -20,6 +20,11 @@ function FlexSIM(params)
 
 warning('off','all')
 time0=tic;
+if params.GPU
+    useGPU(1);
+else
+    useGPU(0);
+end
 %% Routinary checks + Data loading
 CheckParams(params);                       % Check conformity of parameters
 if strcmp(params.DataPath(end-3:end),'.tif')
