@@ -134,11 +134,17 @@ else
     else,  DispMsg(params.verbose,'      Compute phases for each time step.'); end
 end
 OrientCount = 1; 
+k_final = zeros_([params.nbOr,2,nt]);
+if params.eqPh
+    ph_final = zeros_([params.nbOr,1,nt]);
+else
+    ph_final = zeros_([params.nbPh,1,nt]);
+end
 for idx = imgIdxs
     if nt==1,  DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),' ...']);
     else DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),', time step:'],0); end
     idwf=min(size(wf_stack,3),OrientCount);
-    parfor (idt = 1:nt,params.nbcores)
+    parfor (idt = 1:nt,params.nbcores) 
         wf_i=gpuCpuConverter(wf(:,:,idwf,idt));
         g_i=gpuCpuConverter(G(:,:,idx,idt));
         if nt >1,  DispMsg(params.verbose,[' t',num2str(idt)],0); end

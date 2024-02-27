@@ -108,6 +108,9 @@ if params.parallelProcess
     params.paraLoopFrames=(params.nframes>1);
 else
     params.nbcores=0;params.paraLoopOrr=0;params.paraLoopFrames=0;
+    if ~isempty(gcp('nocreate'))
+       delete(gcp('nocreate'));
+    end
 end
 
 % -- Displays
@@ -214,9 +217,9 @@ parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
     if params.sav 
         if params.nframes>1
             saveastiff(rec(:,:,it),[params.DataPath(1:end-4),'_Rec_Frame_',num2str(it),'.tif']);
-            saveastiff(patterns,[params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
+            saveastiff(gather(patterns),[params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
         else
-            saveastiff(patterns,[params.DataPath(1:end-4),'_Patt.tif']);
+            saveastiff(gather(patterns),[params.DataPath(1:end-4),'_Patt.tif']);
         end
     end
     if params.nframes>1
@@ -245,7 +248,7 @@ if params.sav
             patt(:,:,:,it)=loadtiff([params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
             delete([params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
         end
-        saveastiff(reshape(patt,[size(patt,1),size(patt,2),prod(size(patt,3),size(patt,4))]),[params.DataPath(1:end-4),'_Patt.tif']);
+        saveastiff(reshape(patt,[size(patt,1),size(patt,2),size(patt,3)*size(patt,4)]),[params.DataPath(1:end-4),'_Patt.tif']);
     end
 end
 DispMsg(params.verbose,['<strong>=== FlexSIM END. Elapsed time (s): ',num2str(toc(time0)),' </strong>']);
