@@ -245,7 +245,7 @@ if params.sav
             patt(:,:,:,it)=loadtiff([params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
             delete([params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
         end
-        saveastiff(reshape(patt,[size(patt,[1,2]),prod(size(patt,[3,4]))]),[params.DataPath(1:end-4),'_Patt.tif']);
+        saveastiff(reshape(patt,[size(patt,1),size(patt,2),prod(size(patt,3),size(patt,4))]),[params.DataPath(1:end-4),'_Patt.tif']);
     end
 end
 DispMsg(params.verbose,['<strong>=== FlexSIM END. Elapsed time (s): ',num2str(toc(time0)),' </strong>']);
