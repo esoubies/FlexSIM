@@ -36,11 +36,9 @@ else
     [X,Y]=meshgrid(0:2*sz(2)-1,0:2*sz(1)-1); X=X*params.res/2; Y=Y*params.res/2;
 end
 patt = zeros(2*sz(1), 2*sz(2), params.nbOr*params.nbPh,size(Lf,4)); 
-if params.GPU
-    X = gpuArray(X); 
-    Y = gpuArray(Y);
-    patt = gpuArray(patt);
-end
+X = gpuCpuConverter(X); 
+Y = gpuCpuConverter(Y);
+patt = gpuCpuConverter(patt);
 
 
 for it=1:size(Lf,4)

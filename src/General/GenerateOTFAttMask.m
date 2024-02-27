@@ -26,9 +26,11 @@ lv = ((1:sz(1)) - floor(sz(1)/2)-1)/sz(1);
 lh = ((1:sz(2)) - floor(sz(2)/2)-1)/sz(2);
 [X,Y]=meshgrid(lh,lv);
 [~,rho]=cart2pol(X,Y);
+X=gpuCpuConverter(X);
+Y=gpuCpuConverter(Y);
+rho=gpuCpuConverter(rho);
 
 % Generate a normalized OTF
 fc=2*Na/lamb*res;        % cut-off frequency
 OTFatt=ifftshift((1-str*exp(-rho.^2/(2*(width*fc)^2))));
-
 end

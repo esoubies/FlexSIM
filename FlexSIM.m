@@ -138,7 +138,13 @@ if params.cstTimePatt
     phase_min=phase.*(id==1)+(phase+pi).*(id==2)+(phase-pi).*(id==3);
     phase=repmat(mean(phase_min,3),[1 1 params.nframes]);
     if params.displ > 0
-        cmap = colororder();
+        cmap=[0 0.4470 0.7410
+        0.8500 0.3250 0.0980
+        0.9290 0.6940 0.1250
+        0.4940    0.1840    0.5560
+        0.4660    0.6740    0.1880
+        0.3010    0.7450    0.9330
+        0.6350    0.0780    0.1840];
         if isempty(params.framePattEsti), tt=1:params.nframes; else tt=params.framePattEsti; end 
         figure;
         subplot(1,2,1); set(gca,'fontsize',14);hold all;

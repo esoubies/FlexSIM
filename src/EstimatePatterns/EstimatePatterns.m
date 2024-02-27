@@ -74,11 +74,11 @@ imgIdxs = reshape(imgIdxs, [params.nbPh, params.nbOr]);
 grids.X = grids.I*params.res; grids.Y=grids.J*params.res;     % Scaled (by resolution) mesh 
 OTF = GenerateOTF(params.Na, params.lamb, sz, params.res, 1); % Computation of the OTF
 if params.GPU
-    OTF = gpuArray(OTF); 
-    grids.I = gpuArray(grids.I);
-    grids.J = gpuArray(grids.J);
-    grids.X = gpuArray(grids.X);
-    grids.Y = gpuArray(grids.Y); 
+    OTF = gpuCpuConverter(OTF); 
+    grids.I = gpuCpuConverter(grids.I);
+    grids.J = gpuCpuConverter(grids.J);
+    grids.X = gpuCpuConverter(grids.X);
+    grids.Y = gpuCpuConverter(grids.Y); 
 end
 
 %% Preprocess
@@ -139,13 +139,15 @@ for idx = imgIdxs
     else DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),', time step:'],0); end
     idwf=min(size(wf_stack,3),OrientCount);
     parfor (idt = 1:nt,params.nbcores)
+        wf_i=gpuCpuConverter(wf(:,:,idwf,idt));
+        g_i=gpuCpuConverter(G(:,:,idx,idt));
         if nt >1,  DispMsg(params.verbose,[' t',num2str(idt)],0); end
         if params.doRefinement
-            k_final(OrientCount, :,idt) = IterRefinementWavevec(k_init(OrientCount, :)',wf(:,:,idwf,idt),G(:,:,idx,idt),grids,OTF,sz(1:3),params);
+            k_final(OrientCount, :,idt) = IterRefinementWavevec(k_init(OrientCount, :)',wf_i,g_i,grids,OTF,sz(1:3),params);
         else
             k_final(OrientCount, :,idt)=k_init(OrientCount, :);
         end
-        ph_final(OrientCount, :,idt)=GetPhaseAndAmp(k_final(OrientCount, :,idt)',wf(:,:,idwf,idt),G(:,:,idx,idt),grids,OTF,sz(1:3),params);
+        ph_final(OrientCount, :,idt)=GetPhaseAndAmp(k_final(OrientCount, :,idt)',wf_i,g_i,grids,OTF,sz(1:3),params);
     end
     if nt >1 && params.verbose, fprintf('\n'); end
 

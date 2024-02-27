@@ -85,8 +85,8 @@ end
 rec=zeros_([szUp(1:2),n1]);
 x=zeros_(P.sizein);
 if params.sepOrr
-    y=reshape(y,[size(y,[1,2]),params.nbPh,params.nbOr]);
-    patt=reshape(patt,[size(patt,[1,2]),params.nbPh,params.nbOr]);
+    y=reshape(y,[size(y,1),size(y,2),params.nbPh,params.nbOr]);
+    patt=reshape(patt,[size(patt,1),size(patt,2),params.nbPh,params.nbOr]);
 end
 parfor (id1 = 1:n1,params.nbcores*params.paraLoopOrr)
     if params.paraLoopOrr

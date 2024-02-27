@@ -25,18 +25,17 @@ function Lf = EstimateLowFreqPatterns(params,y,wf_stack,filt_sz)
 
 % -- Pre-computations
 sz=size(y);
-h = fspecial('gaussian',min(min(sz(1:2)),6*filt_sz),filt_sz);
+h = gpuCpuConverter(fspecial('gaussian',min(min(sz(1:2)),6*filt_sz),filt_sz));
 
 % -- Loop over orientations and phases
-Lf=zeros([sz(1:2)*2,sz(3:end)]);
-if params.GPU
-    Lf = gpuArray(Lf);
-end
+Lf=zeros_([sz(1:2)*2,sz(3:end)]);
 for it=1:size(y,4)
     for ii=1:params.nbOr
         for jj=1:params.nbPh
             id=(ii-1)*params.nbPh+jj;
-            y_filt = imfilter(y(:,:,id,it),h,'symmetric')./max(imfilter(wf_stack(:,:,min(ii,size(wf_stack,3)),it),h,'symmetric'),eps);
+            wf_i=wf_stack(:,:,min(ii,size(wf_stack,3),it);
+            y_i=y(:,:,id,it);
+            y_filt = imfilter(y_i,h,'symmetric')./max(imfilter(wf_i,h,'symmetric'),eps);
             Lf(:,:,id,it)=imresize(y_filt,sz(1:2)*2);
         end
     end

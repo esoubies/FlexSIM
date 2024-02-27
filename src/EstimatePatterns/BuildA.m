@@ -48,11 +48,7 @@ end
 % If there is the assumption of equally spaced phases, build according system
 if params.eqPh
     % Preallocate A for performance
-    if params.GPU
-        A= zeros([params.nbPh*numel(grids.X(:)), 2],'double','gpuArray');
-    else
-        A = zeros([params.nbPh*numel(grids.X(:)), 2]);
-    end
+    A = zeros_([params.nbPh*numel(grids.X(:)), 2]);
     
     A(1:numel(grids.X(:)), :) = [a1(:),a2(:)];
     for i = 2:params.nbPh
