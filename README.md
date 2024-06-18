@@ -93,7 +93,7 @@ This folder contains scripts to download and reconstruct the 20 open 2D-SIM data
 * download raw data and set FlexSIM parameters
 * run FlexSIM.m function
 
-The 20 open 2D-SIM datasets are sourced from 7 publications including **FairSIM** [2], **OpenSIM** [3], **HiFi-SIM** [4], **ML-SIM** [5], **JSFR-SIM** [6], **Direct-SIM** [7], and **PCA-SIM** [8]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
+The 20 open 2D-SIM datasets are sourced from 7 publications including **FairSIM** [1], **OpenSIM** [2], **HiFi-SIM** [3], **ML-SIM** [4], **JSFR-SIM** [5], **Direct-SIM** [6], and **PCA-SIM** [7]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
 Each subfolder of the Example folder corresponds to one dataset with the following naming convention
 * _Reference_SIM-type_Bio-structure_
 
