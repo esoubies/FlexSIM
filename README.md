@@ -3,7 +3,7 @@
 FlexSIM, for *flexible* SIM reconstruction, aims at providing reliable SIM reconstructions for a variety of SIM data, going from ``ideal'' ones acquired under standardized protocols and configurations, to ones obtained under more challenging settings and subject to reconstruction artifacts. 
 More details can be found in the following paper:
 
-<a href="https://onlinelibrary.wiley.com/doi/10.1111/jmi.13344" target="_blank">Surpassing Light Inhomogeneities in Structured-Illumination Microscopy with FlexSIM.</a>, 
+<a href="https://onlinelibrary.wiley.com/doi/10.1111/jmi.13344" target="_blank">Surpassing Light Inhomogeneities in Structured-Illumination Microscopy with FlexSIM.</a>,  <br />
 Journal of Microscopy (2024), <br />
 E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D. Sage.
 
