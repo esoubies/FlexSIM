@@ -9,7 +9,8 @@ E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D
 
 ## News
 
-* 22 Feb 2024: Integration of a pure Matlab version of the VMLMB optimization method in GlobalBioIm which is used in FlexSIM. As such, no need anymore to compile mex files.
+* March 2024: New parameters to ease the handling of temporal stacks.
+* Feb 2024: Integration of a pure Matlab version of the VMLMB optimization method in GlobalBioIm which is used in FlexSIM. As such, no need anymore to compile mex files.
 
 ## Getting started 
 
@@ -21,7 +22,6 @@ The repository is organized as follows.
 * File **InstallFlexSIM.m**: FlexSIM installation script
 * File **FlexSIM.m**: Main function of FlexSIM, the one that needs to be run with parameters as input (see provided examples)
 * Folder **src**: Matlab source files of FlexSIM
-* Folder **Simulation**: Matlab scripts for patterns estimation experiments in [1]
 * Folder **Examples**:  Scripts to download and reconstruct the 20 open datasets described in Table S1 of [1] (see [Examples](#examples) below).
 
 ## FlexSIM parameters
@@ -35,6 +35,7 @@ The repository is organized as follows.
 | displ | *From 0 to 2 with increasing number of display.* |
 | verbose | *From 0 to 2 with increasing text displays.* |
 | sav | *Boolean on whether to save the reconstructed image and estimated patterns.* |
+| GPU | *Boolean on whether to use GPU or not* |
 | parallelProcess | *Boolean on whether to use parallel computing. Requires the parallel computing toolbox.*  |
 
 ### Physical parameters and pre-processing
@@ -60,12 +61,21 @@ The repository is organized as follows.
 
 | Parameter | Description |
 |------|------|
-|  SzRoiPatt  |  *Size (px) of the ROI for pattern estimation (position automatically detected to maximize the intensity within the ROI).*  |
+|  SzRoiPatt  |  *Size (px) of the ROI for pattern estimation.*  |
+|  posRoiPatt | *Position of the top-left corner of the ROI for pattern estimation. (if empty automatically detected to maximize the intensity within the ROI)* |
 |  maskWF |    *Radius (as a factor of the cutoff freq.) of the disk used to mask central Fourier frequencies.* |
 |  ringRegionSearch |  *Lower and upper limits of Fourier ring region to search peaks (given as factor of the cutoff freq.).*  |
 |  eqPh |  *Boolean, if true equally-spaced phases are assumed.*  |
 |  estiPattLowFreq | *Boolean, if true, estimate the low-freq. component of the patterns.*   |
+|  doRefinement | *If false, do not performs the refinement step* |
 |  pattAmp | *Amplitude $a$ of the pattern (to be adjusted manually).*   | 
+
+### Temporal stack
+| Parameter | Description |
+|------|------|
+|  frameRange | *To treat only a subset of temporal frames of the stack (e.g., [1;5]).* |
+|  cstTimePatt | *If true, common patterns are used for all frames.* |
+|  framePattEsti | *To use only a subset of frames for estimating a common pattern to all frames (empty to use all frames). Only used when cstTimePatt =1.* |
 
 ### Image reconstruction
 
@@ -118,5 +128,5 @@ This program is free software: you can redistribute it and/or modify it under th
 
 Whenever you present or publish results that are based on this repository, please cite:
 
-Surpassing Challenges in Structured-Illumination Microscopy with FlexSIM, Preprint (2023), <br />
-E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D. Sage.
+E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D. Sage. Surpassing Light Inhomogeneities in Structured-Illumination Microscopy with FlexSIM. Journal of Microscopy, 2024.
+
