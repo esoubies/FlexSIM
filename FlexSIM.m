@@ -109,7 +109,7 @@ end
 % -- Displays
 if params.displ > 0
     id=1;
-    DisplayStack(y(:,:,:,id),'SIM Raw data',-1);
+    ff = DisplayStack(y(:,:,:,id),'SIM Raw data',-1); figure(ff);
     leg={};
     if ~isempty(params.SzRoiBack)
         rectangle('Position',[PosRoiBack(2) PosRoiBack(1) params.SzRoiBack params.SzRoiBack],'EdgeColor','r');
