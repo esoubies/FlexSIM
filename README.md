@@ -42,9 +42,10 @@ The repository is organized as follows.
 
 | Parameter | Description |
 |------|------|
-|  | ----  **Reconstruct on ROI** | 
+|  | ----  **Reconstruct on ROI / specific frames** | 
 | SzRoi | *Size (px) of the ROI of the data considered for reconstruction* |
 | posRoi | *Position of the top-left corner of the ROI.* |
+|  frameRange | *To treat only a subset of temporal frames of the stack (e.g., [1;5]).* |
 |  | ---- **Patterns**|
 | StackOrder | *Stack order: ap, pa, apw, paw, wap, wpa, axp, pxa (with a=angles, p=phases, w=widefield). The last two correspond to 9x9 montage with angles (resp phases) in row axp (resp pxa).* |
 | nbOr | *Number of orientations.* |
@@ -68,12 +69,7 @@ The repository is organized as follows.
 |  eqPh |  *Boolean, if true equally-spaced phases are assumed.*  |
 |  estiPattLowFreq | *Boolean, if true, estimate the low-freq. component of the patterns.*   |
 |  doRefinement | *If false, do not performs the refinement step* |
-|  pattAmp | *Amplitude $a$ of the pattern (to be adjusted manually).*   | 
-
-### Temporal stack
-| Parameter | Description |
-|------|------|
-|  frameRange | *To treat only a subset of temporal frames of the stack (e.g., [1;5]).* |
+|  pattAmp | *Amplitude a of the pattern (to be adjusted manually).*   | 
 |  cstTimePatt | *If true, common patterns are used for all frames.* |
 |  framePattEsti | *To use only a subset of frames for estimating a common pattern to all frames (empty to use all frames). Only used when cstTimePatt =1.* |
 
