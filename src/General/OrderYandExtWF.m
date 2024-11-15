@@ -19,7 +19,7 @@ function [y, wf]  = OrderYandExtWF(y, params)
 %--------------------------------------------------------------------------
 
 sz=size(y);
-if strcmp(params.StackOrder,"axp")
+if strcmp(params.StackOrder,'axp')
     assert(mod(sz(1)/params.nbOr,1)==0 && mod(sz(2)/params.nbPh,1)==0,'(x,y) size of raw data should be multiple of nbOr and nbPh  when StackOrder is axp or axp');
     nimgs=params.nbOr*params.nbPh;
     if length(sz)==2, nt=1; else nt=sz(3); end
@@ -35,7 +35,7 @@ if strcmp(params.StackOrder,"axp")
         end
     end
     wf=[];y=tmp;
-elseif strcmp(params.StackOrder,"pxa")
+elseif strcmp(params.StackOrder,'pxa')
     assert(mod(sz(1)/params.nbPh,1)==0 && mod(sz(2)/params.nbOr,1)==0,'(x,y) size of raw data should be multiple of nbPh and nbOr when StackOrder is axp or pxa');
     nimgs=params.nbOr*params.nbPh;
     if length(sz)==2, nt=1; else nt=sz(3); end
@@ -52,7 +52,7 @@ elseif strcmp(params.StackOrder,"pxa")
     end
     wf=[];y=tmp;
 else
-    if isempty(strfind(params.StackOrder,"w"))
+    if isempty(strfind(params.StackOrder,'w'))
         nimgs=params.nbOr*params.nbPh;
         nt=sz(3)/nimgs;
         assert(mod(nt,1)==0,'Number of raw images is not a multiple of nbOr*nbPh');
@@ -64,27 +64,27 @@ else
 
     y=reshape(y,[sz(1:2),nimgs,nt]);
     % Check the acquisition convention of the user and convert to ap(w)
-    switch string(params.StackOrder)
-        case "pa"
+    switch params.StackOrder
+        case 'pa'
             wf=[];
             % Do nothing
-        case "ap"
+        case 'ap'
             wf=[];
             % Reorder stack in angle-phase mode - reshape(reshape(1:9, [3, 3])', 1, [])
             newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []);
             y(:,:,1:params.nbOr*params.nbPh,:) = y(:,:,newOrder,:);
-        case "apw"
+        case 'apw'
             wf = y(:,:,end,:);
             y = y(:,:,1:end-1,:);
             newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []);
             y(:,:,1:params.nbOr*params.nbPh,:) = y(:,:,newOrder,:);
-        case "paw"
+        case 'paw'
             wf = y(:,:,end,:);
             y = y(:,:,1:end-1,:);
-        case "wpa"
+        case 'wpa'
             wf = y(:,:,1,:);
             y = y(:,:,2:end,:);
-        case "wap"
+        case 'wap'
             wf = y(:,:,1,:);
             y = y(:,:,2:end,:);
             newOrder = reshape(reshape(1:params.nbOr*params.nbPh, [params.nbOr, params.nbPh])', 1, []);

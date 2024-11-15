@@ -16,6 +16,8 @@ function y = RemoveBackground(y,PosRoiBack,SzRoi)
 %--------------------------------------------------------------------------
 
 roi=y(PosRoiBack(1):PosRoiBack(1)+SzRoi-1,PosRoiBack(2):PosRoiBack(2)+SzRoi-1,:);
-y=max(y-mean(roi,[1 2]),0);
+for ii = 1: size(y,3)
+    y(:,:,ii) = max(y(:,:,ii) - mean(mean(roi(:,:,ii),1),2),0);
+end
 
 end

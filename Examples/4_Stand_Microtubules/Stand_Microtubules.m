@@ -73,7 +73,7 @@ params.maxIt = 100;               % Maximum number of iterations (stopping crite
 params.stepTol = 5e-4;            % Relative error tolerance between two iterates (stopping criteria)
 
 %% Run FlexSIM
-run(strcat(params.pathToFlexSIM, '/InstallFlexSIM.m')) % Take care of paths & GlobalBioIm
+run(strcat(params.pathToFlexSIM, 'InstallFlexSIM.m')) % Take care of paths & GlobalBioIm
 FlexSIM(params);                                 % Run FlexSIM
 
 
