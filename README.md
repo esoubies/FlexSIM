@@ -9,7 +9,7 @@ E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D
 
 ## News
 
-* Nov 2024*: FlexSIM is now compatible with GPU computation (with Matlab Parrallel Toolbox). Set params.GPU = 1 and it's done!
+* Nov 2024: FlexSIM is now compatible with GPU computation (with Matlab Parrallel Toolbox). Set params.GPU = 1 and it's done!
 * March 2024: New parameters to ease the handling of temporal stacks.
 * Feb 2024: Integration of a pure Matlab version of the VMLMB optimization method in GlobalBioIm which is used in FlexSIM. As such, no need anymore to compile mex files.
 
