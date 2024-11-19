@@ -138,7 +138,7 @@ k_final = zeros_([params.nbOr,2,nt]);
 if params.eqPh
     ph_final = zeros_([params.nbOr,1,nt]);
 else
-    ph_final = zeros_([params.nbPh,1,nt]);
+    ph_final = zeros_([params.nbOr,params.nbPh,nt]);
 end
 for idx = imgIdxs
     if nt==1,  DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),' ...']);
