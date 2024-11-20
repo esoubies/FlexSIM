@@ -36,13 +36,17 @@ elseif strcmp(params.DataPath(end-3:end),'.nd2')
         y = nd2read(params.DataPath);
     end
 end
-% Set default parameters related to the treatment of temporal stacks
+
+% Last added options (error messages to be improved in future)
 if ~isfield(params,'frameRange'), params.frameRange=[]; end
 if ~isfield(params,'cstTimePatt'), params.cstTimePatt=0; end
 if ~isfield(params,'framePattEsti'), params.framePattEsti=[]; end
 if ~isfield(params,'doRefinement'), params.doRefinement=1; end
-if ~isempty(params.framePattEsti), assert(params.cstTimePatt==1,'If framePattEsti can be non empty only when cstTimePatt is true.'); end
+if ~isfield(params,'rollAvg'), params.rollAvg=0; end
+if ~isempty(params.framePattEsti), assert(params.cstTimePatt==1,'framePattEsti can be non empty only when cstTimePatt is true.'); end
+if params.rollAvg>0, assert(params.cstTimePatt==0,'If rollAvg >0, then cstTimePatt should be false.'); end
 if params.cstTimePatt, assert(params.eqPh==1,'Currently cstTimePatt=1 is possible only with eqPh=1.'); end
+if params.rollAvg>0, assert(params.eqPh==1,'Currently rollAvg is possible only with eqPh=1.'); end
 
 %% Pre-processing
 % - Reorder stack with FlexSIM conventions
@@ -134,46 +138,24 @@ end
 % -- Estimate sinusoidal patterns components
 DispMsg(params.verbose,'<strong>=== Patterns estimation</strong> ...');
 DispMsg(params.verbose,'---> Estimate sinusoidal patterns components ...');
-[k, phase] = EstimatePatterns(params, PosRoiPatt, y, 0, wf);
-if params.cstTimePatt
+if params.nframes>1, DispMsg(params.verbose,'    - Frame: ',0); end
+parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
+    if params.nframes>1, DispMsg(params.verbose,[num2str(it),' '],0); end
+    [k(:,:,it), phase(:,:,it)] = EstimatePatterns(params, PosRoiPatt, y(:,:,:,it), 0, wf(:,:,:,it));
+end
+if params.nframes>1
     med=median(phase,3);tt=cat(2,abs(phase-med),abs(phase+pi -med),abs(phase-pi-med));
     [~,id]=min(tt,[],2);
-    phase_min=phase.*(id==1)+(phase+pi).*(id==2)+(phase-pi).*(id==3);
-    phase=repmat(mean(phase_min,3),[1 1 params.nframes]);
-    if params.displ > 0
-        cmap=[0 0.4470 0.7410
-        0.8500 0.3250 0.0980
-        0.9290 0.6940 0.1250
-        0.4940    0.1840    0.5560
-        0.4660    0.6740    0.1880
-        0.3010    0.7450    0.9330
-        0.6350    0.0780    0.1840];
-        if isempty(params.framePattEsti), tt=1:params.nframes; else tt=params.framePattEsti; end 
-        figure;
-        subplot(1,2,1); set(gca,'fontsize',14);hold all;
-        leg={};
-        for ii=1:params.nbOr
-            plot(tt,reshape(k(ii,1,:),1,length(tt))','*','linewidth',2,'markersize',10,'color',cmap(ii,:));
-            plot(tt,reshape(k(ii,2,:),1,length(tt))','o','linewidth',2,'markersize',10,'color',cmap(ii,:));
-            plot(tt,repmat(mean(k(ii,1,:),3),[length(tt), 1]),'--','linewidth',2,'color',cmap(ii,:));
-            plot(tt,repmat(mean(k(ii,2,:),3),[length(tt), 1]),'-.','linewidth',2,'color',cmap(ii,:));
-            leg{end+1}=['Or #',num2str(ii),' kx'];
-            leg{end+1}=['Or #',num2str(ii),' ky'];
-            leg{end+1}=['Or #',num2str(ii),' mean kx'];
-            leg{end+1}=['Or #',num2str(ii),' mean ky'];
-        end
-        xlabel('Frames');title('Wavevector');legend(leg(:));grid;
-        subplot(1,2,2); set(gca,'fontsize',14);hold all; title('Phases');
-        leg={};
-        for ii=1:params.nbOr
-            plot(tt,reshape(phase_min(ii,1,:),1,length(tt))','*','linewidth',2,'markersize',10,'color',cmap(ii,:));hold all;
-            plot(tt,repmat(mean(phase_min(ii,1,:),3),[length(tt), 1]),'--','linewidth',2,'color',cmap(ii,:));
-            leg{end+1}=['Or #',num2str(ii),' ph-offset'];
-            leg{end+1}=['Or #',num2str(ii),' mean'];
-        end
-        xlabel('Frames'); ylabel('Phases');legend(leg(:));grid;
-    end    
-    k=repmat(mean(k,3),[1 1 params.nframes]);
+    phase_est=phase.*(id==1)+(phase+pi).*(id==2)+(phase-pi).*(id==3);
+    k_est=k;
+    if params.cstTimePatt       
+        phase=repmat(mean(phase_est,3),[1 1 params.nframes]);        
+        k=repmat(mean(k,3),[1 1 params.nframes]);
+    elseif params.rollAvg >0
+        phase = movmean(phase_est,params.rollAvg,3) ;
+        k = movmean(k,params.rollAvg,3) ;
+    end
+    if params.displ > 0, DisplayEvolPattParams(params,k_est,phase_est,k,phase,-1); end
 end
 
 % Displays

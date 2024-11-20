@@ -41,7 +41,7 @@ function [k_final, ph_final, k_init, ph_init] = EstimatePatterns(params,PosRoiPa
 if isfield(params,'SzRoiPatt') && ~isempty(params.SzRoiPatt)   % Detect ROI and Crop to ROI
     tmp_y=zeros([params.SzRoiPatt,params.SzRoiPatt,size(y,3),size(y,4)]);
     tmp_wf=zeros([params.SzRoiPatt,params.SzRoiPatt,size(wf_stack,3),size(wf_stack,4)]);
-    for ii=1:params.nframes
+    for ii=1:size(y,4)
         tmp_y(:,:,:,ii) = y(PosRoiPatt(ii,1):PosRoiPatt(ii,1)+params.SzRoiPatt-1,PosRoiPatt(ii,2):PosRoiPatt(ii,2)+params.SzRoiPatt-1,:,ii);
         tmp_wf(:,:,:,ii) = wf_stack(PosRoiPatt(ii,1):PosRoiPatt(ii,1)+params.SzRoiPatt-1,PosRoiPatt(ii,2):PosRoiPatt(ii,2)+params.SzRoiPatt-1,:,ii);
     end
@@ -55,7 +55,7 @@ if ~isempty(params.framePattEsti)
     y = y(:,:,:,params.framePattEsti);
     wf_stack = wf_stack(:,:,:,params.framePattEsti);
 end
-nt=size(y,4);                                      % Number of time steps
+nt=params.nframes;                                    % Number of time steps
 
 if ~gather(k_init)
     compute_k_init=true;
@@ -82,7 +82,7 @@ if params.GPU
 end
 
 %% Preprocess
-DispMsg(params.verbose,'      Preprocess: Remove WF and mask...');
+if nt==1, DispMsg(params.verbose,'      Preprocess: Remove WF and mask...'); end
 G=zeros(size(y));wf=zeros(size(wf_stack));
 OrientCount = 1;
 for idx = imgIdxs
@@ -93,20 +93,22 @@ end
 
 %% Initialization via cross-corr
 if compute_k_init
-    if params.doRefinement
-        DispMsg(params.verbose,'      Initialization: Cross-corr btw WF and data in Fourier...');
-    else
-        DispMsg(params.verbose,'      Cross-corr btw WF and data in Fourier...');
+    if nt==1,
+        if params.doRefinement
+            DispMsg(params.verbose,'      Initialization: Cross-corr btw WF and data in Fourier...');
+        else
+            DispMsg(params.verbose,'      Cross-corr btw WF and data in Fourier...');
+        end
     end
     OrientCount = 1;
     for idx = imgIdxs        
         idwf=min(size(wf_stack,3),OrientCount);
 
-        DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),': Cross-correl btw WF and data in Fourier...']);
+        if nt==1, DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),': Cross-correl btw WF and data in Fourier...']); end
         [map,K1,K2] = CrossCorr(G(:,:,idx,:),wf(:,:,idwf,:), params);
         Jmap=-MaskFT(mean(abs(map).^2,3:length(sz)),FCut,params.ringRegionSearch);
 
-        DispMsg(params.verbose,['                          Extract wavevector...']);
+        if nt==1,  DispMsg(params.verbose,['                          Extract wavevector...']); end
         k_init(OrientCount, :)= ExtractLocMin(1,Jmap,K1,K2);
 
         if nargout==4  && compute_k_init % To output the initial phase estimate if required
@@ -120,34 +122,30 @@ if compute_k_init
 end
 
 % Displays
-if params.displ > 0
+if params.displ > 0 && nt==1
     % - Displays related to estimated parameters
     fig_patt=DisplayPattParams(y(:,:,:,1),params,k_init,[],-1,0,'Initial estimated wavevectors');
 end
 
 %% Refinement
 if params.doRefinement
-    if nt==1, DispMsg(params.verbose,'      Refine initial wavevector and compute phases...');
-    else,  DispMsg(params.verbose,'      Refine initial wavevector and compute phases for each time step.'); end
+    if nt==1, DispMsg(params.verbose,'      Refine initial wavevector and compute phases...');end
 else
-    if nt==1, DispMsg(params.verbose,'      Compute phases...');
-    else,  DispMsg(params.verbose,'      Compute phases for each time step.'); end
+    if nt==1, DispMsg(params.verbose,'      Compute phases...'); end
 end
 OrientCount = 1; 
-k_final = zeros_([params.nbOr,2,nt]);
+k_final = zeros_([params.nbOr,2,size(y,4)]);
 if params.eqPh
-    ph_final = zeros_([params.nbOr,1,nt]);
+    ph_final = zeros_([params.nbOr,1,size(y,4)]);
 else
-    ph_final = zeros_([params.nbOr,params.nbPh,nt]);
+    ph_final = zeros_([params.nbOr,params.nbPh,size(y,4)]);
 end
 for idx = imgIdxs
-    if nt==1,  DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),' ...']);
-    else DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),', time step:'],0); end
+    if nt==1,  DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),' ...']); end
     idwf=min(size(wf_stack,3),OrientCount);
-    parfor (idt = 1:nt,params.nbcores) 
+    for idt = 1:1
         wf_i=gpuCpuConverter(wf(:,:,idwf,idt));
         g_i=gpuCpuConverter(G(:,:,idx,idt));
-        if nt >1,  DispMsg(params.verbose,[' t',num2str(idt)],0); end
         if params.doRefinement
             k_final(OrientCount, :,idt) = IterRefinementWavevec(k_init(OrientCount, :)',wf_i,g_i,grids,OTF,sz(1:3),params);
         else
@@ -155,10 +153,11 @@ for idx = imgIdxs
         end
         ph_final(OrientCount, :,idt)=GetPhaseAndAmp(k_final(OrientCount, :,idt)',wf_i,g_i,grids,OTF,sz(1:3),params);
     end
-    if nt >1 && params.verbose, fprintf('\n'); end
 
     OrientCount=OrientCount+1;
 end
 
+if params.displ > 0 && nt==1
 close(fig_patt);
+end
 end
