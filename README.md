@@ -9,6 +9,7 @@ E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D
 
 ## News
 
+* Dec 2024: The handling of temporal stacks has been improved. A new parameter *eqOrr* has been introduced to impose a soft constraint of equally spaced orientations during patterns estimation. (see parameters below).
 * Nov 2024: FlexSIM is now compatible with GPU computation (with Matlab Parrallel Toolbox). Set params.GPU = 1 and it's done!
 * March 2024: New parameters to ease the handling of temporal stacks.
 * Feb 2024: Integration of a pure Matlab version of the VMLMB optimization method in GlobalBioIm which is used in FlexSIM. As such, no need anymore to compile mex files.
@@ -46,7 +47,7 @@ The repository is organized as follows.
 |  | ----  **Reconstruct on ROI / specific frames** | 
 | SzRoi | *Size (px) of the ROI of the data considered for reconstruction* |
 | posRoi | *Position of the top-left corner of the ROI.* |
-|  frameRange | *To treat only a subset of temporal frames of the stack (e.g., [1;5]).* |
+| frameRange | *To treat only a subset of temporal frames of the stack (e.g., [1;5]).* |
 |  | ---- **Patterns**|
 | StackOrder | *Stack order: ap, pa, apw, paw, wap, wpa, axp, pxa (with a=angles, p=phases, w=widefield). The last two correspond to 9x9 montage with angles (resp phases) in row axp (resp pxa).* |
 | nbOr | *Number of orientations.* |
@@ -68,11 +69,13 @@ The repository is organized as follows.
 |  maskWF |    *Radius (as a factor of the cutoff freq.) of the disk used to mask central Fourier frequencies.* |
 |  ringRegionSearch |  *Lower and upper limits of Fourier ring region to search peaks (given as factor of the cutoff freq.).*  |
 |  eqPh |  *Boolean, if true equally-spaced phases are assumed.*  |
+|  eqOrr | *Boolean, if true equally-spaced orientation are assumed (constraint imposed in a soft way).* |
 |  estiPattLowFreq | *Boolean, if true, estimate the low-freq. component of the patterns.*   |
 |  doRefinement | *If false, do not performs the refinement step* |
 |  pattAmp | *Amplitude a of the pattern (to be adjusted manually).*   | 
-|  cstTimePatt | *If true, common patterns are used for all frames.* |
 |  framePattEsti | *To use only a subset of frames for estimating a common pattern to all frames (empty to use all frames). Only used when cstTimePatt =1.* |
+|  cstTimePatt | *If true, a single set of patterns is estimated and used for all frames.* |
+|  rollMed | *Size of the rolling median interval used to adjust patterns parameters accros frames. Can only be used with cstTimePatt=0.* |    
 
 ### Image reconstruction
 
