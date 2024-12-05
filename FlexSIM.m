@@ -42,6 +42,7 @@ if ~isfield(params,'frameRange'), params.frameRange=[]; end
 if ~isfield(params,'cstTimePatt'), params.cstTimePatt=0; end
 if ~isfield(params,'framePattEsti'), params.framePattEsti=[]; end
 if ~isfield(params,'doRefinement'), params.doRefinement=1; end
+if ~isfield(params,'eqOrr'), params.eqOrr=0; end
 if ~isfield(params,'rollMed'), params.rollMed=0; end
 if ~isempty(params.framePattEsti), assert(params.cstTimePatt==1,'framePattEsti can be non empty only when cstTimePatt is true.'); end
 if params.rollMed>0, assert(params.cstTimePatt==0,'If rollMed >0, then cstTimePatt should be false.'); end

@@ -82,7 +82,7 @@ if params.GPU
 end
 
 %% Preprocess
-if nt==1, DispMsg(params.verbose,'      Preprocess: Remove WF and mask...'); end
+if nt==1, DispMsg(params.verbose,'      Remove WF and mask...'); end
 G=zeros(size(y));wf=zeros(size(wf_stack));
 OrientCount = 1;
 for idx = imgIdxs
@@ -93,23 +93,98 @@ end
 
 %% Initialization via cross-corr
 if compute_k_init
-    if nt==1,
-        if params.doRefinement
-            DispMsg(params.verbose,'      Initialization: Cross-corr btw WF and data in Fourier...');
-        else
-            DispMsg(params.verbose,'      Cross-corr btw WF and data in Fourier...');
-        end
-    end
+    if nt==1, DispMsg(params.verbose,'      Cross-corr btw WF and data in Fourier...'); end
+    
     OrientCount = 1;
     for idx = imgIdxs        
         idwf=min(size(wf_stack,3),OrientCount);
 
-        if nt==1, DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),': Cross-correl btw WF and data in Fourier...']); end
+        %if nt==1, DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),': Cross-correl btw WF and data in Fourier...']); end
         [map,K1,K2] = CrossCorr(G(:,:,idx,:),wf(:,:,idwf,:), params);
-        Jmap=-MaskFT(mean(abs(map).^2,3:length(sz)),FCut,params.ringRegionSearch);
+        Jmap(:,:,OrientCount)=-MaskFT(mean(abs(map).^2,3:length(sz)),FCut,params.ringRegionSearch);
+        OrientCount=OrientCount+1;
+    end
 
-        if nt==1,  DispMsg(params.verbose,['                          Extract wavevector...']); end
-        k_init(OrientCount, :)= ExtractLocMin(1,Jmap,K1,K2);
+    if nt==1,  DispMsg(params.verbose,'      Extract wavevectors...'); end
+    if params.eqOrr
+        rotMap(:,:,1)=Jmap(:,:,1) + imrotate(Jmap(:,:,2),-60,'bilinear','crop') + imrotate(Jmap(:,:,3),60,'bilinear','crop');  % -60 / +60
+        rotMap(:,:,2)=Jmap(:,:,1) + imrotate(Jmap(:,:,2),60,'bilinear','crop') + imrotate(Jmap(:,:,3),-60,'bilinear','crop');  % +60 / -60
+        rotMap(:,:,3)=Jmap(:,:,1) + imrotate(Jmap(:,:,2),60,'bilinear','crop') + imrotate(Jmap(:,:,3),120,'bilinear','crop');  % +60 / +120
+        rotMap(:,:,4)=Jmap(:,:,1) + imrotate(Jmap(:,:,2),120,'bilinear','crop') + imrotate(Jmap(:,:,3),60,'bilinear','crop');  % +120 / +60
+        rotMap(:,:,5)=Jmap(:,:,1) + imrotate(Jmap(:,:,2),-60,'bilinear','crop') + imrotate(Jmap(:,:,3),-120,'bilinear','crop');  % -60 / -120
+        rotMap(:,:,6)=Jmap(:,:,1) + imrotate(Jmap(:,:,2),-120,'bilinear','crop') + imrotate(Jmap(:,:,3),-60,'bilinear','crop');  % -120 / -60
+        rotMap(:,:,7)=Jmap(:,:,1) + imrotate(Jmap(:,:,2),-120,'bilinear','crop') + imrotate(Jmap(:,:,3),120,'bilinear','crop');  % -120 / 120
+        rotMap(:,:,8)=Jmap(:,:,1) + imrotate(Jmap(:,:,2),120,'bilinear','crop') + imrotate(Jmap(:,:,3),-120,'bilinear','crop');  % 120 / -120
+        [~,id]=min(min(rotMap,[],[1,2]));
+        ktmp= ExtractLocMin(1,rotMap(:,:,id),K1,K2);
+        [th,r] = cart2pol(ktmp(1),ktmp(2));
+        radii = 6*pi/params.res/sz(2);
+        mask = ((K1 - ktmp(1)).^2 + (K2 - ktmp(2)).^2 <radii^2) + ((K1 + ktmp(1)).^2 + (K2 + ktmp(2)).^2 <radii^2);
+        Jmap(:,:,1) = mask.*Jmap(:,:,1);
+        switch id
+            case 1 % -60 / +60
+                [k1,k2] = pol2cart(th-pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,2) = mask.*Jmap(:,:,2);
+                [k1,k2] = pol2cart(th+pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,3) = mask.*Jmap(:,:,3);
+            case 2 % +60 / -60
+                [k1,k2] = pol2cart(th+pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,2) = mask.*Jmap(:,:,2);
+                [k1,k2] = pol2cart(th-pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,3) = mask.*Jmap(:,:,3);
+            case 3 % +60 / +120
+                [k1,k2] = pol2cart(th+pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,2) = mask.*Jmap(:,:,2);
+                [k1,k2] = pol2cart(th+2*pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,3) = mask.*Jmap(:,:,3);
+            case 4 % +120 / +60
+                [k1,k2] = pol2cart(th+2*pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,2) = mask.*Jmap(:,:,2);
+                [k1,k2] = pol2cart(th+pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,3) = mask.*Jmap(:,:,3);
+            case 5 % -60 / -120
+                [k1,k2] = pol2cart(th-pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,2) = mask.*Jmap(:,:,2);
+                [k1,k2] = pol2cart(th-2*pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,3) = mask.*Jmap(:,:,3);
+            case 6 % -120 / -60
+                [k1,k2] = pol2cart(th-2*pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,2) = mask.*Jmap(:,:,2);
+                [k1,k2] = pol2cart(th-pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,3) = mask.*Jmap(:,:,3);
+            case 7 % -120 / +120
+                [k1,k2] = pol2cart(th-2*pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,2) = mask.*Jmap(:,:,2);
+                [k1,k2] = pol2cart(th+2*pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,3) = mask.*Jmap(:,:,3);
+            case 8 % +120 / -120
+                [k1,k2] = pol2cart(th+2*pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,2) = mask.*Jmap(:,:,2);
+                [k1,k2] = pol2cart(th-2*pi/3,r);
+                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+                Jmap(:,:,3) = mask.*Jmap(:,:,3);
+        end
+    end
+
+    OrientCount = 1;    
+    for idx = imgIdxs 
+        %if nt==1,  DispMsg(params.verbose,['                          Extract wavevector...']); end
+        k_init(OrientCount, :)= ExtractLocMin(1,Jmap(:,:,OrientCount),K1,K2);
 
         if nargout==4  && compute_k_init % To output the initial phase estimate if required
             id=intersect(find(k_init(OrientCount,1)==K1(:)),find(k_init(OrientCount,2)==K2(:)));
@@ -129,7 +204,7 @@ end
 
 %% Refinement
 if params.doRefinement
-    if nt==1, DispMsg(params.verbose,'      Refine initial wavevector and compute phases...');end
+    if nt==1, DispMsg(params.verbose,'      Refine initial wavevectors and compute phases...');end
 else
     if nt==1, DispMsg(params.verbose,'      Compute phases...'); end
 end
@@ -141,7 +216,7 @@ else
     ph_final = zeros_([params.nbOr,params.nbPh,size(y,4)]);
 end
 for idx = imgIdxs
-    if nt==1,  DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),' ...']); end
+    %if nt==1,  DispMsg(params.verbose,['        - Orientation #', num2str(OrientCount),' ...']); end
     idwf=min(size(wf_stack,3),OrientCount);
     for idt = 1:1
         wf_i=gpuCpuConverter(wf(:,:,idwf,idt));
