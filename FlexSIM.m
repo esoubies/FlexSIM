@@ -42,11 +42,11 @@ if ~isfield(params,'frameRange'), params.frameRange=[]; end
 if ~isfield(params,'cstTimePatt'), params.cstTimePatt=0; end
 if ~isfield(params,'framePattEsti'), params.framePattEsti=[]; end
 if ~isfield(params,'doRefinement'), params.doRefinement=1; end
-if ~isfield(params,'rollAvg'), params.rollAvg=0; end
+if ~isfield(params,'rollMed'), params.rollMed=0; end
 if ~isempty(params.framePattEsti), assert(params.cstTimePatt==1,'framePattEsti can be non empty only when cstTimePatt is true.'); end
-if params.rollAvg>0, assert(params.cstTimePatt==0,'If rollAvg >0, then cstTimePatt should be false.'); end
+if params.rollMed>0, assert(params.cstTimePatt==0,'If rollMed >0, then cstTimePatt should be false.'); end
 if params.cstTimePatt, assert(params.eqPh==1,'Currently cstTimePatt=1 is possible only with eqPh=1.'); end
-if params.rollAvg>0, assert(params.eqPh==1,'Currently rollAvg is possible only with eqPh=1.'); end
+if params.rollMed>0, assert(params.eqPh==1,'Currently rollMed is possible only with eqPh=1.'); end
 
 %% Pre-processing
 % - Reorder stack with FlexSIM conventions
@@ -151,9 +151,9 @@ if params.nframes>1
     if params.cstTimePatt       
         phase=repmat(mean(phase_est,3),[1 1 params.nframes]);        
         k=repmat(mean(k,3),[1 1 params.nframes]);
-    elseif params.rollAvg >0
-        phase = movmean(phase_est,params.rollAvg,3) ;
-        k = movmean(k,params.rollAvg,3) ;
+    elseif params.rollMed >0
+        phase = movmedian(phase_est,params.rollMed,3) ;
+        k = movmedian(k,params.rollMed,3) ;
     end
     if params.displ > 0, DisplayEvolPattParams(params,k_est,phase_est,k,phase,-1); end
 end
