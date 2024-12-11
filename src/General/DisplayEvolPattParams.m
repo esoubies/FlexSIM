@@ -7,9 +7,10 @@ end
 set(0,'CurrentFigure',fig_id);
 
 % Plot evolution of wavevector norm
+if ~isempty(params.framePattEsti), fr = params.framePattEsti; else fr = 1:params.nframes; end
 for ii=1:params.nbOr
     subplot(3,3,ii);hold on;
-    plot(squeeze(sqrt((k_est(ii,1,:)/(2*params.Na)*params.lamb/pi).^2 + (k_est(ii,2,:)/(2*params.Na)*params.lamb/pi).^2)),'k.','markersize',15);
+    plot(fr,squeeze(sqrt((k_est(ii,1,:)/(2*params.Na)*params.lamb/pi).^2 + (k_est(ii,2,:)/(2*params.Na)*params.lamb/pi).^2)),'k.','markersize',15);
     if params.cstTimePatt || params.rollMed>0, plot(squeeze(sqrt((k(ii,1,:)/(2*params.Na)*params.lamb/pi).^2 + (k(ii,2,:)/(2*params.Na)*params.lamb/pi).^2)),'rx','markersize',8,'linewidth',2);end
     title(['Orientation #',num2str(ii)]);grid; set(gca,'fontsize',14);
     xticks(1:max(round(params.nframes/5),1):params.nframes);%axis([1 params.nframes params.ringRegionSearch(1) params.ringRegionSearch(2)]);
@@ -18,7 +19,7 @@ end
 % Plot wavevector angle
 for ii=1:params.nbOr
     subplot(3,3,3+ii); hold on;
-    plot(squeeze(atan(k_est(ii,2,:)./k_est(ii,1,:))),'k.','markersize',15);
+    plot(fr,squeeze(atan(k_est(ii,2,:)./k_est(ii,1,:))),'k.','markersize',15);
     if params.cstTimePatt || params.rollMed>0, plot(squeeze(atan(k(ii,2,:)./k(ii,1,:))),'rx','markersize',8,'linewidth',2); end
     grid; set(gca,'fontsize',14); %axis([1 params.nframes -pi/2 pi/2]);
     xticks(1:max(round(params.nframes/5),1):params.nframes);
@@ -27,7 +28,7 @@ end
 % Plot phase offset
 for ii=1:params.nbOr
     subplot(3,3,6+ii); hold on;
-    plot(squeeze(phase_est(ii,1,:)),'k.','markersize',15);
+    plot(fr,squeeze(phase_est(ii,1,:)),'k.','markersize',15);
     if params.cstTimePatt || params.rollMed>0, plot(squeeze(phase(ii,1,:)),'rx','markersize',8,'linewidth',2); end
     xlabel('Frames');grid; set(gca,'fontsize',14);
     xticks(1:max(round(params.nframes/5),1):params.nframes); % axis([1 params.nframes 0 pi]);

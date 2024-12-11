@@ -1,5 +1,5 @@
 function FlexSIM(params)
-%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------EstimatePatterns
 % Function  FlexSIM(params)
 % 
 % FlexSIM [1] should be called from a script defining the structure `params`,
@@ -140,9 +140,16 @@ end
 DispMsg(params.verbose,'<strong>=== Patterns estimation</strong> ...');
 DispMsg(params.verbose,'---> Estimate sinusoidal patterns components ...');
 if params.nframes>1, DispMsg(params.verbose,'    - Frame: ',0); end
-parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
-    if params.nframes>1, DispMsg(params.verbose,[num2str(it),' '],0); end
-    [k(:,:,it), phase(:,:,it)] = EstimatePatterns(params, PosRoiPatt, y(:,:,:,it), 0, wf(:,:,:,it));
+if ~isempty(params.framePattEsti)
+    parfor (it = 1:length(params.framePattEsti),params.nbcores*params.paraLoopFrames)
+        if params.nframes>1, DispMsg(params.verbose,[num2str(params.framePattEsti(it)),' '],0); end
+        [k(:,:,it), phase(:,:,it)] = EstimatePatterns(params, PosRoiPatt, y(:,:,:,params.framePattEsti(it)), 0, wf(:,:,:,params.framePattEsti(it)));
+    end
+else
+    parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
+        if params.nframes>1, DispMsg(params.verbose,[num2str(it),' '],0); end
+        [k(:,:,it), phase(:,:,it)] = EstimatePatterns(params, PosRoiPatt, y(:,:,:,it), 0, wf(:,:,:,it));
+    end
 end
 if params.nframes>1
     med=median(phase,3);tt=cat(2,abs(phase-med),abs(phase+pi -med),abs(phase-pi-med));
