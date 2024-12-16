@@ -1,4 +1,4 @@
-function k = ExtractLocMin(n,map,K1,K2)
+function [k,ii,jj] = ExtractLocMin(n,map,K1,K2)
 %--------------------------------------------------------------------------
 % function k = ExtractLocMin(n,map,K1,K2)
 %

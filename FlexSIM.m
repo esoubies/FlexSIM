@@ -157,14 +157,21 @@ if params.nframes>1
     phase_est=phase.*(id==1)+(phase+pi).*(id==2)+(phase-pi).*(id==3);
     k_est=k;
     if params.cstTimePatt       
-        phase=repmat(mean(phase_est,3),[1 1 params.nframes]);        
-        k=repmat(mean(k,3),[1 1 params.nframes]);
+        kmed = median(sqrt(k(:,1,:).^2+k(:,2,:).^2),3);
+        aglmed = median(atan(k_est(:,2,:)./k_est(:,1,:)),3);
+        k = repmat(kmed .* [cos(aglmed),sin(aglmed)],[1 1 params.nframes]);
+        k = sign(k(:,1,:)).*sign(k_est(:,1,:)).*k;
+        phase=repmat(median(phase_est,3),[1 1 params.nframes]);        
     elseif params.rollMed >0
+        kmed = movmedian(sqrt(k(:,1,:).^2+k(:,2,:).^2),params.rollMed,3);
+        aglmed = median(atan(k_est(:,2,:)./k_est(:,1,:)),params.rollMed,3);
+        k = kmed .* [cos(aglmed),sin(aglmed)];
+        k = sign(k(:,1,:)).*sign(k_est(:,1,:)).*k;
         phase = movmedian(phase_est,params.rollMed,3) ;
-        k = movmedian(k,params.rollMed,3) ;
     end
     if params.displ > 0, DisplayEvolPattParams(params,k_est,phase_est,k,phase,-1); end
 end
+
 
 % Displays
 if params.displ > 0

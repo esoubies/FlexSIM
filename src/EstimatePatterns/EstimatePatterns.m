@@ -114,80 +114,39 @@ if compute_k_init
         ktmp= ExtractLocMin(1,rotMap(:,:,id),K1,K2);
         [th,r] = cart2pol(ktmp(1),ktmp(2));
         radii = 6*pi/params.res/sz(2);
-        mask = ((K1 - ktmp(1)).^2 + (K2 - ktmp(2)).^2 <radii^2) + ((K1 + ktmp(1)).^2 + (K2 + ktmp(2)).^2 <radii^2);
-        Jmap(:,:,1) = mask.*Jmap(:,:,1);
-        switch id
-            case 1 % -60 / +60
-                [k1,k2] = pol2cart(th-pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,2) = mask.*Jmap(:,:,2);
-                [k1,k2] = pol2cart(th+pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,3) = mask.*Jmap(:,:,3);
-            case 2 % +60 / -60
-                [k1,k2] = pol2cart(th+pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,2) = mask.*Jmap(:,:,2);
-                [k1,k2] = pol2cart(th-pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,3) = mask.*Jmap(:,:,3);
-            case 3 % +60 / +120
-                [k1,k2] = pol2cart(th+pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,2) = mask.*Jmap(:,:,2);
-                [k1,k2] = pol2cart(th+2*pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,3) = mask.*Jmap(:,:,3);
-            case 4 % +120 / +60
-                [k1,k2] = pol2cart(th+2*pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,2) = mask.*Jmap(:,:,2);
-                [k1,k2] = pol2cart(th+pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,3) = mask.*Jmap(:,:,3);
-            case 5 % -60 / -120
-                [k1,k2] = pol2cart(th-pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,2) = mask.*Jmap(:,:,2);
-                [k1,k2] = pol2cart(th-2*pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,3) = mask.*Jmap(:,:,3);
-            case 6 % -120 / -60
-                [k1,k2] = pol2cart(th-2*pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,2) = mask.*Jmap(:,:,2);
-                [k1,k2] = pol2cart(th-pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,3) = mask.*Jmap(:,:,3);
-            case 7 % -120 / +120
-                [k1,k2] = pol2cart(th-2*pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,2) = mask.*Jmap(:,:,2);
-                [k1,k2] = pol2cart(th+2*pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,3) = mask.*Jmap(:,:,3);
-            case 8 % +120 / -120
-                [k1,k2] = pol2cart(th+2*pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,2) = mask.*Jmap(:,:,2);
-                [k1,k2] = pol2cart(th-2*pi/3,r);
-                mask = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
-                Jmap(:,:,3) = mask.*Jmap(:,:,3);
+        mask(:,:,1) = ((K1 - ktmp(1)).^2 + (K2 - ktmp(2)).^2 <radii^2) + ((K1 + ktmp(1)).^2 + (K2 + ktmp(2)).^2 <radii^2);
+        [k1,k2] = pol2cart(th-pi/3,r);
+        mask(:,:,2) = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+        [k1,k2] = pol2cart(th+pi/3,r);
+        mask(:,:,3) = ((K1 - k1).^2 + (K2 - k2).^2 <radii^2) + ((K1 + k1).^2 + (K2 + k2).^2 <radii^2);
+        k_mat = zeros(3,3,2);
+        for ii=1:size(Jmap,3)
+            for jj=1:3
+                [kk,idi,idj] = ExtractLocMin(1,Jmap(:,:,ii).*mask(:,:,jj),K1,K2);
+                k_mat(ii,jj, :) = reshape(kk,[1,1,2]);
+                val(ii,jj) = Jmap(idi,idj,ii);
+            end
         end
-    end
-
-    OrientCount = 1;    
-    for idx = imgIdxs 
-        %if nt==1,  DispMsg(params.verbose,['                          Extract wavevector...']); end
-        k_init(OrientCount, :)= ExtractLocMin(1,Jmap(:,:,OrientCount),K1,K2);
-
-        if nargout==4  && compute_k_init % To output the initial phase estimate if required
-            id=intersect(find(k_init(OrientCount,1)==K1(:)),find(k_init(OrientCount,2)==K2(:)));
-            [ii,jj]=ind2sub(size(K1),id);
-            ph_init(OrientCount, :,:)=mod(angle(map(ii,jj,:,:)),2*pi)/2;
+        mpairs = matchpairs(val,0);
+        for OrientCount=1:size(Jmap,3)
+            k_init(OrientCount,:) = squeeze(k_mat(OrientCount,mpairs(OrientCount,2), :));
+            if nargout==4  && compute_k_init % To output the initial phase estimate if required
+                id=intersect(find(k_init(OrientCount,1)==K1(:)),find(k_init(OrientCount,2)==K2(:)));
+                [ii,jj]=ind2sub(size(K1),id);
+                ph_init(OrientCount, :,:)=mod(angle(map(ii,jj,:,:)),2*pi)/2;
+            end
         end
+    else
+        for OrientCount=1:size(Jmap,3)
+            %if nt==1,  DispMsg(params.verbose,['                          Extract wavevector...']); end
+            k_init(OrientCount, :)= ExtractLocMin(1,Jmap(:,:,OrientCount),K1,K2);
 
-        OrientCount=OrientCount+1;
+            if nargout==4  && compute_k_init % To output the initial phase estimate if required
+                id=intersect(find(k_init(OrientCount,1)==K1(:)),find(k_init(OrientCount,2)==K2(:)));
+                [ii,jj]=ind2sub(size(K1),id);
+                ph_init(OrientCount, :,:)=mod(angle(map(ii,jj,:,:)),2*pi)/2;
+            end
+        end
     end
 end
 
