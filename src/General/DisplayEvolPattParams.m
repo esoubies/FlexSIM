@@ -30,7 +30,7 @@ for ii=1:params.nbOr
 end
 for ii=1:params.nbOr
     subplot(3,3,3+ii);
-    axis([1 params.nframes agl_min-0.1 agl_max+0.1]);
+    axis([1 params.nframes gather(agl_min-0.1) gather(agl_max+0.1)]);
 end
 % Plot phase offset
 for ii=1:params.nbOr
