@@ -164,7 +164,7 @@ if params.nframes>1
         phase=repmat(median(phase_est,3),[1 1 params.nframes]);        
     elseif params.rollMed >0
         kmed = movmedian(sqrt(k(:,1,:).^2+k(:,2,:).^2),params.rollMed,3);
-        aglmed = median(atan(k_est(:,2,:)./k_est(:,1,:)),params.rollMed,3);
+        aglmed = movmedian(atan(k_est(:,2,:)./k_est(:,1,:)),params.rollMed,3);
         k = kmed .* [cos(aglmed),sin(aglmed)];
         k = sign(k(:,1,:)).*sign(k_est(:,1,:)).*k;
         phase = movmedian(phase_est,params.rollMed,3) ;
