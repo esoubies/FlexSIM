@@ -9,7 +9,7 @@ E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D
 
 ## News
 
-* Feb 2025: New examples have been added (see below) **
+* Feb 2025: New examples have been added (see below) 
 * Dec 2024: The handling of temporal stacks has been improved. A new parameter *eqOrr* has been introduced to impose a soft constraint of equally spaced orientations during patterns estimation. (see parameters below).
 * Nov 2024: FlexSIM is now compatible with GPU computation (with Matlab Parrallel Toolbox). Set params.GPU = 1 and it's done!
 * March 2024: New parameters to ease the handling of temporal stacks.
