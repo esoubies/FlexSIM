@@ -119,7 +119,7 @@ Each subfolder of the Example folder corresponds to one dataset with the followi
 
 [6] _<a href="https://photonix.springeropen.com/articles/10.1186/s43074-023-00092-6" target="_blank">Direct-SIM</a>_, G. Wen et al., Spectrum-optimized direct image reconstruction of super-resolution structured illumination microscopy, PhotoniX, vol. 4, no. 1, June 2023.
 
-[7] _<a href="https://elight.springeropen.com/articles/10.1186/s43593-022-00035-x" target="_blank">Direct-SIM</a>_, J. Qian, et al., Structured illumination microscopy based on principal component analysis, eLight, vol. 3, no. 1, Feb. 2023.
+[7] _<a href="https://elight.springeropen.com/articles/10.1186/s43593-022-00035-x" target="_blank">PCA-SIM</a>_, J. Qian, et al., Structured illumination microscopy based on principal component analysis, eLight, vol. 3, no. 1, Feb. 2023.
 
 [8] _<a href="https://www.nature.com/articles/s44303-024-00066-8" target="_blank">B-SIM</a>_,  A. Saurabh, et al., Approaching maximum resolution in structured illumination microscopy via accurate noise modeling, npj Imaging, vol. 3, no. 5, Jan. 2025.
 
