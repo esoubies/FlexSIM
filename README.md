@@ -103,7 +103,7 @@ This folder contains scripts to download and reconstruct the 20 open 2D-SIM data
 * download raw data and set FlexSIM parameters
 * run FlexSIM.m function
 
-The 20 open 2D-SIM datasets are sourced from 7 publications including **FairSIM** [1], **OpenSIM** [2], **HiFi-SIM** [3], **ML-SIM** [4], **JSFR-SIM** [5], **Direct-SIM** [6], and **PCA-SIM** [7]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
+The 20 open 2D-SIM datasets are sourced from 7 publications including **FairSIM** [1], **OpenSIM** [2], **HiFi-SIM** [3], **ML-SIM** [4], **JSFR-SIM** [5], **Direct-SIM** [6], **PCA-SIM** [7], and **B-SIM** [8]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
 Each subfolder of the Example folder corresponds to one dataset with the following naming convention
 * _Reference_SIM-type_Bio-structure_
 
@@ -120,6 +120,8 @@ Each subfolder of the Example folder corresponds to one dataset with the followi
 [6] _<a href="https://photonix.springeropen.com/articles/10.1186/s43074-023-00092-6" target="_blank">Direct-SIM</a>_, G. Wen et al., Spectrum-optimized direct image reconstruction of super-resolution structured illumination microscopy, PhotoniX, vol. 4, no. 1, June 2023.
 
 [7] _<a href="https://elight.springeropen.com/articles/10.1186/s43593-022-00035-x" target="_blank">Direct-SIM</a>_, J. Qian, et al., Structured illumination microscopy based on principal component analysis, eLight, vol. 3, no. 1, Feb. 2023.
+
+[8] _<a href="https://www.nature.com/articles/s44303-024-00066-8" target="_blank">B-SIM</a>_,  A. Saurabh, et al., Approaching maximum resolution in structured illumination microscopy via accurate noise modeling, npj Imaging, vol. 3, no. 5, Jan. 2025.
 
 
 ## Conditions of use
