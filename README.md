@@ -9,6 +9,7 @@ E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D
 
 ## News
 
+* Feb 2025: New examples have been added (see below) 
 * Dec 2024: The handling of temporal stacks has been improved. A new parameter *eqOrr* has been introduced to impose a soft constraint of equally spaced orientations during patterns estimation. (see parameters below).
 * Nov 2024: FlexSIM is now compatible with GPU computation (with Matlab Parrallel Toolbox). Set params.GPU = 1 and it's done!
 * March 2024: New parameters to ease the handling of temporal stacks.
@@ -103,7 +104,7 @@ This folder contains scripts to download and reconstruct the 20 open 2D-SIM data
 * download raw data and set FlexSIM parameters
 * run FlexSIM.m function
 
-The 20 open 2D-SIM datasets are sourced from 7 publications including **FairSIM** [1], **OpenSIM** [2], **HiFi-SIM** [3], **ML-SIM** [4], **JSFR-SIM** [5], **Direct-SIM** [6], **PCA-SIM** [7], and **B-SIM** [8]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
+The 20 open 2D-SIM datasets are sourced from 8 publications including **FairSIM** [1], **OpenSIM** [2], **HiFi-SIM** [3], **ML-SIM** [4], **JSFR-SIM** [5], **Direct-SIM** [6], **PCA-SIM** [7], and **B-SIM** [8]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
 Each subfolder of the Example folder corresponds to one dataset with the following naming convention
 * _Reference_SIM-type_Bio-structure_
 
