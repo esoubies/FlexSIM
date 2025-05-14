@@ -36,9 +36,9 @@ msg='Should be an integer within {0, 1, 2}';
 assert(isfield(params, 'verbose'),[prefix, missg, '`verbose`. ', msg]);
 assert(params.verbose==0 || params.verbose==1 || params.verbose==2, [prefix, invld, '`verbose`. ', msg]);  
 % sav
-msg='Should be a boolean.';
+msg='Should be an integer between 0 and 2.';
 assert(isfield(params, 'sav'),[prefix, missg, '`sav`. ', msg]);
-assert(params.sav==0 || params.sav==1, [prefix, invld, '`sav`. ', msg]);  
+assert(params.sav==0 || params.sav==1 || params.sav==2, [prefix, invld, '`sav`. ', msg]);  
 % GPU usage
 prefix='[GPU]';
 msg='Should be a boolean';

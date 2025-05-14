@@ -28,7 +28,7 @@ end
 % -- Display, saving and GPU acceleration
 params.displ = 1;                       % Displaying choice, from 0 to 2 with increasing number of display
 params.verbose=2;                       % 0: minimal text displays / 1: detailled text displays / 2: more details
-params.sav = 1;                         % Boolean on whether to save or not the reconstructed image and estimated patterns
+params.sav = 1;                         % Saving options (0: no saving / 1: save reconstruction / 2: save patterns and reconstruction)
 params.parallelProcess=0;               % Boolean on whether to parallelize over orientation (if sepOrr=1) or over frames (temporal stack). Requires the parallel computing toolbox. 
 params.GPU=0;                           % Boolean on whether to use GPU. Requires the parallel computing toolbox. 
 

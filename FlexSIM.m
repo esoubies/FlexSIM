@@ -44,6 +44,7 @@ if ~isfield(params,'framePattEsti'), params.framePattEsti=[]; end
 if ~isfield(params,'doRefinement'), params.doRefinement=1; end
 if ~isfield(params,'eqOrr'), params.eqOrr=0; end
 if ~isfield(params,'rollMed'), params.rollMed=0; end
+if ~isfield(params,'dataType'), params.dataType='single'; end
 if ~isempty(params.framePattEsti), assert(params.cstTimePatt==1,'framePattEsti can be non empty only when cstTimePatt is true.'); end
 if params.rollMed>0, assert(params.cstTimePatt==0,'If rollMed >0, then cstTimePatt should be false.'); end
 if params.cstTimePatt, assert(params.eqPh==1,'Currently cstTimePatt=1 is possible only with eqPh=1.'); end
@@ -224,10 +225,13 @@ parfor (it = 1:params.nframes,params.nbcores*params.paraLoopFrames)
     % - Save 
     if params.sav 
         if params.nframes>1
-            saveastiff(rec(:,:,it),[params.DataPath(1:end-4),'_Rec_Frame_',num2str(it),'.tif']);
-            saveastiff(gather(patterns),[params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
-        else
-            saveastiff(gather(patterns),[params.DataPath(1:end-4),'_Patt.tif']);
+            saveastiff(ConvertDataType(rec(:,:,it),params.dataType),[params.DataPath(1:end-4),'_Rec_Frame_',num2str(it),'.tif']);
+            if params.sav==2
+                saveastiff(ConvertDataType(gather(patterns),params.dataType),[params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
+            end
+        end
+        if params.sav==2
+            saveastiff(ConvertDataType(gather(patterns),params.dataType),[params.DataPath(1:end-4),'_Patt.tif']);
         end
     end
     if params.nframes>1
@@ -248,15 +252,21 @@ end
 % Save 
 if params.sav
     save(strcat(params.DataPath(1:end-4),'_Params'),'params'); 
-    saveastiff(rec,strcat(params.DataPath(1:end-4),'_Rec.tif'));
+    saveastiff(ConvertDataType(rec,params.dataType),strcat(params.DataPath(1:end-4),'_Rec.tif'));
     if params.nframes>1
-        patt=zeros([sz(1:2)*2+params.padSz,params.nbOr*params.nbPh,params.nframes]);
         for it=1:params.nframes
             delete([params.DataPath(1:end-4),'_Rec_Frame_',num2str(it),'.tif']);
-            patt(:,:,:,it)=loadtiff([params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
-            delete([params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
         end
-        saveastiff(reshape(patt,[size(patt,1),size(patt,2),size(patt,3)*size(patt,4)]),[params.DataPath(1:end-4),'_Patt.tif']);
+    end
+    if params.sav==2
+        if params.nframes>1
+            patt=zeros([sz(1:2)*2+params.padSz,params.nbOr*params.nbPh,params.nframes]);
+            for it=1:params.nframes
+                patt(:,:,:,it)=loadtiff([params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
+                delete([params.DataPath(1:end-4),'_Patt_Frame_',num2str(it),'.tif']);
+            end
+            saveastiff(ConvertDataType(reshape(patt,[size(patt,1),size(patt,2),size(patt,3)*size(patt,4)]),params.dataType),[params.DataPath(1:end-4),'_Patt.tif']);
+        end
     end
 end
 DispMsg(params.verbose,['<strong>=== FlexSIM END. Elapsed time (s): ',num2str(toc(time0)),' </strong>']);

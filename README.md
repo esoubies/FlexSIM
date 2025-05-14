@@ -9,6 +9,7 @@ E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D
 
 ## News
 
+* May 2025: New saving options and integration of the newly proposed _<a href="https://www.nature.com/articles/s41592-025-02667-6" target="_blank">Dark-Sectioning</a>_ method.
 * Feb 2025: New examples have been added (see below) 
 * Dec 2024: The handling of temporal stacks has been improved. A new parameter *eqOrr* has been introduced to impose a soft constraint of equally spaced orientations during patterns estimation. (see parameters below).
 * Nov 2024: FlexSIM is now compatible with GPU computation (with Matlab Parrallel Toolbox). Set params.GPU = 1 and it's done!
@@ -37,7 +38,8 @@ The repository is organized as follows.
 | pathToFlexSIM | *Path to FlexSIM root folder.* |
 | displ | *From 0 to 2 with increasing number of display.* |
 | verbose | *From 0 to 2 with increasing text displays.* |
-| sav | *Boolean on whether to save the reconstructed image and estimated patterns.* |
+| sav | *Saving options (0: no saving / 1: save reconstruction / 2: save patterns and reconstruction).* |
+| dataType | *Data type for saving: 'uint8', 'uint16', 'uint32', 'single' (default)* |
 | GPU | *Boolean on whether to use GPU or not* |
 | parallelProcess | *Boolean on whether to use parallel computing. Requires the parallel computing toolbox.*  |
 
@@ -85,6 +87,9 @@ The repository is organized as follows.
 |   | ---- **OTF Attenuation**  |
 | OTFAttStr  |  *Strength of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.* |
 | OTFAttwdth  | *Width of the OTF attenuation (>0). If 0 no OTF attenuation.* |
+|   | ---- **Dark-Sectioning** (from this _<a href="https://www.nature.com/articles/s41592-025-02667-6" target="_blank">paper</a>_)  |
+| DarkSec  |  *If >0 activate the Dark-sectioning (1 for middle and 2 for strong out-of-focus).* |
+| DarkSecThres  | *Threshold used to define a mask on the image that contains the background.* |
 |   | ---- **Cost function** |
 |  apodize | *Boolean on whether to use apodization on boundaries.* |
 |  sepOrr  | *Boolean on whether to treat each orientation separately.* |
@@ -104,7 +109,7 @@ This folder contains scripts to download and reconstruct the 20 open 2D-SIM data
 * download raw data and set FlexSIM parameters
 * run FlexSIM.m function
 
-The 20 open 2D-SIM datasets are sourced from 8 publications including **FairSIM** [1], **OpenSIM** [2], **HiFi-SIM** [3], **ML-SIM** [4], **JSFR-SIM** [5], **Direct-SIM** [6], **PCA-SIM** [7], and **B-SIM** [8]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
+The 20 open 2D-SIM datasets are sourced from 8 publications including **FairSIM** [1], **OpenSIM** [2], **HiFi-SIM** [3], **ML-SIM** [4], **JSFR-SIM** [5], **Direct-SIM** [6], **PCA-SIM** [7], **B-SIM** [8], as well as the dark-sectioning paper [9]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
 Each subfolder of the Example folder corresponds to one dataset with the following naming convention
 * _Reference_SIM-type_Bio-structure_
 
@@ -124,6 +129,7 @@ Each subfolder of the Example folder corresponds to one dataset with the followi
 
 [8] _<a href="https://www.nature.com/articles/s44303-024-00066-8" target="_blank">B-SIM</a>_,  A. Saurabh, et al., Approaching maximum resolution in structured illumination microscopy via accurate noise modeling, npj Imaging, vol. 3, no. 5, Jan. 2025.
 
+[9] _<a href="https://www.nature.com/articles/s41592-025-02667-6" target="_blank">Dark-SIM</a>_,  R. Cao et al., Dark-based optical sectioning assists background removal in fluorescence microscopy, Nature Methods, 2025.
 
 ## Conditions of use
 
