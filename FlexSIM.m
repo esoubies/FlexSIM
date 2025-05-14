@@ -75,6 +75,16 @@ if tmp~=params.padSz
     params.padSz=tmp;
 end
 
+% - Dark-Sectioning
+if isfield(params,'DarkSec') && params.DarkSec>0
+    for ii=1:params.nframes
+        y(:,:,:,ii) = DarkSectioning(y(:,:,:,ii),params);
+    end
+    if params.displ > 0
+        DisplayStack(y(:,:,:,1)<params.DarkSecThres,'Mask used for Dark Sectioning',-1);
+    end
+end
+
 % - Remove background
 if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)
     for ii=params.nframes:-1:1 % Inverse order so that the last PosRoiBack corresponds to the first frame for display below
@@ -85,6 +95,7 @@ if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)
 else
     PosRoiBack=[1,1];
 end
+
 if isempty(wf)
     for ii=1:params.nbOr
         wf(:,:,ii,:)=mean(y(:,:,(ii-1)*params.nbPh+1:ii*params.nbPh,:),3);
