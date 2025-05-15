@@ -105,7 +105,7 @@ The repository is organized as follows.
 
 ## Examples
 
-This folder contains scripts to download and reconstruct the 20 open 2D-SIM datasets described in Table S1 of [1]. Each script is made of the following two steps
+This folder contains scripts to download and reconstruct the 25 open 2D-SIM datasets described in Table S1 of [1]. Each script is made of the following two steps
 * download raw data and set FlexSIM parameters
 * run FlexSIM.m function
 
