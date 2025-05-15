@@ -76,15 +76,7 @@ if tmp~=params.padSz
     params.padSz=tmp;
 end
 
-% - Dark-Sectioning
-if isfield(params,'DarkSec') && params.DarkSec>0
-    for ii=1:params.nframes
-        y(:,:,:,ii) = DarkSectioning(y(:,:,:,ii),params);
-    end
-    if params.displ > 0
-        DisplayStack(y(:,:,:,1)<params.DarkSecThres,'Mask used for Dark Sectioning',-1);
-    end
-end
+
 
 % - Remove background
 if isfield(params,'SzRoiBack') && ~isempty(params.SzRoiBack)
@@ -189,6 +181,16 @@ end
 if params.displ > 0
     % - Displays related to estimated parameters
     DisplayPattParams(y(:,:,:,1),params,k(:,:,1),phase(:,:,1),-1,0,'Refined patterns parameters');
+end
+
+% - Dark-Sectioning
+if isfield(params,'DarkSec') && params.DarkSec>0
+    for ii=1:params.nframes
+        y(:,:,:,ii) = max(DarkSectioning(y(:,:,:,ii),params),0);
+    end
+    if params.displ > 0
+        DisplayStack(y(:,:,:,1)<params.DarkSecThres,'Mask used for Dark Sectioning',-1);
+    end
 end
 
 % -- Loop over frames
