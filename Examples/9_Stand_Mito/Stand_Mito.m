@@ -3,8 +3,10 @@
 % at https://figshare.com/ndownloader/files/44375816
 %
 % Reference papers for the dataset:
+% Quantitative structured illumination microscopy via a physical model-based background filtering algorithm reveals actin dynamics
+% Y. Mo et al, Nature Communications, 2023.
 % Dark-based optical sectioning assists background removal in fluorescence microscopy
-% Cao et al, Nature Methods, 2025,
+% Cao et al, Nature Methods, 2025.
 %
 % Copyright (2025) E. Soubies (emmanuel.soubies@irit.fr) 
 %--------------------------------------------------------------------------
