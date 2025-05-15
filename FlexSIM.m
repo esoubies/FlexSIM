@@ -185,11 +185,13 @@ end
 
 % - Dark-Sectioning
 if isfield(params,'DarkSec') && params.DarkSec>0
+    if params.displ > 0
+        tt = y(:,:,:,1);
+        tt = 255*(tt - min(tt(:)))./(max(tt(:))-min(tt(:))); % To be in the same convention as in the DarkSec code
+        DisplayStack(tt<params.DarkSecThres,'Mask used for Dark Sectioning',-1);
+    end
     for ii=1:params.nframes
         y(:,:,:,ii) = max(DarkSectioning(y(:,:,:,ii),params),0);
-    end
-    if params.displ > 0
-        DisplayStack(y(:,:,:,1)<params.DarkSecThres,'Mask used for Dark Sectioning',-1);
     end
 end
 
