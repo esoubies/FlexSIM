@@ -105,11 +105,11 @@ The repository is organized as follows.
 
 ## Examples
 
-This folder contains scripts to download and reconstruct the 25 open 2D-SIM datasets described in Table S1 of [1]. Each script is made of the following two steps
+This folder contains scripts to download and reconstruct 25 open 2D-SIM datasets. Each script is made of the following two steps
 * download raw data and set FlexSIM parameters
 * run FlexSIM.m function
 
-The 20 open 2D-SIM datasets are sourced from 8 publications including **FairSIM** [1], **OpenSIM** [2], **HiFi-SIM** [3], **ML-SIM** [4], **JSFR-SIM** [5], **Direct-SIM** [6], **PCA-SIM** [7], **B-SIM** [8], as well as the dark-sectioning paper [9]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
+The 25 open 2D-SIM datasets are sourced from 8 publications including **FairSIM** [1], **OpenSIM** [2], **HiFi-SIM** [3], **ML-SIM** [4], **JSFR-SIM** [5], **Direct-SIM** [6], **PCA-SIM** [7], **B-SIM** [8], as well as the **dark-sectioning** paper [9]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
 Each subfolder of the Example folder corresponds to one dataset with the following naming convention
 * _Reference_SIM-type_Bio-structure_
 
