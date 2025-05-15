@@ -42,7 +42,7 @@ params.GPU=0;                           % Boolean on whether to use GPU. Require
 
 %% Physical parameters and pre-processing
 % -- Background estimation
-params.SzRoiBack= [];        % Size (odd number or empty) of the ROI for background estimation (position automatically detected so as to minimize the intensity within the ROI)
+params.SzRoiBack= [];       % Size (odd number or empty) of the ROI for background estimation (position automatically detected so as to minimize the intensity within the ROI)
 
 % -- Patterns
 params.StackOrder = 'pa';   % SIM stack order ('ap','pa','apw','paw','wap','wpa') with a=angles, p=phases, w=widefield. For 'ap' and 'pa' a widefield per orientation is computed as the summing along phases. 
@@ -53,36 +53,36 @@ params.nbPh = 3;            % Number of phases
 params.lamb = 525;        % Emission wavelength (nm)
 params.res = 65;          % Pixel size (nm)
 params.Na = 1.49;         % Objective numerical aperture
-params.damp = 0.25;        % damping parameter (in [0,1], 1= no damping) to attenuate middle freq in the approx OTF
+params.damp = 0.25;       % damping parameter (in [0,1], 1= no damping) to attenuate middle freq in the approx OTF
 
 %% Parameters for patterns estimation
 params.SzRoiPatt = [];            % Size (odd number or empty) of the ROI for pattern estimation (position automatically detected so as to maximize the intensity within the ROI)
 params.maskWF = 0.2;              % Radius (as a factor of the cutoff freq) of the disk used to mask central Fourier frequencies (attenuate residual WF contrib prior to cross-corr)
-params.ringRegionSearch = [0.3 1];  % Lower and upper limits of Fourier ring region to search peaks (given as factor of the cutoff freq)
+params.ringRegionSearch = [0.3 1];% Lower and upper limits of Fourier ring region to search peaks (given as factor of the cutoff freq)
 params.eqPh = 1;                  % Boolean, if true equally-spaced phases are assumed
 params.estiPattLowFreq=0;         % If true, estimate the low-freq component of the patterns
 params.doRefinement=0;
-params.pattAmp=0.5;                 % Amplitude of the patterns in [0,1]
+params.pattAmp=0.5;               % Amplitude of the patterns in [0,1]
         
 %% Parameters for image Reconstruction 
 % -- OTF Attenuation
-params.OTFAttStr=0;            % Strength of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.
-params.OTFAttwdth=0;           % Width of the OTF attenuation (>0). If 0 no OTF attenuation.
+params.OTFAttStr=0;              % Strength of the OTF attenuation (in [0,1]). If 0 no OTF attenuation.
+params.OTFAttwdth=0;             % Width of the OTF attenuation (>0). If 0 no OTF attenuation.
 
 % -- Dark-Sectioning
-params.DarkSec = 1;             % If >0 activate the Dark-sectioning (1 for middle and 2 for strong out-of-focus) 
-params.DarkSecThres = 30;       % Threshold used to define a mask on the image that contains the background
+params.DarkSec = 1;              % If >0 activate the Dark-sectioning (1 for middle and 2 for strong out-of-focus) 
+params.DarkSecThres = 30;        % Threshold used to define a mask on the image that contains the background
 
 % -- Cost function
-params.apodize = 1;               % Boolean on whether to use apodization on boundaries
-params.sepOrr=1;                % Boolean on whether to treat each orientation separately
-params.padSz=100;                  % Padding size (px) used in the forward operator
+params.apodize = 1;              % Boolean on whether to use apodization on boundaries
+params.sepOrr=1;                 % Boolean on whether to treat each orientation separately
+params.padSz=100;                % Padding size (px) used in the forward operator
 params.mu = 5e-5;                % Regularization parameter
-params.regType=3;                 % Regularization function: 1 for 1st-order Tikhonov, 2 for Total Variation, 3 for Good roughness.
+params.regType=3;                % Regularization function: 1 for 1st-order Tikhonov, 2 for Total Variation, 3 for Good roughness.
 
 % -- Optim
-params.maxIt = 500;                % Maximum number of iterations (stopping criteria)
-params.stepTol = 5e-4;            % Relative error tolerance between two iterates (stopping criteria)
+params.maxIt = 500;              % Maximum number of iterations (stopping criteria)
+params.stepTol = 5e-4;           % Relative error tolerance between two iterates (stopping criteria)
 
 %% Run FlexSIM
 run(strcat(params.pathToFlexSIM, 'InstallFlexSIM.m')) % Take care of paths & GlobalBioIm
