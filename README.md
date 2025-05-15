@@ -129,7 +129,7 @@ Each subfolder of the Example folder corresponds to one dataset with the followi
 
 [8] _<a href="https://www.nature.com/articles/s44303-024-00066-8" target="_blank">B-SIM</a>_,  A. Saurabh, et al., Approaching maximum resolution in structured illumination microscopy via accurate noise modeling, npj Imaging, vol. 3, no. 5, Jan. 2025.
 
-[9] _<a href="[https://www.nature.com/articles/s41592-025-02667-6](https://www.nature.com/articles/s41467-023-38808-8#Sec17)" target="_blank">Dark-SIM</a>_,  Y. Mo et al., Quantitative structured illumination microscopy via a physical model-based background filtering algorithm reveals actin dynamics, Nature Communications, 2023.
+[9] _<a href="https://www.nature.com/articles/s41592-025-02667-6](https://www.nature.com/articles/s41467-023-38808-8#Sec17" target="_blank">BF-SIM</a>_,  Y. Mo et al., Quantitative structured illumination microscopy via a physical model-based background filtering algorithm reveals actin dynamics, Nature Communications, 2023.
 
 ## Conditions of use
 
