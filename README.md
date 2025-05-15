@@ -7,6 +7,14 @@ More details can be found in the following paper:
 Journal of Microscopy (2024), <br />
 E. Soubies, A. Nogueron, F. Pelletier, T. Mangeat, C. Leterrier, M. Unser, and D. Sage.
 
+## Outline
+1. [News](#news)
+2. [Getting started](#getting-started)
+3. [Repository content](#repository-content)
+4. [FlexSIM parameters](#flexsim-parameters)
+5. [Examples](#examples)
+6. [Conditions of use](#conditions-of-use)
+
 ## News
 
 * May 2025: New saving options and integration of the newly proposed _<a href="https://www.nature.com/articles/s41592-025-02667-6" target="_blank">Dark-Sectioning</a>_ method.
