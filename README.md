@@ -109,7 +109,7 @@ This folder contains scripts to download and reconstruct 25 open 2D-SIM datasets
 * download raw data and set FlexSIM parameters
 * run FlexSIM.m function
 
-The 25 open 2D-SIM datasets are sourced from 8 publications including **FairSIM** [1], **OpenSIM** [2], **HiFi-SIM** [3], **ML-SIM** [4], **JSFR-SIM** [5], **Direct-SIM** [6], **PCA-SIM** [7], **B-SIM** [8], as well as the **dark-sectioning** paper [9]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
+The 25 open 2D-SIM datasets are sourced from 8 publications including **FairSIM** [1], **OpenSIM** [2], **HiFi-SIM** [3], **ML-SIM** [4], **JSFR-SIM** [5], **Direct-SIM** [6], **PCA-SIM** [7], **B-SIM** [8], and **BF-SIM** [9]. This corresponds to a collection of SIM data  acquired with a diversity of SIM systems and configurations.
 Each subfolder of the Example folder corresponds to one dataset with the following naming convention
 * _Reference_SIM-type_Bio-structure_
 
@@ -129,7 +129,7 @@ Each subfolder of the Example folder corresponds to one dataset with the followi
 
 [8] _<a href="https://www.nature.com/articles/s44303-024-00066-8" target="_blank">B-SIM</a>_,  A. Saurabh, et al., Approaching maximum resolution in structured illumination microscopy via accurate noise modeling, npj Imaging, vol. 3, no. 5, Jan. 2025.
 
-[9] _<a href="https://www.nature.com/articles/s41592-025-02667-6" target="_blank">Dark-SIM</a>_,  R. Cao et al., Dark-based optical sectioning assists background removal in fluorescence microscopy, Nature Methods, 2025.
+[9] _<a href="[https://www.nature.com/articles/s41592-025-02667-6](https://www.nature.com/articles/s41467-023-38808-8#Sec17)" target="_blank">Dark-SIM</a>_,  Y. Mo et al., Quantitative structured illumination microscopy via a physical model-based background filtering algorithm reveals actin dynamics, Nature Communications, 2023.
 
 ## Conditions of use
 
